@@ -34,7 +34,7 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.27",
     "bcryptjs": "^3.0.3",
-    "eslint": "^9.39.4",
+    "eslint": "^10.0.3",
     "eslint-config-next": "^16.2.0",
     "googleapis": "^171.4.0",
     "ip-cidr": "^4.0.2",
