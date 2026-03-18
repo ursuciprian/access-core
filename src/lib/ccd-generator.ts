@@ -101,21 +101,36 @@ export async function generateCcdForUser(userId: string): Promise<string> {
   })
 }
 
+function shellEscape(value: string) {
+  return `'${value.replace(/'/g, `'\\''`)}'`
+}
+
 export function buildCcdWriteCommand(
   ccdPath: string,
   commonName: string,
   ccdContent: string
 ): string {
+  const cnValidation = validateCommonName(commonName)
+  if (!cnValidation.success) {
+    throw new Error('Invalid common name for CCD write')
+  }
+
+  const pathValidation = validateServerPaths({
+    ccdPath,
+    easyRsaPath: '/tmp',
+    serverConf: '/tmp/server.conf',
+  })
+  if (!pathValidation.success) {
+    throw new Error('Invalid CCD path for write')
+  }
+
+  const escapedTarget = shellEscape(`${ccdPath}/${commonName}`)
   return [
-    `cat > ${ccdPath}/${commonName} << 'CCDEOF'`,
+    `cat > ${escapedTarget} << 'CCDEOF'`,
     ccdContent,
     'CCDEOF',
-    `chmod 644 ${ccdPath}/${commonName}`,
+    `chmod 644 ${escapedTarget}`,
   ].join('\n')
-}
-
-function shellEscape(value: string) {
-  return `'${value.replace(/'/g, `'\\''`)}'`
 }
 
 export function buildCcdDeleteCommand(
