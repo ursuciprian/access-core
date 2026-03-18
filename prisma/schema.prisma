@@ -278,6 +278,7 @@ enum UserRole {
 enum AuthRateLimitScope {
   EMAIL
   IP
+  MFA_VERIFY
 }
 
 enum AccessRequestStatus {

@@ -40,7 +40,14 @@ export async function canAttemptLogin(email: string, ip: string | null, now?: nu
   return records.every((record) => !record?.lockedUntil || record.lockedUntil <= currentTime)
 }
 
-async function upsertFailure(scopeType: AuthRateLimitScope, rawKey: string | null, maxAttempts: number, now: Date) {
+async function upsertFailure(
+  scopeType: AuthRateLimitScope,
+  rawKey: string | null,
+  maxAttempts: number,
+  now: Date,
+  windowMs: number = WINDOW_MS,
+  lockoutMs: number = LOCKOUT_MS,
+) {
   const scopeKey = getScopeKey(scopeType, rawKey)
   const record = await getRecord(scopeType, scopeKey)
 
@@ -52,15 +59,15 @@ async function upsertFailure(scopeType: AuthRateLimitScope, rawKey: string | nul
         failures: 1,
         windowStart: now,
         lastAttemptAt: now,
-        lockedUntil: maxAttempts <= 1 ? new Date(now.getTime() + LOCKOUT_MS) : null,
+        lockedUntil: maxAttempts <= 1 ? new Date(now.getTime() + lockoutMs) : null,
       },
     })
   }
 
-  const windowExpired = now.getTime() - record.windowStart.getTime() > WINDOW_MS
+  const windowExpired = now.getTime() - record.windowStart.getTime() > windowMs
   const lockoutExpired = record.lockedUntil !== null && record.lockedUntil <= now
   const nextFailures = windowExpired || lockoutExpired ? 1 : record.failures + 1
-  const nextLockedUntil = nextFailures >= maxAttempts ? new Date(now.getTime() + LOCKOUT_MS) : null
+  const nextLockedUntil = nextFailures >= maxAttempts ? new Date(now.getTime() + lockoutMs) : null
 
   return prisma.authRateLimit.update({
     where: {
@@ -108,6 +115,30 @@ export async function clearFailedLoginAttempts(email: string, ip: string | null)
 
 export async function resetLoginRateLimitState() {
   await prisma.authRateLimit.deleteMany()
+}
+
+const MFA_WINDOW_MS = 5 * 60 * 1000
+const MFA_LOCKOUT_MS = 15 * 60 * 1000
+const MFA_MAX_ATTEMPTS = 5
+
+export async function canAttemptMfaVerify(userId: string, now?: number) {
+  const currentTime = new Date(now ?? Date.now())
+  const record = await getRecord(AuthRateLimitScope.MFA_VERIFY, userId)
+  return !record?.lockedUntil || record.lockedUntil <= currentTime
+}
+
+export async function recordFailedMfaAttempt(userId: string, now?: number) {
+  const currentTime = new Date(now ?? Date.now())
+  await upsertFailure(AuthRateLimitScope.MFA_VERIFY, userId, MFA_MAX_ATTEMPTS, currentTime, MFA_WINDOW_MS, MFA_LOCKOUT_MS)
+}
+
+export async function clearMfaRateLimit(userId: string) {
+  await prisma.authRateLimit.deleteMany({
+    where: {
+      scopeType: AuthRateLimitScope.MFA_VERIFY,
+      scopeKey: userId,
+    },
+  })
 }
 
 export const loginRateLimitConfig = {
