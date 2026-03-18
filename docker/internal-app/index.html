@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internal App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0A0A0A;
+      color: #F0F0F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #111111;
+      border: 1px solid #1E1E1E;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      max-width: 480px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(34,197,94,0.15);
+      color: #22C55E;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    p { font-size: 14px; color: #888888; line-height: 1.6; }
+    .ip { font-family: ui-monospace, monospace; color: #EA7E20; font-size: 13px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">VPN Only</div>
+    <h1>Internal Application</h1>
+    <p>If you can see this page, you are connected to the VPN. This service is only accessible through the VPN tunnel at <strong>10.8.1.100</strong>.</p>
+    <p class="ip">Network: 10.8.1.0/24</p>
+  </div>
+</body>
+</html>

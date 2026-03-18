@@ -1,0 +1,138 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+
+const PAGE_META = [
+  { match: (pathname: string) => pathname === '/', title: 'Dashboard', subtitle: 'Monitor system health, activity, and connected VPN sessions.' },
+  { match: (pathname: string) => pathname.startsWith('/users'), title: 'Users', subtitle: 'Manage VPN users, certificates, and account status.' },
+  { match: (pathname: string) => pathname.startsWith('/groups'), title: 'Groups', subtitle: 'Control group membership and network access policy.' },
+  { match: (pathname: string) => pathname.startsWith('/servers'), title: 'Servers', subtitle: 'Review server status, logs, imports, and live connections.' },
+  { match: (pathname: string) => pathname.startsWith('/access-requests'), title: 'VPN Requests', subtitle: 'Approve or reject requests for VPN access.' },
+  { match: (pathname: string) => pathname.startsWith('/analytics'), title: 'Analytics', subtitle: 'Review operational trends, admin activity, and AccessCore insights.' },
+  { match: (pathname: string) => pathname.startsWith('/admin/settings'), title: 'Settings', subtitle: 'Configure AccessCore defaults, sessions, and integrations.' },
+  { match: (pathname: string) => pathname.startsWith('/admin'), title: 'Portal Access', subtitle: 'Manage who can sign in to the portal.' },
+  { match: (pathname: string) => pathname.startsWith('/my-access'), title: 'My VPN', subtitle: 'Download configs and review your assigned VPN access.' },
+  { match: (pathname: string) => pathname.startsWith('/request-access'), title: 'Request Access', subtitle: 'Request new VPN access for servers and groups.' },
+  { match: (pathname: string) => pathname.startsWith('/sync'), title: 'Sync', subtitle: 'Run and inspect directory sync jobs.' },
+  { match: (pathname: string) => pathname.startsWith('/flagged'), title: 'Flags', subtitle: 'Review users that need manual attention.' },
+  { match: (pathname: string) => pathname.startsWith('/audit'), title: 'Audit Log', subtitle: 'Track administrative activity and system events.' },
+  { match: (pathname: string) => pathname.startsWith('/profile'), title: 'Profile', subtitle: 'Manage your AccessCore account and login history.' },
+]
+
+export default function Topbar({
+  onSearchOpen,
+  onNavOpen,
+  isMobile,
+}: {
+  onSearchOpen: () => void
+  onNavOpen: () => void
+  isMobile: boolean
+}) {
+  const pathname = usePathname()
+  const { data: session } = useSession()
+  const meta = PAGE_META.find((item) => item.match(pathname)) ?? {
+    title: 'AccessCore',
+    subtitle: 'Manage VPN access, infrastructure, and the AccessCore control center.',
+  }
+  const isAdmin = ((session?.user as Record<string, unknown> | undefined)?.role as string | undefined) === 'ADMIN'
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'stretch' : 'flex-start',
+        justifyContent: 'space-between',
+        gap: '16px',
+        marginBottom: '24px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+        {isMobile && (
+          <button
+            onClick={onNavOpen}
+            aria-label="Open navigation"
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              border: '1px solid #232323',
+              background: '#111111',
+              color: '#F0F0F0',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+            }}
+          >
+            <MenuIcon />
+          </button>
+        )}
+        <div>
+          <h1 style={{ fontSize: isMobile ? '22px' : '24px', fontWeight: 700, color: '#F0F0F0', margin: 0 }}>{meta.title}</h1>
+          <p style={{ fontSize: '13px', color: '#666666', margin: '6px 0 0', maxWidth: '680px', lineHeight: 1.5 }}>{meta.subtitle}</p>
+        </div>
+      </div>
+      {isAdmin && (
+        <button
+          onClick={onSearchOpen}
+          style={{
+            width: isMobile ? '100%' : 'auto',
+            minWidth: isMobile ? undefined : '220px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            padding: '11px 14px',
+            borderRadius: '12px',
+            border: '1px solid #232323',
+            background: '#111111',
+            color: '#888888',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: 500 }}>
+            <SearchIcon />
+            Search or jump...
+          </span>
+          {!isMobile && (
+            <kbd style={{
+              padding: '2px 6px',
+              borderRadius: '6px',
+              border: '1px solid #333333',
+              background: '#171717',
+              fontSize: '11px',
+              color: '#555555',
+            }}>
+              ⌘K
+            </kbd>
+          )}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function MenuIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+    </svg>
+  )
+}
+
+function SearchIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
