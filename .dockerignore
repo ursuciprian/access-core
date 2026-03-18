@@ -1,0 +1,14 @@
+.git
+.github
+.next
+.omc
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+coverage
+docs
+node_modules
+*.log
+tsconfig.tsbuildinfo

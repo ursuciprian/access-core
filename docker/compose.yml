@@ -1,0 +1,78 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: openvpn_gui
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  openvpn:
+    build:
+      context: ./openvpn
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+    ports:
+      - "1194:1194/udp"
+      - "2222:22"
+    volumes:
+      - openvpn_data:/etc/openvpn
+    environment:
+      OPENVPN_SERVER_SUBNET: "10.8.0.0 255.255.255.0"
+    networks:
+      default:
+      vpn-internal:
+        ipv4_address: 10.8.1.2
+
+  internal-app:
+    image: nginx:alpine
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    entrypoint: ["/bin/sh", "-c", "ip route add 10.8.0.0/24 via 10.8.1.2 2>/dev/null || true; nginx -g 'daemon off;'"]
+    depends_on:
+      - openvpn
+    networks:
+      vpn-internal:
+        ipv4_address: 10.8.1.100
+    volumes:
+      - ./internal-app/index.html:/usr/share/nginx/html/index.html:ro
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/app/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - db
+      - openvpn
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://db:5432/openvpn_gui?schema=public"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_SECRET: "replace-this-before-deploying"
+      GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_SECRET: ""
+      GOOGLE_ALLOWED_DOMAIN: ""
+      ALLOW_SSH_PASSWORD_AUTH: "true"
+      SSH_PASS_LOCAL_DEV: "openvpn"
+
+networks:
+  vpn-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.8.1.0/24
+
+volumes:
+  pgdata:
+  openvpn_data:

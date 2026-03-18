@@ -1,0 +1,327 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model VpnServer {
+  id              String        @id @default(cuid())
+  name            String
+  hostname        String
+  transport       TransportType @default(SSM)
+  // SSM transport fields
+  instanceId      String?
+  region          String?
+  // SSH transport fields
+  sshHost         String?
+  sshPort         Int?          @default(22)
+  sshUser         String?
+  sshKeySecretId  String?
+  sshHostKey      String?
+  // Agent transport fields
+  agentUrl        String?
+  agentApiKeySecretId String?
+  // Common fields
+  ccdPath         String
+  easyRsaPath     String
+  serverConf      String
+  vpnNetwork      String        @default("10.8.0.0/24")
+  dnsServers      String[]      @default([])
+  searchDomains   String[]      @default([])
+  routeMode       String        @default("NAT")
+  splitTunnel     Boolean       @default(false)
+  compression     String        @default("off")
+  protocol        String        @default("udp")
+  port            Int           @default(1194)
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  groups          VpnGroup[]
+  users           VpnUser[]
+  syncJobs        SyncJob[]
+  temporaryAccess TemporaryAccess[]
+  accessRequests  AccessRequest[]
+  connections     VpnConnection[]
+}
+
+model VpnGroup {
+  id              String              @id @default(cuid())
+  name            String
+  description     String?
+  require2fa      Boolean             @default(false)
+  cidrBlocks      CidrBlock[]
+  users           VpnUserGroup[]
+  temporaryAccess TemporaryAccess[]
+  googleMappings  GoogleGroupMapping[]
+  serverId        String
+  server          VpnServer           @relation(fields: [serverId], references: [id])
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([name, serverId])
+}
+
+model CidrBlock {
+  id          String   @id @default(cuid())
+  cidr        String
+  description String?
+  groupId     String
+  group       VpnGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([cidr, groupId])
+}
+
+model VpnUser {
+  id              String     @id @default(cuid())
+  email           String
+  commonName      String
+  displayName     String?
+  googleUserId    String?
+  certStatus      CertStatus @default(NONE)
+  certCreatedAt   DateTime?
+  certExpiresAt   DateTime?
+  isEnabled       Boolean    @default(true)
+  isFlagged       Boolean    @default(false)
+  flagReason      String?
+  flaggedAt       DateTime?
+  groups          VpnUserGroup[]
+  temporaryAccess TemporaryAccess[]
+  serverId        String
+  server          VpnServer  @relation(fields: [serverId], references: [id])
+  auditLogs       AuditLog[]
+  staticIp        String?
+  allowInternet   Boolean    @default(true)
+  maxConnections  Int        @default(1)
+  require2fa      Boolean    @default(false)
+  allowedSourceIps String[]  @default([])
+  ccdSyncStatus   SyncStatus @default(PENDING)
+  lastCcdPush     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([email, serverId])
+  @@unique([commonName, serverId])
+  @@unique([googleUserId, serverId])
+}
+
+model AdminUser {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  password     String?        // bcrypt-hashed password (null = Google OAuth only)
+  role         UserRole       @default(VIEWER)
+  isApproved   Boolean        @default(false)
+  mfaEnabled   Boolean        @default(false)
+  mfaSecret    String?
+  mfaPendingSecret String?
+  mfaEnabledAt DateTime?
+  lastLoginAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  loginHistory LoginHistory[]
+}
+
+model LoginHistory {
+  id        String    @id @default(cuid())
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String?
+  userAgent String?
+  method    String    // "credentials" | "google"
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model AuthRateLimit {
+  id            String             @id @default(cuid())
+  scopeType     AuthRateLimitScope
+  scopeKey      String
+  failures      Int                @default(0)
+  windowStart   DateTime
+  lastAttemptAt DateTime           @default(now())
+  lockedUntil   DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@unique([scopeType, scopeKey])
+  @@index([lockedUntil])
+}
+
+model SystemSettings {
+  id                 String   @id @default("global")
+  googleSyncEnabled  Boolean  @default(false)
+  autoApproveUsers   Boolean  @default(false)
+  defaultUserRole    UserRole @default(VIEWER)
+  defaultVpnServerId String?
+  sessionMaxAge      Int      @default(86400)
+  certExpiryWarnDays Int      @default(30)
+  maintenanceMode    Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+}
+
+model VpnUserGroup {
+  id        String           @id @default(cuid())
+  userId    String
+  user      VpnUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     VpnGroup         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  source    MembershipSource @default(MANUAL)
+  createdAt DateTime         @default(now())
+
+  @@unique([userId, groupId])
+}
+
+model GoogleGroupMapping {
+  id               String   @id @default(cuid())
+  googleGroupEmail String
+  googleGroupName  String?
+  vpnGroupId       String
+  vpnGroup         VpnGroup @relation(fields: [vpnGroupId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@unique([googleGroupEmail, vpnGroupId])
+}
+
+model SyncJob {
+  id          String     @id @default(cuid())
+  type        SyncType
+  status      SyncStatus @default(PENDING)
+  serverId    String
+  server      VpnServer  @relation(fields: [serverId], references: [id])
+  triggeredBy String?
+  details     Json?
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+}
+
+model TemporaryAccess {
+  id          String   @id @default(cuid())
+  userId      String
+  user        VpnUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId     String
+  group       VpnGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  serverId    String
+  server      VpnServer @relation(fields: [serverId], references: [id])
+  reason      String?
+  grantedBy   String              // admin email who granted access
+  startsAt    DateTime @default(now())
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  revokedAt   DateTime?
+  revokedBy   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([expiresAt])
+  @@index([isActive])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  actorEmail String
+  targetType String
+  targetId   String
+  userId     String?
+  user       VpnUser? @relation(fields: [userId], references: [id])
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([action])
+  @@index([targetId])
+  @@index([createdAt])
+}
+
+enum TransportType {
+  SSM
+  SSH
+  AGENT
+}
+
+enum CertStatus {
+  NONE
+  ACTIVE
+  REVOKED
+}
+
+enum SyncStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  FAILED
+}
+
+enum SyncType {
+  GOOGLE_SYNC
+  CCD_PUSH
+  CERT_OPERATION
+  IMPORT
+}
+
+enum MembershipSource {
+  MANUAL
+  GOOGLE_SYNC
+}
+
+enum UserRole {
+  ADMIN
+  VIEWER
+}
+
+enum AuthRateLimitScope {
+  EMAIL
+  IP
+}
+
+enum AccessRequestStatus {
+  PENDING
+  PROCESSING
+  APPROVED
+  FAILED
+  REJECTED
+}
+
+model AccessRequest {
+  id          String              @id @default(cuid())
+  email       String
+  name        String?
+  serverId    String
+  server      VpnServer           @relation(fields: [serverId], references: [id])
+  groupIds    String[]            // requested group IDs
+  reason      String?
+  status      AccessRequestStatus @default(PENDING)
+  reviewedBy  String?             // admin email who reviewed
+  reviewedAt  DateTime?
+  reviewNote  String?             // admin note on approval/rejection
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+model VpnConnection {
+  id             String    @id @default(cuid())
+  commonName     String
+  realAddress    String
+  vpnAddress     String
+  bytesIn        BigInt    @default(0)
+  bytesOut       BigInt    @default(0)
+  serverId       String
+  server         VpnServer @relation(fields: [serverId], references: [id])
+  connectedAt    DateTime  @default(now())
+  disconnectedAt DateTime?
+  duration       Int?
+
+  @@index([serverId])
+  @@index([connectedAt])
+  @@index([commonName])
+}
