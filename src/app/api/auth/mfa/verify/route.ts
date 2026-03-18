@@ -7,6 +7,11 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { decryptTotpSecret, verifyTotpCode } from '@/lib/totp'
 import { logAudit } from '@/lib/audit'
+import {
+  canAttemptMfaVerify,
+  recordFailedMfaAttempt,
+  clearMfaRateLimit,
+} from '@/lib/login-rate-limit'
 
 const verifyMfaSchema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
@@ -35,8 +40,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Multi-factor authentication is not enabled' }, { status: 409 })
   }
 
+  if (!(await canAttemptMfaVerify(adminUser.id))) {
+    return NextResponse.json({ error: 'Too many verification attempts. Please try again later.' }, { status: 429 })
+  }
+
   const secret = decryptTotpSecret(adminUser.mfaSecret)
   if (!secret || !verifyTotpCode(secret, parsed.data.code)) {
+    await recordFailedMfaAttempt(adminUser.id)
     await logAudit({
       action: 'MFA_VERIFICATION_FAILED',
       actorEmail: adminUser.email,
@@ -47,6 +57,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 })
   }
 
+  await clearMfaRateLimit(adminUser.id)
   await logAudit({
     action: 'MFA_VERIFIED',
     actorEmail: adminUser.email,
