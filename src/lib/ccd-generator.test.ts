@@ -73,22 +73,22 @@ describe('generateCcdContent', () => {
 })
 
 describe('buildCcdWriteCommand', () => {
-  it('produces a heredoc cat command followed by chmod', () => {
+  it('produces a heredoc cat command followed by chmod with shell-escaped paths', () => {
     const result = buildCcdWriteCommand('/etc/openvpn/ccd', 'user1', 'push "route 10.0.1.0 255.255.255.0"')
     expect(result).toBe(
       [
-        "cat > /etc/openvpn/ccd/user1 << 'CCDEOF'",
+        "cat > '/etc/openvpn/ccd/user1' << 'CCDEOF'",
         'push "route 10.0.1.0 255.255.255.0"',
         'CCDEOF',
-        'chmod 644 /etc/openvpn/ccd/user1',
+        "chmod 644 '/etc/openvpn/ccd/user1'",
       ].join('\n')
     )
   })
 
-  it('uses the provided ccdPath and commonName in both lines', () => {
+  it('uses shell-escaped ccdPath and commonName in both lines', () => {
     const result = buildCcdWriteCommand('/custom/path', 'myuser', '')
-    expect(result).toContain('cat > /custom/path/myuser')
-    expect(result).toContain('chmod 644 /custom/path/myuser')
+    expect(result).toContain("cat > '/custom/path/myuser'")
+    expect(result).toContain("chmod 644 '/custom/path/myuser'")
   })
 
   it('embeds the ccdContent between the heredoc markers', () => {
