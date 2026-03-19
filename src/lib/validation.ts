@@ -2,6 +2,7 @@ import { z } from 'zod/v4'
 
 const SERVER_PATH_REGEX = /^\/[a-zA-Z0-9/_.-]+$/
 const COMMON_NAME_REGEX = /^[a-zA-Z0-9._-]+$/
+export const MIN_PASSWORD_LENGTH = 12
 
 export const serverPathSchema = z
   .string()
@@ -30,6 +31,11 @@ export const cidrSchema = z
     const octets = ip.split('.').map(Number)
     return octets.every((o) => o >= 0 && o <= 255)
   }, 'Invalid IPv4 CIDR notation')
+
+export const passwordSchema = z
+  .string()
+  .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`)
+  .max(256, 'Password must be at most 256 characters long')
 
 export function validateServerPaths(data: {
   ccdPath: string

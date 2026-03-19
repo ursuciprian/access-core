@@ -1,30 +1,24 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
 import { generateCcdForUser, buildCcdWriteCommand } from '@/lib/ccd-generator'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { reconcileExpiredTemporaryAccess } from '@/lib/temporary-access'
 import { getTransport } from '@/lib/transport'
+import { requireAdmin } from '@/lib/rbac'
 
-export async function POST(
+export const POST = requireAdmin()(async (
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  session,
+  context
+) => {
+  const actorEmail = session.user.email as string
   if (!isServerManagementEnabled()) {
     return NextResponse.json({ error: SERVER_MANAGEMENT_DISABLED_MESSAGE }, { status: 409 })
   }
 
-  const { id } = await params
+  const { id } = await (context as { params: Promise<{ id: string }> }).params
   const { prisma } = await import('@/lib/prisma')
   await reconcileExpiredTemporaryAccess({ serverId: id })
 
@@ -42,7 +36,7 @@ export async function POST(
       type: 'CCD_PUSH',
       status: 'IN_PROGRESS',
       serverId: id,
-      triggeredBy: session.user.email,
+      triggeredBy: actorEmail,
       startedAt: new Date(),
       details: { totalUsers: users.length },
     },
@@ -50,7 +44,7 @@ export async function POST(
 
   await logAudit({
     action: 'SYNC_STARTED',
-    actorEmail: session.user.email,
+    actorEmail,
     targetType: 'SERVER',
     targetId: id,
     details: { syncJobId: syncJob.id, totalUsers: users.length },
@@ -114,7 +108,7 @@ export async function POST(
 
   await logAudit({
     action: 'SYNC_COMPLETED',
-    actorEmail: session.user.email,
+    actorEmail,
     targetType: 'SERVER',
     targetId: id,
     details: {
@@ -126,4 +120,4 @@ export async function POST(
   })
 
   return NextResponse.json(updatedJob)
-}
+})

@@ -1,24 +1,13 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { z } from 'zod/v4'
 import { logAudit } from '@/lib/audit'
 import { getAuthMethodLabel } from '@/lib/auth-method'
+import { requireAdmin } from '@/lib/rbac'
+import { passwordSchema } from '@/lib/validation'
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) return null
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') return null
-  return session
-}
-
-export async function GET() {
-  const session = await requireAdmin()
-  if (!session) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+export const GET = requireAdmin()(async (_request: NextRequest) => {
 
   const { prisma } = await import('@/lib/prisma')
 
@@ -48,20 +37,15 @@ export async function GET() {
   }))
 
   return NextResponse.json(mapped)
-}
+})
 
 const createAdminSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: passwordSchema,
   role: z.enum(['ADMIN', 'VIEWER']).default('VIEWER'),
 })
 
-export async function POST(request: NextRequest) {
-  const session = await requireAdmin()
-  if (!session) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const POST = requireAdmin()(async (request: NextRequest, session) => {
   const body = await request.json()
   const parsed = createAdminSchema.safeParse(body)
   if (!parsed.success) {
@@ -95,4 +79,4 @@ export async function POST(request: NextRequest) {
   })
 
   return NextResponse.json(admin, { status: 201 })
-}
+})

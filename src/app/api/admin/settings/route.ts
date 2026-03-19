@@ -1,13 +1,12 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { z } from 'zod/v4'
-import { authOptions } from '@/lib/auth'
 import { getEffectiveSystemSettings, upsertSystemSettings } from '@/lib/system-settings'
 import { logAudit } from '@/lib/audit'
 import { getFeatureFlags } from '@/lib/features'
 import { getLdapConfig } from '@/lib/ldap'
+import { requireAdmin } from '@/lib/rbac'
 
 const updateSettingsSchema = z.object({
   googleSyncEnabled: z.boolean(),
@@ -19,16 +18,7 @@ const updateSettingsSchema = z.object({
   maintenanceMode: z.boolean(),
 })
 
-export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const GET = requireAdmin()(async (_request: NextRequest) => {
   const settings = await getEffectiveSystemSettings()
   const featureFlags = getFeatureFlags()
   const ldapConfig = getLdapConfig()
@@ -84,18 +74,10 @@ export async function GET() {
       tlsRejectUnauthorized: true,
     },
   })
-}
+})
 
-export async function PUT(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const PUT = requireAdmin()(async (request: NextRequest, session) => {
+  const actorEmail = session.user.email as string
   const body = await request.json()
   const parsed = updateSettingsSchema.safeParse(body)
   if (!parsed.success) {
@@ -114,11 +96,11 @@ export async function PUT(request: NextRequest) {
 
   await logAudit({
     action: 'SETTINGS_UPDATED',
-    actorEmail: session.user.email,
+    actorEmail,
     targetType: 'ADMIN_USER',
-    targetId: session.user.email,
+    targetId: actorEmail,
     details: parsed.data,
   })
 
   return NextResponse.json({ success: true })
-}
+})

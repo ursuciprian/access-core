@@ -5,7 +5,15 @@ const TOTP_DIGITS = 6
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 function getMfaEncryptionKey(): Buffer {
-  const source = process.env.MFA_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET || 'local-dev-mfa-secret'
+  const source = process.env.MFA_ENCRYPTION_KEY?.trim()
+  if (!source) {
+    throw new Error('MFA_ENCRYPTION_KEY must be configured')
+  }
+
+  if (source.length < 32) {
+    throw new Error('MFA_ENCRYPTION_KEY must be at least 32 characters long')
+  }
+
   return createHash('sha256').update(source).digest()
 }
 

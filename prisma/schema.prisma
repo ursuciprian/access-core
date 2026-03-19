@@ -109,19 +109,20 @@ model VpnUser {
 }
 
 model AdminUser {
-  id           String         @id @default(cuid())
-  email        String         @unique
-  password     String?        // bcrypt-hashed password (null = Google OAuth only)
-  role         UserRole       @default(VIEWER)
-  isApproved   Boolean        @default(false)
-  mfaEnabled   Boolean        @default(false)
-  mfaSecret    String?
+  id               String         @id @default(cuid())
+  email            String         @unique
+  password         String?        // bcrypt-hashed password (null = Google OAuth only)
+  role             UserRole       @default(VIEWER)
+  isApproved       Boolean        @default(false)
+  mfaEnabled       Boolean        @default(false)
+  mfaSecret        String?
   mfaPendingSecret String?
-  mfaEnabledAt DateTime?
-  lastLoginAt  DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  loginHistory LoginHistory[]
+  mfaEnabledAt     DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  loginHistory     LoginHistory[]
+  authSessions     AuthSession[]
 }
 
 model LoginHistory {
@@ -134,6 +135,25 @@ model LoginHistory {
   createdAt DateTime  @default(now())
 
   @@index([userId])
+}
+
+model AuthSession {
+  id         String    @id @default(cuid())
+  userId     String
+  user       AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method     String
+  ip         String?
+  userAgent  String?
+  expiresAt  DateTime
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+  revokedBy  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
 }
 
 model AuthRateLimit {

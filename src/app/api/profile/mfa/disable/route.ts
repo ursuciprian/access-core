@@ -6,12 +6,15 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { requireApprovedUser } from '@/lib/rbac'
 import { decryptTotpSecret, verifyTotpCode } from '@/lib/totp'
+import { revokeUserAuthSessions } from '@/lib/auth-session'
+import { clearAuthCookies } from '@/lib/auth-cookies'
 
 const disableMfaSchema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
 })
 
 export const POST = requireApprovedUser()(async (request: NextRequest, session) => {
+  const userId = (session.user as Record<string, unknown>).id as string
   const parsed = disableMfaSchema.safeParse(await request.json())
   if (!parsed.success) {
     return NextResponse.json({ error: 'Validation failed', details: parsed.error.issues }, { status: 400 })
@@ -53,5 +56,12 @@ export const POST = requireApprovedUser()(async (request: NextRequest, session) 
     details: { email: adminUser.email, method: 'TOTP' },
   })
 
-  return NextResponse.json({ success: true })
+  await revokeUserAuthSessions({
+    userId,
+    revokedBy: adminUser.email,
+  })
+
+  const response = NextResponse.json({ success: true, requiresReauth: true })
+  clearAuthCookies(response)
+  return response
 })

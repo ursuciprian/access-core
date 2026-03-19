@@ -1,9 +1,22 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 import { isMfaOnboardingRequired } from '@/lib/features'
+import {
+  isValidMfaVerificationCookie,
+  MFA_VERIFICATION_COOKIE,
+} from '@/lib/mfa-cookie'
 
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req) {
+    if (req.method === 'TRACE') {
+      return new NextResponse(null, {
+        status: 405,
+        headers: {
+          Allow: 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS',
+        },
+      })
+    }
+
     const token = req.nextauth.token
     const pathname = req.nextUrl.pathname
 
@@ -16,7 +29,8 @@ export default withAuth(
     if (token && token.isApproved === false) {
       const allowPendingApproval =
         pathname === '/pending-approval' ||
-        pathname.startsWith('/api/access-requests')
+        pathname.startsWith('/api/access-requests') ||
+        pathname === '/api/servers/public'
 
       if (!allowPendingApproval) {
         return NextResponse.redirect(new URL('/pending-approval', req.url))
@@ -45,7 +59,22 @@ export default withAuth(
       return NextResponse.redirect(setupUrl)
     }
 
-    if (token && token.mfaEnabled === true && token.mfaVerified !== true && !allowMfaVerification) {
+    const hasServerIssuedMfaVerification =
+      typeof token?.userId === 'string' &&
+      typeof token?.authSessionId === 'string' &&
+      await isValidMfaVerificationCookie(
+        req.cookies.get(MFA_VERIFICATION_COOKIE)?.value,
+        token.userId,
+        token.authSessionId
+      )
+
+    if (
+      token &&
+      token.mfaEnabled === true &&
+      token.mfaVerified !== true &&
+      !hasServerIssuedMfaVerification &&
+      !allowMfaVerification
+    ) {
       if (pathname.startsWith('/api/')) {
         return NextResponse.json(
           { error: 'Forbidden: Multi-factor authentication required' },
@@ -60,7 +89,7 @@ export default withAuth(
   },
   {
   callbacks: {
-    authorized: ({ token }) => {
+    authorized: async ({ req, token }) => {
       if (!token) return false
 
       const expiresAt = typeof token.sessionExpiresAt === 'number' ? token.sessionExpiresAt : null
@@ -68,7 +97,21 @@ export default withAuth(
         return false
       }
 
-      return true
+      if (typeof token.authSessionId !== 'string' || typeof token.userId !== 'string') {
+        return false
+      }
+
+      try {
+        const response = await fetch(new URL('/api/auth/validate-session', req.url), {
+          headers: {
+            cookie: req.headers.get('cookie') ?? '',
+          },
+          cache: 'no-store',
+        })
+        return response.ok
+      } catch {
+        return false
+      }
     },
   },
   pages: {
@@ -78,6 +121,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/((?!login|mfa/verify|request-access|api/auth|api/servers/public|api/health|_next/static|_next/image|favicon.ico|icon.svg).*)',
+    '/((?!login|mfa/verify|request-access|api/auth|api/health|_next/static|_next/image|favicon.ico|icon.svg).*)',
   ],
 }

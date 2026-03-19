@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { AccessRequestStatus } from '@prisma/client'
+import { z } from 'zod/v4'
 import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
+
+const createAccessRequestSchema = z.object({
+  serverId: z.string().trim().min(1),
+  groupIds: z.array(z.string().trim().min(1)).max(50).default([]),
+  reason: z.string().trim().max(500).optional(),
+})
 
 // GET /api/access-requests — list requests (admins see all, viewers see own)
 export async function GET(req: NextRequest) {
@@ -58,14 +65,14 @@ export async function POST(req: NextRequest) {
 
   const email = session.user.email as string
 
-  const body = await req.json()
-  const { serverId, groupIds, reason } = body
-
-  if (!serverId) {
-    return NextResponse.json({ error: 'Server is required' }, { status: 400 })
+  const parsed = createAccessRequestSchema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Validation failed', details: parsed.error.issues }, { status: 400 })
   }
 
-  const [existingRequest, existingAccess] = await Promise.all([
+  const { serverId, groupIds, reason } = parsed.data
+
+  const [existingRequest, existingAccess, activeRequestCount] = await Promise.all([
     prisma.accessRequest.findFirst({
       where: {
         email,
@@ -84,6 +91,14 @@ export async function POST(req: NextRequest) {
       },
       select: {
         id: true,
+      },
+    }),
+    prisma.accessRequest.count({
+      where: {
+        email,
+        status: {
+          in: ['PENDING', 'PROCESSING', 'FAILED'],
+        },
       },
     }),
   ])
@@ -120,6 +135,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'You already have an approved request for this server' },
       { status: 409 }
+    )
+  }
+
+  if (activeRequestCount >= 3) {
+    return NextResponse.json(
+      { error: 'You already have too many active access requests. Please wait for an administrator to review them.' },
+      { status: 429 }
     )
   }
 

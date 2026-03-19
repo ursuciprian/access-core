@@ -1,49 +1,36 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { z } from 'zod/v4'
 import { generateCcdForUser, buildCcdWriteCommand } from '@/lib/ccd-generator'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { getTransport } from '@/lib/transport'
 import { generateCert } from '@/lib/cert-service'
+import { requireAdmin } from '@/lib/rbac'
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+const bulkActionSchema = z.object({
+  action: z.enum(['push-ccd', 'generate-cert', 'add-to-group']),
+  userIds: z.array(z.string().trim().min(1)).min(1).max(100),
+  groupId: z.string().trim().min(1).optional(),
+}).superRefine((value, ctx) => {
+  if (value.action === 'add-to-group' && !value.groupId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['groupId'],
+      message: 'groupId is required for add-to-group action',
+    })
   }
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+})
 
-  const body = await request.json()
-  const { action, userIds, groupId } = body as {
-    action: string
-    userIds: string[]
-    groupId?: string
-  }
-
-  if (!action || !Array.isArray(userIds) || userIds.length === 0) {
-    return NextResponse.json(
-      { error: 'Invalid request: action and userIds are required' },
-      { status: 400 }
-    )
+export const POST = requireAdmin()(async (request: NextRequest) => {
+  const parsed = bulkActionSchema.safeParse(await request.json())
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Validation failed', details: parsed.error.issues }, { status: 400 })
   }
 
-  if (!['push-ccd', 'generate-cert', 'add-to-group'].includes(action)) {
-    return NextResponse.json(
-      { error: 'Invalid action. Must be push-ccd, generate-cert, or add-to-group' },
-      { status: 400 }
-    )
-  }
-
-  if (action === 'add-to-group' && !groupId) {
-    return NextResponse.json(
-      { error: 'groupId is required for add-to-group action' },
-      { status: 400 }
-    )
-  }
+  const action = parsed.data.action
+  const userIds = [...new Set(parsed.data.userIds)]
+  const groupId = parsed.data.groupId
 
   if (!isServerManagementEnabled() && (action === 'push-ccd' || action === 'generate-cert')) {
     return NextResponse.json(
@@ -137,4 +124,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ success, failed, errors })
-}
+})

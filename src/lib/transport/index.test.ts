@@ -176,6 +176,28 @@ describe('getTransport', () => {
       })
       expect(() => getTransport(server)).toThrow('Agent transport requires agentUrl and agentApiKeySecretId')
     })
+
+    it('rejects non-HTTPS agent URLs', () => {
+      const server = baseServer({
+        transport: TransportType.AGENT,
+        agentUrl: 'http://agent.example.com',
+        agentApiKeySecretId: 'my-agent-key',
+      })
+
+      expect(() => getTransport(server)).toThrow('Agent URL must use HTTPS')
+    })
+
+    it('rejects localhost agent URLs', () => {
+      const server = baseServer({
+        transport: TransportType.AGENT,
+        agentUrl: 'https://localhost:8443',
+        agentApiKeySecretId: 'my-agent-key',
+      })
+
+      expect(() => getTransport(server)).toThrow(
+        'Agent URL must not target localhost, link-local, or private IP ranges'
+      )
+    })
   })
 
   describe('unknown transport', () => {

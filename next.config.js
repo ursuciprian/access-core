@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const isProduction = process.env.NODE_ENV === 'production'
+const allowUnsafeDevCsp = !isProduction && process.env.ALLOW_UNSAFE_DEV_CSP === 'true'
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self'${isProduction ? '' : " 'unsafe-inline' 'unsafe-eval'"}`,
+  `script-src 'self'${allowUnsafeDevCsp ? " 'unsafe-inline' 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
@@ -17,6 +18,7 @@ const contentSecurityPolicy = [
 
 const nextConfig = {
   output: 'standalone',
+  poweredByHeader: false,
   serverExternalPackages: ['ssh2', '@aws-sdk/client-ssm'],
   async headers() {
     const baseHeaders = [

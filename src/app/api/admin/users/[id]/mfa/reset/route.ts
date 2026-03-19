@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { logAudit } from '@/lib/audit'
 import { requireAdmin } from '@/lib/rbac'
+import { revokeUserAuthSessions } from '@/lib/auth-session'
 
 export const POST = requireAdmin()(async (_request, session, context) => {
   const { id } = await (context as { params: Promise<{ id: string }> }).params
@@ -25,6 +26,11 @@ export const POST = requireAdmin()(async (_request, session, context) => {
       mfaPendingSecret: null,
       mfaEnabledAt: null,
     },
+  })
+
+  await revokeUserAuthSessions({
+    userId: adminUser.id,
+    revokedBy: session.user.email as string,
   })
 
   await logAudit({

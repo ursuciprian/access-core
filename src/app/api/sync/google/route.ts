@@ -1,26 +1,18 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { z } from 'zod/v4'
 import { runGoogleSync } from '@/lib/sync-engine'
 import { logAudit } from '@/lib/audit'
 import { getEffectiveSystemSettings } from '@/lib/system-settings'
+import { requireAdmin } from '@/lib/rbac'
 
 const triggerSyncSchema = z.object({
   serverId: z.string().min(1),
 })
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const POST = requireAdmin()(async (request: NextRequest, session) => {
+  const actorEmail = session.user.email as string
   const body = await request.json()
   const parsed = triggerSyncSchema.safeParse(body)
   if (!parsed.success) {
@@ -40,18 +32,18 @@ export async function POST(request: NextRequest) {
 
   await logAudit({
     action: 'SYNC_STARTED',
-    actorEmail: session.user.email,
+    actorEmail,
     targetType: 'SERVER',
     targetId: parsed.data.serverId,
     details: { type: 'GOOGLE_SYNC' },
   })
 
   try {
-    const result = await runGoogleSync(parsed.data.serverId, session.user.email)
+    const result = await runGoogleSync(parsed.data.serverId, actorEmail)
 
     await logAudit({
       action: 'SYNC_COMPLETED',
-      actorEmail: session.user.email,
+      actorEmail,
       targetType: 'SERVER',
       targetId: parsed.data.serverId,
       details: {
@@ -68,4 +60,4 @@ export async function POST(request: NextRequest) {
     const errorMessage = err instanceof Error ? err.message : String(err)
     return NextResponse.json({ error: 'Sync failed', details: errorMessage }, { status: 500 })
   }
-}
+})

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
 import { generateCert, revokeCert } from '@/lib/cert-service'
 import { deriveCommonName, validateCommonName } from '@/lib/validation'
+import { requireAdmin } from '@/lib/rbac'
 
 function sanitizeCommonName(email: string) {
   const candidate = deriveCommonName(email)
@@ -42,22 +43,14 @@ async function buildUniqueCommonName(prisma: any, serverId: string, email: strin
 export const dynamic = 'force-dynamic'
 
 // PATCH /api/access-requests/[id] — approve or reject (admin only)
-export async function PATCH(
+export const PATCH = requireAdmin()(async (
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  session,
+  context
+) => {
   const { prisma } = await import('@/lib/prisma')
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const role = (session.user as Record<string, unknown>).role as string
-  if (role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { id } = await params
+  const actorEmail = session.user.email as string
+  const { id } = await (context as { params: Promise<{ id: string }> }).params
   const body = await req.json()
   const { action, reviewNote } = body as { action: 'approve' | 'reject'; reviewNote?: string }
 
@@ -81,7 +74,7 @@ export async function PATCH(
       where: { id },
       data: {
         status: 'REJECTED',
-        reviewedBy: session.user.email,
+        reviewedBy: actorEmail,
         reviewedAt: new Date(),
         reviewNote: reviewNote || undefined,
       },
@@ -90,7 +83,7 @@ export async function PATCH(
 
     await logAudit({
       action: 'ACCESS_REQUEST_REJECTED',
-      actorEmail: session.user.email,
+      actorEmail,
       targetType: 'ACCESS_REQUEST',
       targetId: request.id,
       details: { email: request.email, reviewNote },
@@ -109,7 +102,7 @@ export async function PATCH(
 
   await logAudit({
     action: 'ACCESS_REQUEST_PROVISIONING_STARTED',
-    actorEmail: session.user.email,
+    actorEmail,
     targetType: 'ACCESS_REQUEST',
     targetId: request.id,
     details: { email: request.email, reviewNote },
@@ -140,7 +133,7 @@ export async function PATCH(
 
       await logAudit({
         action: 'USER_CREATED',
-        actorEmail: session.user.email,
+        actorEmail,
         targetType: 'USER',
         targetId: vpnUser.id,
         userId: vpnUser.id,
@@ -176,7 +169,7 @@ export async function PATCH(
         where: { id },
         data: {
           status: 'APPROVED',
-          reviewedBy: session.user.email,
+          reviewedBy: actorEmail,
           reviewedAt: new Date(),
           reviewNote: reviewNote || undefined,
         },
@@ -199,7 +192,7 @@ export async function PATCH(
     if (needsNewCert) {
       await logAudit({
         action: 'CERT_GENERATED',
-        actorEmail: session.user.email,
+        actorEmail,
         targetType: 'USER',
         targetId: provisionedUser.id,
         userId: provisionedUser.id,
@@ -209,7 +202,7 @@ export async function PATCH(
 
     await logAudit({
       action: 'ACCESS_REQUEST_APPROVED',
-      actorEmail: session.user.email,
+      actorEmail,
       targetType: 'ACCESS_REQUEST',
       targetId: request.id,
       details: { email: request.email, reviewNote, provisioned: true },
@@ -235,7 +228,7 @@ export async function PATCH(
       where: { id },
       data: {
         status: 'FAILED',
-        reviewedBy: session.user.email,
+        reviewedBy: actorEmail,
         reviewedAt: new Date(),
         reviewNote:
           reviewNote || 'Provisioning failed. An administrator can retry this request.',
@@ -251,7 +244,7 @@ export async function PATCH(
 
     await logAudit({
       action: 'ACCESS_REQUEST_PROVISIONING_FAILED',
-      actorEmail: session.user.email,
+      actorEmail,
       targetType: 'ACCESS_REQUEST',
       targetId: request.id,
       userId: createdUserId ?? vpnUser?.id,
@@ -266,7 +259,7 @@ export async function PATCH(
       { status: 502 }
     )
   }
-}
+})
 
 // DELETE /api/access-requests/[id] — cancel own pending request
 export async function DELETE(

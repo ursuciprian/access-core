@@ -15,6 +15,9 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    authSession: {
+      updateMany: vi.fn(),
+    },
   },
 }))
 

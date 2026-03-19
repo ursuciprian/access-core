@@ -8,7 +8,6 @@ import Link from 'next/link'
 interface ServerOption {
   id: string
   name: string
-  hostname: string
 }
 
 interface GroupOption {
@@ -334,7 +333,7 @@ function RequestAccessContent() {
               <option value="">Select a server...</option>
               {servers.map(s => (
                 <option key={s.id} value={s.id} disabled={blockedServerIds.has(s.id)}>
-                  {s.name} ({s.hostname}){blockedServerIds.has(s.id) ? ` - ${getBlockedServerLabel(s.id)}` : ''}
+                  {s.name}{blockedServerIds.has(s.id) ? ` - ${getBlockedServerLabel(s.id)}` : ''}
                 </option>
               ))}
             </select>

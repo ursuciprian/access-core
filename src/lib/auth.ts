@@ -12,6 +12,11 @@ import {
   clearFailedLoginAttempts,
   recordFailedLoginAttempt,
 } from './login-rate-limit'
+import {
+  createAuthSession,
+  isAuthSessionActive,
+  revokeAuthSession,
+} from './auth-session'
 
 interface AuthRequestMetadata {
   ip: string | null
@@ -438,13 +443,23 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+      const metadata = getAuthRequestMetadata()
+
       if (account?.provider === 'credentials' && user && 'role' in user) {
+        const sessionExpiresAt = await buildSessionExpiryTimestamp()
         token.role = user.role
         token.isApproved = Boolean((user as Record<string, unknown>).isApproved)
         token.userId = user.id
         token.mfaEnabled = Boolean((user as Record<string, unknown>).mfaEnabled)
         token.mfaVerified = !Boolean((user as Record<string, unknown>).mfaEnabled)
-        token.sessionExpiresAt = await buildSessionExpiryTimestamp()
+        token.sessionExpiresAt = sessionExpiresAt
+        token.authSessionId = await createAuthSession({
+          userId: user.id,
+          method: ((user as Record<string, unknown>).authMethod as 'credentials' | 'ldap' | undefined) ?? 'credentials',
+          expiresAt: sessionExpiresAt,
+          ip: metadata.ip,
+          userAgent: metadata.userAgent,
+        })
         await recordLogin(
           user.id,
           ((user as Record<string, unknown>).authMethod as 'credentials' | 'ldap' | undefined) ?? 'credentials'
@@ -453,25 +468,41 @@ export const authOptions: NextAuthOptions = {
         const email = normalizeEmail(user.email)
         const settings = await getEffectiveSystemSettings()
         const adminUser = await ensurePortalUser(email, user.name)
+        const sessionExpiresAt = Date.now() + settings.sessionMaxAge * 1000
 
         token.role = adminUser.role
         token.isApproved = adminUser.isApproved
         token.userId = adminUser.id
         token.mfaEnabled = adminUser.mfaEnabled
         token.mfaVerified = !adminUser.mfaEnabled
-        token.sessionExpiresAt = Date.now() + settings.sessionMaxAge * 1000
+        token.sessionExpiresAt = sessionExpiresAt
+        token.authSessionId = await createAuthSession({
+          userId: adminUser.id,
+          method: 'google',
+          expiresAt: sessionExpiresAt,
+          ip: metadata.ip,
+          userAgent: metadata.userAgent,
+        })
         await recordLogin(adminUser.id, 'google')
       } else if (account?.provider === 'oidc' && user?.email) {
         const email = normalizeEmail(user.email)
         const settings = await getEffectiveSystemSettings()
         const adminUser = await ensurePortalUser(email, user.name)
+        const sessionExpiresAt = Date.now() + settings.sessionMaxAge * 1000
 
         token.role = adminUser.role
         token.isApproved = adminUser.isApproved
         token.userId = adminUser.id
         token.mfaEnabled = adminUser.mfaEnabled
         token.mfaVerified = !adminUser.mfaEnabled
-        token.sessionExpiresAt = Date.now() + settings.sessionMaxAge * 1000
+        token.sessionExpiresAt = sessionExpiresAt
+        token.authSessionId = await createAuthSession({
+          userId: adminUser.id,
+          method: 'sso',
+          expiresAt: sessionExpiresAt,
+          ip: metadata.ip,
+          userAgent: metadata.userAgent,
+        })
         await recordLogin(adminUser.id, 'sso')
       } else if (token.email) {
         // Re-check role and approval status from DB on each token refresh
@@ -479,16 +510,26 @@ export const authOptions: NextAuthOptions = {
         const adminUser = await prisma.adminUser.findUnique({
           where: { email: normalizeEmail(token.email as string) },
         })
-        if (adminUser) {
-          token.role = adminUser.role
-          token.isApproved = adminUser.isApproved
-          token.userId = adminUser.id
-          token.mfaEnabled = adminUser.mfaEnabled
-          if (!adminUser.mfaEnabled) {
-            token.mfaVerified = true
-          } else if (typeof token.mfaVerified !== 'boolean') {
-            token.mfaVerified = false
-          }
+        if (!adminUser) {
+          return {}
+        }
+
+        const sessionIsActive = await isAuthSessionActive(
+          typeof token.authSessionId === 'string' ? token.authSessionId : null,
+          adminUser.id
+        )
+        if (!sessionIsActive) {
+          return {}
+        }
+
+        token.role = adminUser.role
+        token.isApproved = adminUser.isApproved
+        token.userId = adminUser.id
+        token.mfaEnabled = adminUser.mfaEnabled
+        if (!adminUser.mfaEnabled) {
+          token.mfaVerified = true
+        } else if (typeof token.mfaVerified !== 'boolean') {
+          token.mfaVerified = false
         }
       }
       return token
@@ -501,8 +542,18 @@ export const authOptions: NextAuthOptions = {
         ;(session.user as Record<string, unknown>).sessionExpiresAt = token.sessionExpiresAt as number | undefined
         ;(session.user as Record<string, unknown>).mfaEnabled = Boolean(token.mfaEnabled)
         ;(session.user as Record<string, unknown>).mfaVerified = Boolean(token.mfaVerified ?? !token.mfaEnabled)
+        ;(session.user as Record<string, unknown>).authSessionId = token.authSessionId as string | undefined
       }
       return session
+    },
+  },
+  events: {
+    async signOut(message) {
+      const token = 'token' in message ? message.token as Record<string, unknown> | null : null
+      await revokeAuthSession(
+        typeof token?.authSessionId === 'string' ? token.authSessionId : null,
+        typeof token?.email === 'string' ? token.email : null
+      )
     },
   },
   pages: {

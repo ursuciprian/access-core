@@ -6,14 +6,18 @@ import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { requireApprovedUser } from '@/lib/rbac'
+import { passwordSchema } from '@/lib/validation'
+import { revokeUserAuthSessions } from '@/lib/auth-session'
+import { clearAuthCookies } from '@/lib/auth-cookies'
 
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(6),
+  newPassword: passwordSchema,
 })
 
 export const PUT = requireApprovedUser()(async (request: NextRequest, session) => {
   const email = session.user.email as string
+  const userId = (session.user as Record<string, unknown>).id as string
   const body = await request.json()
   const parsed = updatePasswordSchema.safeParse(body)
   if (!parsed.success) {
@@ -51,5 +55,12 @@ export const PUT = requireApprovedUser()(async (request: NextRequest, session) =
     details: { email: adminUser.email },
   })
 
-  return NextResponse.json({ success: true })
+  await revokeUserAuthSessions({
+    userId,
+    revokedBy: adminUser.email,
+  })
+
+  const response = NextResponse.json({ success: true, requiresReauth: true })
+  clearAuthCookies(response)
+  return response
 })
