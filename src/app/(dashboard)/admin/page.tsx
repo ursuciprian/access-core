@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/ToastProvider'
+import { MIN_PASSWORD_LENGTH, MIN_PASSWORD_MESSAGE } from '@/lib/password-policy'
 
 interface AdminUser {
   id: string
@@ -15,6 +16,26 @@ interface AdminUser {
   hasPassword: boolean
   authMethod: string
   mfaEnabled: boolean
+}
+
+function getApiErrorMessage(data: unknown, fallback: string) {
+  if (typeof data !== 'object' || data === null) {
+    return fallback
+  }
+
+  const payload = data as {
+    error?: unknown
+    details?: Array<{ message?: unknown }>
+  }
+
+  if (Array.isArray(payload.details)) {
+    const message = payload.details.find((detail) => typeof detail.message === 'string')?.message
+    if (typeof message === 'string' && message.length > 0) {
+      return message
+    }
+  }
+
+  return typeof payload.error === 'string' && payload.error.length > 0 ? payload.error : fallback
 }
 
 function timeAgo(dateStr: string): string {
@@ -106,8 +127,8 @@ export default function AdminPage() {
         toast('User created successfully', 'success')
         fetchUsers()
       } else {
-        const data = await res.json()
-        setError(data.error || 'Failed to create user')
+        const data = await res.json().catch(() => ({}))
+        setError(getApiErrorMessage(data, 'Failed to create user'))
       }
     } finally {
       setSubmitting(false)
@@ -214,8 +235,8 @@ export default function AdminPage() {
   }
 
   const handleResetPassword = async (id: string) => {
-    if (resetPassword.length < 6) {
-      toast('Password must be at least 6 characters', 'error')
+    if (resetPassword.length < MIN_PASSWORD_LENGTH) {
+      toast(MIN_PASSWORD_MESSAGE, 'error')
       return
     }
 
@@ -227,7 +248,7 @@ export default function AdminPage() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      toast((data as Record<string, string>).error || 'Failed to reset password', 'error')
+      toast(getApiErrorMessage(data, 'Failed to reset password'), 'error')
       return
     }
 
@@ -301,7 +322,7 @@ export default function AdminPage() {
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Password</label>
-              <input type="password" required minLength={6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" style={inputStyle} />
+              <input type="password" required minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={`Min ${MIN_PASSWORD_LENGTH} characters`} style={inputStyle} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Role</label>
@@ -501,7 +522,7 @@ export default function AdminPage() {
                             value={resetPassword}
                             onChange={(e) => setResetPassword(e.target.value)}
                             placeholder="New password"
-                            minLength={6}
+                            minLength={MIN_PASSWORD_LENGTH}
                             style={{ ...inputStyle, maxWidth: '240px' }}
                           />
                           <button

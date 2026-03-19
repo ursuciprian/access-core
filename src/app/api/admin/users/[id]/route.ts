@@ -6,6 +6,7 @@ import { logAudit } from '@/lib/audit'
 import { requireAdmin } from '@/lib/rbac'
 import { passwordSchema } from '@/lib/validation'
 import { revokeUserAuthSessions } from '@/lib/auth-session'
+import { clearFailedLoginAttempts } from '@/lib/login-rate-limit'
 
 const updateAdminSchema = z.object({
   role: z.enum(['ADMIN', 'VIEWER']).optional(),
@@ -74,6 +75,10 @@ export const PUT = requireAdmin()(async (
       userId: id,
       revokedBy: session.user!.email!,
     })
+  }
+
+  if (parsed.data.password) {
+    await clearFailedLoginAttempts(existing.email, null)
   }
 
   const isApprovalChange = parsed.data.isApproved === true && !existing.isApproved

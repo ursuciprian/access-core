@@ -9,6 +9,7 @@ import { requireApprovedUser } from '@/lib/rbac'
 import { passwordSchema } from '@/lib/validation'
 import { revokeUserAuthSessions } from '@/lib/auth-session'
 import { clearAuthCookies } from '@/lib/auth-cookies'
+import { clearFailedLoginAttempts } from '@/lib/login-rate-limit'
 
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1),
@@ -54,6 +55,8 @@ export const PUT = requireApprovedUser()(async (request: NextRequest, session) =
     targetId: adminUser.id,
     details: { email: adminUser.email },
   })
+
+  await clearFailedLoginAttempts(adminUser.email, null)
 
   await revokeUserAuthSessions({
     userId,

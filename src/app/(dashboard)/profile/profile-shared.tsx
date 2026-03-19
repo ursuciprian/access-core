@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/components/ui/ToastProvider'
 import MfaQrCode from '@/components/auth/MfaQrCode'
+import { MIN_PASSWORD_LENGTH, MIN_PASSWORD_MESSAGE } from '@/lib/password-policy'
 
 export interface ProfileAccess {
   id: string
@@ -41,6 +42,26 @@ export interface LoginHistoryEntry {
   ip: string | null
   userAgent: string | null
   createdAt: string
+}
+
+function getApiErrorMessage(data: unknown, fallback: string) {
+  if (typeof data !== 'object' || data === null) {
+    return fallback
+  }
+
+  const payload = data as {
+    error?: unknown
+    details?: Array<{ message?: unknown }>
+  }
+
+  if (Array.isArray(payload.details)) {
+    const message = payload.details.find((detail) => typeof detail.message === 'string')?.message
+    if (typeof message === 'string' && message.length > 0) {
+      return message
+    }
+  }
+
+  return typeof payload.error === 'string' && payload.error.length > 0 ? payload.error : fallback
 }
 
 const PROFILE_SECTIONS = [
@@ -282,8 +303,8 @@ export function useProfileData() {
   async function handlePasswordUpdate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (passwordForm.newPassword.length < 6) {
-      toast('New password must be at least 6 characters', 'error')
+    if (passwordForm.newPassword.length < MIN_PASSWORD_LENGTH) {
+      toast(MIN_PASSWORD_MESSAGE, 'error')
       return
     }
 
@@ -305,7 +326,7 @@ export function useProfileData() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
-        toast((data as Record<string, string>).error ?? 'Failed to update password', 'error')
+        toast(getApiErrorMessage(data, 'Failed to update password'), 'error')
         return
       }
 
