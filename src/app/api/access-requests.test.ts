@@ -6,6 +6,7 @@ const { prismaMock } = vi.hoisted(() => ({
       findFirst: vi.fn(),
       findMany: vi.fn(),
       create: vi.fn(),
+      count: vi.fn(),
     },
     vpnUser: {
       findFirst: vi.fn(),
@@ -43,6 +44,7 @@ function makeRequest(body: Record<string, unknown>) {
 describe('POST /api/access-requests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prismaMock.accessRequest.count.mockResolvedValue(0)
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
         email: 'viewer@example.com',
@@ -76,6 +78,19 @@ describe('POST /api/access-requests', () => {
     expect(response.status).toBe(409)
     await expect(response.json()).resolves.toEqual({
       error: 'You already have VPN access for this server',
+    })
+  })
+
+  it('rate limits users with too many active requests', async () => {
+    prismaMock.accessRequest.findFirst.mockResolvedValue(null)
+    prismaMock.vpnUser.findFirst.mockResolvedValue(null)
+    prismaMock.accessRequest.count.mockResolvedValue(3)
+
+    const response = await POST(makeRequest({ serverId: 'server-1', groupIds: [], reason: 'Need access' }))
+
+    expect(response.status).toBe(429)
+    await expect(response.json()).resolves.toEqual({
+      error: 'You already have too many active access requests. Please wait for an administrator to review them.',
     })
   })
 })

@@ -8,6 +8,7 @@ import { isCertRevokedOrMissing, revokeCert } from '@/lib/cert-service'
 import { buildCcdDeleteCommand } from '@/lib/ccd-generator'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { getTransport } from '@/lib/transport'
+import { buildOpenVpnKillCommand } from '@/lib/shell'
 
 export const GET = requireAdmin()(async (
   _request: NextRequest,
@@ -143,7 +144,7 @@ export const DELETE = requireAdmin()(async (
     )
 
     await transport.executeCommand(
-      `echo "kill ${user.commonName}" | nc -w 1 127.0.0.1 7505 2>/dev/null || true`
+      buildOpenVpnKillCommand(user.commonName)
     )
   } catch (error) {
     console.error('Failed to clean up VPN user before deletion', {

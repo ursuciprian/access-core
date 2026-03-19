@@ -7,11 +7,13 @@ import { logAudit } from '@/lib/audit'
 import { requireAdmin } from '@/lib/rbac'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { getTransport } from '@/lib/transport'
+import { validateAgentUrl } from '@/lib/transport/agent-url'
 import {
   applyNetworkSettingsToServerConfig,
   buildApplyNetworkSettingsCommand,
   validateServerNetworkSettings,
 } from '@/lib/server-network-config'
+import { buildCatCommand } from '@/lib/shell'
 
 const serverDetailSelect = {
   id: true,
@@ -150,6 +152,20 @@ export const PUT = requireAdmin()(async (
     return NextResponse.json({ error: networkValidation.error }, { status: 400 })
   }
 
+  if (mergedServer.transport === 'AGENT') {
+    if (!mergedServer.agentUrl) {
+      return NextResponse.json({ error: 'agentUrl is required for agent transport' }, { status: 400 })
+    }
+
+    const agentUrlValidation = validateAgentUrl(mergedServer.agentUrl)
+    if (!agentUrlValidation.success) {
+      return NextResponse.json({ error: agentUrlValidation.error }, { status: 400 })
+    }
+
+    parsed.data.agentUrl = agentUrlValidation.data
+    mergedServer.agentUrl = agentUrlValidation.data
+  }
+
   const hasNetworkChanges = [
     'vpnNetwork',
     'dnsServers',
@@ -165,7 +181,7 @@ export const PUT = requireAdmin()(async (
   if (hasNetworkChanges) {
     try {
       const transport = getTransport(mergedServer)
-      const currentConfigResult = await transport.executeCommand(`cat ${mergedServer.serverConf} 2>/dev/null || echo ""`)
+      const currentConfigResult = await transport.executeCommand(`${buildCatCommand(mergedServer.serverConf)} 2>/dev/null || echo ""`)
       const nextConfig = applyNetworkSettingsToServerConfig(currentConfigResult.stdout, {
         vpnNetwork: mergedServer.vpnNetwork,
         dnsServers: mergedServer.dnsServers,

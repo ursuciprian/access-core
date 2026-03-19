@@ -12,6 +12,10 @@ import {
   recordFailedMfaAttempt,
   clearMfaRateLimit,
 } from '@/lib/login-rate-limit'
+import {
+  createMfaVerificationCookieValue,
+  MFA_VERIFICATION_COOKIE,
+} from '@/lib/mfa-cookie'
 
 const verifyMfaSchema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
@@ -66,5 +70,25 @@ export async function POST(request: NextRequest) {
     details: { email: adminUser.email },
   })
 
-  return NextResponse.json({ success: true })
+  const response = NextResponse.json({ success: true })
+  const userId = (session.user as Record<string, unknown>).id
+  const authSessionId = (session.user as Record<string, unknown>).authSessionId
+  const sessionExpiresAt = (session.user as Record<string, unknown>).sessionExpiresAt
+  if (
+    typeof userId === 'string' &&
+    typeof authSessionId === 'string' &&
+    typeof sessionExpiresAt === 'number'
+  ) {
+    response.cookies.set({
+      name: MFA_VERIFICATION_COOKIE,
+      value: await createMfaVerificationCookieValue(userId, authSessionId, sessionExpiresAt),
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      expires: new Date(sessionExpiresAt),
+    })
+  }
+
+  return response
 }

@@ -1,27 +1,20 @@
 export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { getTransport } from '@/lib/transport'
+import { requireAdmin } from '@/lib/rbac'
 
-export async function GET(
+export const GET = requireAdmin()(async (
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  _session,
+  context
+) => {
   if (!isServerManagementEnabled()) {
     return NextResponse.json({ error: SERVER_MANAGEMENT_DISABLED_MESSAGE }, { status: 409 })
   }
 
-  const { id } = await params
+  const { id } = await (context as { params: Promise<{ id: string }> }).params
   const { prisma } = await import('@/lib/prisma')
 
   const server = await prisma.vpnServer.findUnique({ where: { id } })
@@ -49,4 +42,4 @@ export async function GET(
     console.error('Failed to fetch server logs', { serverId: id, error: err })
     return NextResponse.json({ error: 'Failed to fetch server logs' }, { status: 500 })
   }
-}
+})

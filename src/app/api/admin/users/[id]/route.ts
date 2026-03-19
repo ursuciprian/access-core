@@ -1,34 +1,24 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { z } from 'zod/v4'
 import { logAudit } from '@/lib/audit'
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) return null
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') return null
-  return session
-}
+import { requireAdmin } from '@/lib/rbac'
+import { passwordSchema } from '@/lib/validation'
+import { revokeUserAuthSessions } from '@/lib/auth-session'
 
 const updateAdminSchema = z.object({
   role: z.enum(['ADMIN', 'VIEWER']).optional(),
-  password: z.string().min(6).optional(),
+  password: passwordSchema.optional(),
   isApproved: z.boolean().optional(),
 })
 
-export async function PUT(
+export const PUT = requireAdmin()(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await requireAdmin()
-  if (!session) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { id } = await params
+  session,
+  context
+) => {
+  const { id } = await (context as { params: Promise<{ id: string }> }).params
   const body = await request.json()
   const parsed = updateAdminSchema.safeParse(body)
   if (!parsed.success) {
@@ -79,6 +69,13 @@ export async function PUT(
     select: { id: true, email: true, role: true, createdAt: true, isApproved: true },
   })
 
+  if (parsed.data.role !== undefined || parsed.data.password || parsed.data.isApproved !== undefined) {
+    await revokeUserAuthSessions({
+      userId: id,
+      revokedBy: session.user!.email!,
+    })
+  }
+
   const isApprovalChange = parsed.data.isApproved === true && !existing.isApproved
   const isPasswordReset = Boolean(parsed.data.password)
 
@@ -95,18 +92,14 @@ export async function PUT(
   })
 
   return NextResponse.json(admin)
-}
+})
 
-export async function DELETE(
+export const DELETE = requireAdmin()(async (
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await requireAdmin()
-  if (!session) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { id } = await params
+  session,
+  context
+) => {
+  const { id } = await (context as { params: Promise<{ id: string }> }).params
   const { prisma } = await import('@/lib/prisma')
 
   const existing = await prisma.adminUser.findUnique({ where: { id } })
@@ -130,4 +123,4 @@ export async function DELETE(
   })
 
   return NextResponse.json({ success: true })
-}
+})

@@ -104,7 +104,7 @@ describe('DELETE /api/users/[id]', () => {
     expect(executeCommandMock).toHaveBeenNthCalledWith(1, "rm -f '/etc/openvpn/ccd/alice'")
     expect(executeCommandMock).toHaveBeenNthCalledWith(
       2,
-      'echo "kill alice" | nc -w 1 127.0.0.1 7505 2>/dev/null || true'
+      "printf '%s\\n' 'kill alice' | nc -w 1 127.0.0.1 7505 2>/dev/null || true"
     )
     expect(prismaMock.vpnUser.delete).toHaveBeenCalledWith({ where: { id: 'user-1' } })
     expect(logAuditMock).toHaveBeenCalledWith(

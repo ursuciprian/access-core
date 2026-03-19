@@ -100,4 +100,36 @@ describe('buildCcdWriteCommand', () => {
     expect(lines[2]).toBe('push "route 10.0.0.0 255.0.0.0"')
     expect(lines[3]).toBe('CCDEOF')
   })
+
+  it('rejects command injection via semicolon in commonName', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd', 'user; rm -rf /', 'content')).toThrow()
+  })
+
+  it('rejects command injection via backtick in commonName', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd', 'user`whoami`', 'content')).toThrow()
+  })
+
+  it('rejects command injection via $() in commonName', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd', 'user$(id)', 'content')).toThrow()
+  })
+
+  it('rejects path traversal in commonName', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd', '../../../etc/passwd', 'content')).toThrow()
+  })
+
+  it('rejects pipe in commonName', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd', 'user | cat /etc/shadow', 'content')).toThrow()
+  })
+
+  it('rejects semicolon in ccdPath', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd; rm -rf /', 'user1', 'content')).toThrow()
+  })
+
+  it('rejects backtick in ccdPath', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd`whoami`', 'user1', 'content')).toThrow()
+  })
+
+  it('rejects $() in ccdPath', () => {
+    expect(() => buildCcdWriteCommand('/etc/openvpn/ccd$(id)', 'user1', 'content')).toThrow()
+  })
 })

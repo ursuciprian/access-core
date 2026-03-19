@@ -1,30 +1,25 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
 import { generateCcdForUser, buildCcdWriteCommand } from '@/lib/ccd-generator'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { reconcileExpiredTemporaryAccess } from '@/lib/temporary-access'
 import { getTransport } from '@/lib/transport'
+import { requireAdmin } from '@/lib/rbac'
+import { buildOpenVpnKillCommand } from '@/lib/shell'
 
-export async function POST(
+export const POST = requireAdmin()(async (
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  if ((session.user as Record<string, unknown>).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  session,
+  context
+) => {
+  const actorEmail = session.user.email as string
   if (!isServerManagementEnabled()) {
     return NextResponse.json({ error: SERVER_MANAGEMENT_DISABLED_MESSAGE }, { status: 409 })
   }
 
-  const { id } = await params
+  const { id } = await (context as { params: Promise<{ id: string }> }).params
   const { prisma } = await import('@/lib/prisma')
   await reconcileExpiredTemporaryAccess({ userId: id })
 
@@ -49,9 +44,7 @@ export async function POST(
 
     // Kill the client's active connection via the management interface
     // so OpenVPN re-reads the CCD on reconnect (Tunnelblick auto-reconnects)
-    await transport.executeCommand(
-      `echo "kill ${user.commonName}" | nc -w 1 127.0.0.1 7505 2>/dev/null || true`
-    )
+    await transport.executeCommand(buildOpenVpnKillCommand(user.commonName))
 
     const updatedUser = await prisma.vpnUser.update({
       where: { id },
@@ -63,7 +56,7 @@ export async function POST(
 
     await logAudit({
       action: 'CCD_PUSHED',
-      actorEmail: session.user.email,
+      actorEmail,
       targetType: 'USER',
       targetId: id,
       userId: id,
@@ -83,4 +76,4 @@ export async function POST(
       { status: 500 }
     )
   }
-}
+})

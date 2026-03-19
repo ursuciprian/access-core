@@ -6,6 +6,9 @@ const { prismaMock, logAuditMock } = vi.hoisted(() => ({
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    authSession: {
+      updateMany: vi.fn(),
+    },
   },
   logAuditMock: vi.fn(),
 }))
@@ -59,6 +62,7 @@ describe('POST /api/admin/users/[id]/mfa/reset', () => {
     prismaMock.adminUser.update.mockResolvedValue({
       id: 'admin-2',
     })
+    prismaMock.authSession.updateMany.mockResolvedValue({ count: 1 })
     logAuditMock.mockResolvedValue(undefined)
 
     const response = await POST(makeRequest(), makeParams('admin-2'))
@@ -73,6 +77,7 @@ describe('POST /api/admin/users/[id]/mfa/reset', () => {
         mfaEnabledAt: null,
       },
     })
+    expect(prismaMock.authSession.updateMany).toHaveBeenCalled()
     expect(logAuditMock).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'ADMIN_USER_MFA_RESET',

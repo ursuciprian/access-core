@@ -3,6 +3,7 @@ import { TransportProvider } from './types'
 import { SsmTransport } from './ssm-transport'
 import { SshTransport } from './ssh-transport'
 import { AgentTransport } from './agent-transport'
+import { validateAgentUrl } from './agent-url'
 
 export type { TransportProvider, CommandResult } from './types'
 
@@ -53,8 +54,12 @@ export function getTransport(server: VpnServer): TransportProvider {
           `Agent transport requires agentUrl and agentApiKeySecretId for server "${server.name}"`
         )
       }
+      const agentUrlValidation = validateAgentUrl(server.agentUrl)
+      if (!agentUrlValidation.success) {
+        throw new Error(agentUrlValidation.error)
+      }
       const apiKey = process.env[`AGENT_KEY_${server.agentApiKeySecretId}`] ?? ''
-      return new AgentTransport(server.agentUrl, apiKey)
+      return new AgentTransport(agentUrlValidation.data, apiKey)
     }
 
     default:

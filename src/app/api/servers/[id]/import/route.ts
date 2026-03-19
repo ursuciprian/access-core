@@ -6,9 +6,10 @@ import { discoverExistingUsers, importUsers } from '@/lib/import-service'
 import type { ImportUserInput } from '@/lib/import-service'
 import { requireAdmin } from '@/lib/rbac'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
+import { commonNameSchema } from '@/lib/validation'
 
 const importUserSchema = z.object({
-  commonName: z.string().min(1).max(64),
+  commonName: commonNameSchema,
   email: z.string().email(),
   groupIds: z.array(z.string()),
 })

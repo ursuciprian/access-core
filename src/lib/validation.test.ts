@@ -1,4 +1,4 @@
-import { validateServerPaths, validateCommonName, validateCidr, deriveCommonName } from './validation'
+import { validateServerPaths, validateCommonName, validateCidr, deriveCommonName, passwordSchema } from './validation'
 
 describe('validateServerPaths', () => {
   const validData = {
@@ -140,5 +140,15 @@ describe('deriveCommonName', () => {
 
   it('handles multiple + signs — strips from first +', () => {
     expect(deriveCommonName('user+tag+extra@example.com')).toBe('user')
+  })
+})
+
+describe('passwordSchema', () => {
+  it('accepts passwords that are at least 12 characters long', () => {
+    expect(passwordSchema.safeParse('correct horse').success).toBe(true)
+  })
+
+  it('rejects passwords shorter than 12 characters', () => {
+    expect(passwordSchema.safeParse('short-pass').success).toBe(false)
   })
 })

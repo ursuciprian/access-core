@@ -6,6 +6,7 @@ import { validateServerPaths } from '@/lib/validation'
 import { logAudit } from '@/lib/audit'
 import { requireAdmin } from '@/lib/rbac'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
+import { validateAgentUrl } from '@/lib/transport/agent-url'
 
 const serverListSelect = {
   id: true,
@@ -65,6 +66,19 @@ export const POST = requireAdmin()(async (request: NextRequest, session) => {
   })
   if (!pathValidation.success) {
     return NextResponse.json({ error: 'Invalid server paths', details: pathValidation.error.issues }, { status: 400 })
+  }
+
+  if (parsed.data.transport === 'AGENT') {
+    if (!parsed.data.agentUrl) {
+      return NextResponse.json({ error: 'agentUrl is required for agent transport' }, { status: 400 })
+    }
+
+    const agentUrlValidation = validateAgentUrl(parsed.data.agentUrl)
+    if (!agentUrlValidation.success) {
+      return NextResponse.json({ error: agentUrlValidation.error }, { status: 400 })
+    }
+
+    parsed.data.agentUrl = agentUrlValidation.data
   }
 
   const { prisma } = await import('@/lib/prisma')
