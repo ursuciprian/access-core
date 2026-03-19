@@ -1,8 +1,8 @@
 import { z } from 'zod/v4'
+import { MIN_PASSWORD_LENGTH } from './password-policy'
 
 const SERVER_PATH_REGEX = /^\/[a-zA-Z0-9/_.-]+$/
 const COMMON_NAME_REGEX = /^[a-zA-Z0-9._-]+$/
-export const MIN_PASSWORD_LENGTH = 12
 
 export const serverPathSchema = z
   .string()

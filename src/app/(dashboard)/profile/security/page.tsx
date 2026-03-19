@@ -15,6 +15,7 @@ import {
   summarizeUserAgent,
   MfaSetupCard,
 } from '../profile-shared'
+import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy'
 
 export default function ProfileSecurityPage() {
   const {
@@ -208,7 +209,7 @@ export default function ProfileSecurityPage() {
                       value={passwordForm.newPassword}
                       onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
                       style={inputStyle}
-                      minLength={6}
+                      minLength={MIN_PASSWORD_LENGTH}
                       required
                     />
                   </div>
@@ -219,7 +220,7 @@ export default function ProfileSecurityPage() {
                       value={passwordForm.confirmPassword}
                       onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
                       style={inputStyle}
-                      minLength={6}
+                      minLength={MIN_PASSWORD_LENGTH}
                       required
                     />
                   </div>
