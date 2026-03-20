@@ -26,17 +26,17 @@ export default function ProfileAccountPage() {
       loading={loading}
     >
       {!profile ? (
-        <div style={{ color: '#888888' }}>Unable to load your profile.</div>
+        <div style={{ color: 'var(--text-secondary)' }}>Unable to load your profile.</div>
       ) : (
         <PageGrid minWidth={420}>
-          <section style={{ ...cardStyle, background: 'linear-gradient(180deg, rgba(234,126,32,0.08) 0%, #111111 54%)', display: 'flex', flexDirection: 'column' }}>
+          <section style={{ ...cardStyle, background: 'linear-gradient(180deg, rgba(234,126,32,0.08) 0%, var(--surface) 54%)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '18px' }}>
               <div>
-                <div style={{ fontSize: '11px', color: '#EA7E20', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>
                   AccessCore Account
                 </div>
-                <h3 style={{ fontSize: '22px', fontWeight: 700, color: '#F0F0F0', margin: 0 }}>{profile.email}</h3>
-                <p style={{ fontSize: '13px', color: '#888888', margin: '8px 0 0', lineHeight: 1.6 }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{profile.email}</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '8px 0 0', lineHeight: 1.6 }}>
                   Account details, role, and sign-in method for your AccessCore account.
                 </p>
               </div>
@@ -45,7 +45,7 @@ export default function ProfileAccountPage() {
                 borderRadius: '9999px',
                 background: 'rgba(234,126,32,0.12)',
                 border: '1px solid rgba(234,126,32,0.22)',
-                color: '#EA7E20',
+                color: 'var(--accent)',
                 fontSize: '12px',
                 fontWeight: 600,
                 whiteSpace: 'nowrap',

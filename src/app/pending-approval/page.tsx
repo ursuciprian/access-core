@@ -38,7 +38,7 @@ function PendingApprovalContent() {
 
   if (status === 'loading') {
     return (
-      <div style={{ minHeight: '100vh', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
         Loading...
       </div>
     )
@@ -46,46 +46,48 @@ function PendingApprovalContent() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0A0A0A',
+      minHeight: '100vh', background: 'var(--bg)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
     }}>
       <div style={{
-        width: '100%', maxWidth: '440px', background: '#111',
-        border: '1px solid #1E1E1E', borderRadius: '16px',
+        width: '100%', maxWidth: '440px', background: 'rgba(18,18,18,0.94)',
+        border: '1px solid var(--border)', borderRadius: '20px',
         padding: '40px 32px', textAlign: 'center',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}>
         {/* Waiting icon */}
         <div style={{
           width: '56px', height: '56px', margin: '0 auto 20px',
-          background: 'rgba(234,126,32,0.15)', borderRadius: '14px',
+          background: 'linear-gradient(180deg, rgba(255,183,125,0.18), rgba(255,140,0,0.10))', borderRadius: '14px',
+          border: '1px solid rgba(255,183,125,0.18)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EA7E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
         </div>
 
-        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#F0F0F0', marginBottom: '8px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.03em' }}>
           Pending Approval
         </h1>
-        <p style={{ fontSize: '14px', color: '#888', marginBottom: '24px', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
           Your access request has been submitted. An administrator will review and approve your account shortly.
         </p>
 
         {/* User info */}
         <div style={{
-          padding: '14px', background: '#1A1A1A', borderRadius: '10px',
-          marginBottom: '24px', border: '1px solid #2A2A2A',
+          padding: '14px', background: 'var(--elevated)', borderRadius: '12px',
+          marginBottom: '24px', border: '1px solid var(--border-strong)',
         }}>
-          <p style={{ fontSize: '13px', color: '#888', marginBottom: '4px' }}>Signed in as</p>
-          <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0F0F0' }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Signed in as</p>
+          <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
             {session?.user?.email}
           </p>
           <span style={{
             display: 'inline-block', marginTop: '8px',
             padding: '3px 10px', borderRadius: '9999px', fontSize: '11px',
-            fontWeight: 600, background: 'rgba(234,126,32,0.15)', color: '#EA7E20',
+            fontWeight: 700, background: 'rgba(255,183,125,0.15)', color: 'var(--accent)',
           }}>
             AWAITING APPROVAL
           </span>
@@ -96,8 +98,8 @@ function PendingApprovalContent() {
             onClick={handleCheckStatus}
             disabled={checking}
             style={{
-              padding: '10px 20px', background: '#EA7E20', color: '#FFF',
-              fontSize: '14px', fontWeight: 600, borderRadius: '8px',
+              padding: '10px 20px', background: 'linear-gradient(to bottom, var(--accent), var(--accent-strong))', color: '#0A0A0A',
+              fontSize: '14px', fontWeight: 700, borderRadius: '10px',
               border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               opacity: checking ? 0.5 : 1,
             }}
@@ -108,8 +110,8 @@ function PendingApprovalContent() {
             onClick={() => signOut({ callbackUrl: '/login' })}
             style={{
               padding: '10px 20px', background: 'transparent',
-              color: '#888', fontSize: '14px', fontWeight: 500,
-              borderRadius: '8px', border: '1px solid #2A2A2A',
+              color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600,
+              borderRadius: '10px', border: '1px solid var(--border-strong)',
               cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
@@ -117,7 +119,7 @@ function PendingApprovalContent() {
           </button>
         </div>
 
-        <p style={{ fontSize: '11px', color: '#444', marginTop: '24px' }}>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '24px' }}>
           Contact your administrator if you need immediate access.
         </p>
       </div>

@@ -24,8 +24,8 @@ function formatBytes(bytes: number): string {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '16px',
   padding: '20px',
 }
@@ -34,16 +34,16 @@ const thStyle: React.CSSProperties = {
   padding: '10px 12px',
   fontSize: '12px',
   fontWeight: 500,
-  color: '#888888',
+  color: 'var(--text-secondary)',
   textAlign: 'left',
-  borderBottom: '1px solid #1E1E1E',
+  borderBottom: '1px solid var(--border)',
 }
 
 const tdStyle: React.CSSProperties = {
   padding: '10px 12px',
   fontSize: '13px',
-  color: '#F0F0F0',
-  borderBottom: '1px solid #1E1E1E',
+  color: 'var(--text-primary)',
+  borderBottom: '1px solid var(--border)',
 }
 
 export default function ConnectionsPage() {
@@ -82,7 +82,7 @@ export default function ConnectionsPage() {
           <>
             <Link
               href={`/servers/${params.id}/connections/history`}
-              style={{ fontSize: '13px', color: '#EA7E20', textDecoration: 'none', fontWeight: 500 }}
+              style={{ fontSize: '13px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}
             >
               View History
             </Link>
@@ -95,7 +95,7 @@ export default function ConnectionsPage() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: '#555555' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: 'var(--text-muted)' }}>
           Loading connections...
         </div>
       ) : error ? (
@@ -104,8 +104,8 @@ export default function ConnectionsPage() {
         </div>
       ) : connections.length === 0 ? (
         <div style={{ ...cardStyle, textAlign: 'center', padding: '40px 20px' }}>
-          <p style={{ fontSize: '14px', color: '#888888', marginBottom: '4px' }}>No active connections</p>
-          <p style={{ fontSize: '12px', color: '#555555' }}>Connected clients will appear here</p>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}>No active connections</p>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Connected clients will appear here</p>
         </div>
       ) : (
         <div style={cardStyle}>
@@ -123,12 +123,12 @@ export default function ConnectionsPage() {
             <tbody>
               {connections.map((conn, i) => (
                 <tr key={`${conn.commonName}-${i}`}>
-                  <td style={{ ...tdStyle, fontWeight: 500, color: '#EA7E20' }}>{conn.commonName}</td>
-                  <td style={{ ...tdStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>{conn.realAddress}</td>
-                  <td style={{ ...tdStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>{conn.vpnAddress}</td>
+                  <td style={{ ...tdStyle, fontWeight: 500, color: 'var(--accent)' }}>{conn.commonName}</td>
+                  <td style={{ ...tdStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{conn.realAddress}</td>
+                  <td style={{ ...tdStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{conn.vpnAddress}</td>
                   <td style={tdStyle}>{conn.connectedSince}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>{formatBytes(conn.bytesIn)}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>{formatBytes(conn.bytesOut)}</td>
+                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{formatBytes(conn.bytesIn)}</td>
+                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{formatBytes(conn.bytesOut)}</td>
                 </tr>
               ))}
             </tbody>

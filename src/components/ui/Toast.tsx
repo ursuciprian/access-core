@@ -25,9 +25,9 @@ export default function Toast({ message, variant, onClose }: ToastProps) {
   return (
     <div
       style={{
-        background: '#1A1A1A',
+        background: 'var(--elevated)',
         borderLeft: `3px solid ${color}`,
-        borderRadius: '8px',
+        borderRadius: '10px',
         padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',
@@ -38,13 +38,13 @@ export default function Toast({ message, variant, onClose }: ToastProps) {
         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
       }}
     >
-      <span style={{ fontSize: '13px', color: '#F0F0F0' }}>{message}</span>
+      <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{message}</span>
       <button
         onClick={onClose}
         style={{
           background: 'none',
           border: 'none',
-          color: '#888888',
+          color: 'var(--text-secondary)',
           cursor: 'pointer',
           fontSize: '14px',
           padding: '0 2px',

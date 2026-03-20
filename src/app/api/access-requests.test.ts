@@ -10,6 +10,7 @@ const { prismaMock } = vi.hoisted(() => ({
     },
     vpnUser: {
       findFirst: vi.fn(),
+      findMany: vi.fn(),
     },
   },
 }))
@@ -45,6 +46,7 @@ describe('POST /api/access-requests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     prismaMock.accessRequest.count.mockResolvedValue(0)
+    prismaMock.vpnUser.findMany.mockResolvedValue([])
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
         email: 'viewer@example.com',
@@ -98,6 +100,7 @@ describe('POST /api/access-requests', () => {
 describe('GET /api/access-requests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prismaMock.vpnUser.findMany.mockResolvedValue([])
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
         email: 'viewer@example.com',
@@ -115,5 +118,74 @@ describe('GET /api/access-requests', () => {
       error: 'Invalid status filter',
     })
     expect(prismaMock.accessRequest.findMany).not.toHaveBeenCalled()
+  })
+
+  it('filters stale approved requests out of mine=true results when VPN access no longer exists', async () => {
+    prismaMock.accessRequest.findMany.mockResolvedValue([
+      {
+        id: 'approved-1',
+        status: 'APPROVED',
+        serverId: 'server-1',
+        email: 'viewer@example.com',
+        server: { id: 'server-1', name: 'Server 1', hostname: 'vpn-1.example.com' },
+      },
+      {
+        id: 'pending-1',
+        status: 'PENDING',
+        serverId: 'server-2',
+        email: 'viewer@example.com',
+        server: { id: 'server-2', name: 'Server 2', hostname: 'vpn-2.example.com' },
+      },
+    ])
+    prismaMock.vpnUser.findMany.mockResolvedValue([{ serverId: 'server-2' }])
+
+    const response = await GET(new NextRequest('http://localhost/api/access-requests?mine=true'))
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual([
+      expect.objectContaining({ id: 'pending-1', status: 'PENDING' }),
+    ])
+  })
+})
+
+describe('POST /api/access-requests re-request flow', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    prismaMock.accessRequest.count.mockResolvedValue(0)
+    prismaMock.vpnUser.findMany.mockResolvedValue([])
+    vi.mocked(getServerSession).mockResolvedValue({
+      user: {
+        email: 'viewer@example.com',
+        name: 'Viewer',
+        role: 'VIEWER',
+      },
+    } as never)
+  })
+
+  it('allows a new request when an old approved request exists but VPN access was deleted', async () => {
+    prismaMock.accessRequest.findFirst.mockResolvedValue({
+      id: 'req-1',
+      status: 'APPROVED',
+    })
+    prismaMock.vpnUser.findFirst.mockResolvedValue(null)
+    prismaMock.accessRequest.create.mockResolvedValue({
+      id: 'req-2',
+      email: 'viewer@example.com',
+      serverId: 'server-1',
+      status: 'PENDING',
+      server: { id: 'server-1', name: 'Server 1' },
+    })
+
+    const response = await POST(makeRequest({ serverId: 'server-1', groupIds: [], reason: 'Need access again' }))
+
+    expect(response.status).toBe(201)
+    expect(prismaMock.accessRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: 'viewer@example.com',
+          serverId: 'server-1',
+        }),
+      })
+    )
   })
 })

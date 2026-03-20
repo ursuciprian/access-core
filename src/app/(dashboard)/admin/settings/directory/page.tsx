@@ -35,14 +35,14 @@ export default function AdminDirectorySettingsPage() {
         <section style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <div>
-              <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
                 LDAP Configuration
               </p>
-              <p style={{ fontSize: '13px', color: '#555555', margin: 0, lineHeight: 1.5 }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
                 Environment-driven LDAP settings, role mapping, and diagnostics.
               </p>
             </div>
-            <div style={{ fontSize: '12px', color: form.ldap.enabled ? '#22C55E' : '#888888', fontWeight: 600 }}>
+            <div style={{ fontSize: '12px', color: form.ldap.enabled ? '#22C55E' : 'var(--text-secondary)', fontWeight: 600 }}>
               {form.ldap.enabled ? 'Enabled via env' : 'Disabled via env'}
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function AdminDirectorySettingsPage() {
           {ldapDiagnostic && (
             <div style={{
               borderRadius: '12px',
-              border: '1px solid #1E1E1E',
+              border: '1px solid var(--border)',
               background: '#151515',
               padding: '16px',
               display: 'flex',
@@ -102,7 +102,7 @@ export default function AdminDirectorySettingsPage() {
               ) : (
                 <>
                   {'message' in ldapDiagnostic && (
-                    <div style={{ fontSize: '13px', color: '#888888' }}>{String(ldapDiagnostic.message)}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{String(ldapDiagnostic.message)}</div>
                   )}
                   {'identity' in ldapDiagnostic && ldapDiagnostic.identity && typeof ldapDiagnostic.identity === 'object' && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>

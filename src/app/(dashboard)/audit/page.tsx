@@ -15,19 +15,19 @@ interface AuditEntry {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '16px',
   padding: '20px',
 }
 
 const inputStyle: React.CSSProperties = {
   padding: '10px 12px',
-  border: '1px solid #333333',
+  border: '1px solid var(--border-hover)',
   borderRadius: '10px',
   fontSize: '13px',
-  background: '#1A1A1A',
-  color: '#F0F0F0',
+  background: 'var(--elevated)',
+  color: 'var(--text-primary)',
   outline: 'none',
   width: '100%',
   boxSizing: 'border-box',
@@ -37,7 +37,7 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '12px',
-  color: '#888888',
+  color: 'var(--text-secondary)',
   marginBottom: '6px',
 }
 
@@ -133,7 +133,7 @@ export default function AuditPage() {
     <OperationsShell
       title="Audit"
       description="Search the AccessCore event stream for access changes, downloads, provisioning, MFA, and server operations."
-      actions={<div style={{ fontSize: '12px', color: '#555555' }}>{summary}</div>}
+      actions={<div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{summary}</div>}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <section style={cardStyle}>
@@ -175,9 +175,9 @@ export default function AuditPage() {
                   width: '100%',
                   minHeight: '40px',
                   borderRadius: '10px',
-                  border: '1px solid #333333',
+                  border: '1px solid var(--border-hover)',
                   background: 'transparent',
-                  color: '#F0F0F0',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   fontSize: '13px',
                   fontFamily: 'inherit',
@@ -190,7 +190,7 @@ export default function AuditPage() {
         </section>
 
         <section style={{ ...cardStyle, padding: '0' }}>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid #1E1E1E', display: 'grid', gridTemplateColumns: '180px 180px 220px minmax(0, 1fr)', gap: '16px', fontSize: '11px', color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '180px 180px 220px minmax(0, 1fr)', gap: '16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           <div>When</div>
           <div>Action</div>
           <div>Actor</div>
@@ -204,7 +204,7 @@ export default function AuditPage() {
             <SkeletonCard height="72px" />
           </div>
         ) : logs.length === 0 ? (
-          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#555555', fontSize: '14px' }}>
+          <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
             No audit entries found.
           </div>
         ) : (
@@ -214,24 +214,24 @@ export default function AuditPage() {
                 key={log.id}
                 style={{
                   padding: '14px 16px',
-                  borderBottom: '1px solid #1E1E1E',
+                  borderBottom: '1px solid var(--border)',
                   display: 'grid',
                   gridTemplateColumns: '180px 180px 220px minmax(0, 1fr)',
                   gap: '16px',
                   alignItems: 'start',
                 }}
               >
-                <div style={{ fontSize: '13px', color: '#888888', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   {new Date(log.createdAt).toLocaleString()}
                 </div>
                 <div style={{ fontSize: '13px', color: getActionColor(log.action), fontWeight: 600, wordBreak: 'break-word' }}>
                   {log.action}
                 </div>
-                <div style={{ fontSize: '13px', color: '#F0F0F0', wordBreak: 'break-word', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-primary)', wordBreak: 'break-word', lineHeight: 1.5 }}>
                   {log.actorEmail}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', color: '#F0F0F0', lineHeight: 1.5, wordBreak: 'break-word' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5, wordBreak: 'break-word' }}>
                     {summarizeTarget(log)}
                   </div>
                   <div style={{ fontSize: '12px', color: '#777777', marginTop: '4px', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
@@ -251,10 +251,10 @@ export default function AuditPage() {
             gap: '12px',
             flexWrap: 'wrap',
             padding: '14px 16px',
-            borderTop: '1px solid #1E1E1E',
+            borderTop: '1px solid var(--border)',
           }}
         >
-          <span style={{ fontSize: '13px', color: '#888888' }}>Page {page} of {totalPages}</span>
+          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Page {page} of {totalPages}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               disabled={page <= 1}
@@ -262,9 +262,9 @@ export default function AuditPage() {
               style={{
                 padding: '8px 14px',
                 borderRadius: '10px',
-                border: page <= 1 ? '1px solid #222222' : '1px solid #333333',
+                border: page <= 1 ? '1px solid #222222' : '1px solid var(--border-hover)',
                 background: 'transparent',
-                color: page <= 1 ? '#444444' : '#F0F0F0',
+                color: page <= 1 ? 'var(--text-faint)' : 'var(--text-primary)',
                 cursor: page <= 1 ? 'not-allowed' : 'pointer',
                 fontSize: '13px',
                 fontFamily: 'inherit',
@@ -278,9 +278,9 @@ export default function AuditPage() {
               style={{
                 padding: '8px 14px',
                 borderRadius: '10px',
-                border: page >= totalPages ? '1px solid #222222' : '1px solid #333333',
+                border: page >= totalPages ? '1px solid #222222' : '1px solid var(--border-hover)',
                 background: 'transparent',
-                color: page >= totalPages ? '#444444' : '#F0F0F0',
+                color: page >= totalPages ? 'var(--text-faint)' : 'var(--text-primary)',
                 cursor: page >= totalPages ? 'not-allowed' : 'pointer',
                 fontSize: '13px',
                 fontFamily: 'inherit',

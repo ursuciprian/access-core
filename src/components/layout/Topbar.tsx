@@ -33,7 +33,7 @@ export default function Topbar({
   const { data: session } = useSession()
   const meta = PAGE_META.find((item) => item.match(pathname)) ?? {
     title: 'AccessCore',
-    subtitle: 'Manage VPN access, infrastructure, and the AccessCore control center.',
+    subtitle: 'Manage VPN access, infrastructure, and the AccessCore operations workspace.',
   }
   const isAdmin = ((session?.user as Record<string, unknown> | undefined)?.role as string | undefined) === 'ADMIN'
 
@@ -57,9 +57,9 @@ export default function Topbar({
               width: '44px',
               height: '44px',
               borderRadius: '12px',
-              border: '1px solid #232323',
-              background: '#111111',
-              color: '#F0F0F0',
+              border: '1px solid var(--border)',
+              background: 'rgba(18,18,18,0.92)',
+              color: 'var(--text-primary)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -72,8 +72,8 @@ export default function Topbar({
           </button>
         )}
         <div>
-          <h1 style={{ fontSize: isMobile ? '22px' : '24px', fontWeight: 700, color: '#F0F0F0', margin: 0 }}>{meta.title}</h1>
-          <p style={{ fontSize: '13px', color: '#666666', margin: '6px 0 0', maxWidth: '680px', lineHeight: 1.5 }}>{meta.subtitle}</p>
+          <h1 style={{ fontSize: isMobile ? '22px' : '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.03em' }}>{meta.title}</h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', maxWidth: '680px', lineHeight: 1.5 }}>{meta.subtitle}</p>
         </div>
       </div>
       {isAdmin && (
@@ -88,9 +88,9 @@ export default function Topbar({
             gap: '12px',
             padding: '11px 14px',
             borderRadius: '12px',
-            border: '1px solid #232323',
-            background: '#111111',
-            color: '#888888',
+            border: '1px solid var(--border)',
+            background: 'rgba(18,18,18,0.92)',
+            color: 'var(--text-secondary)',
             cursor: 'pointer',
             fontFamily: 'inherit',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
@@ -104,10 +104,10 @@ export default function Topbar({
             <kbd style={{
               padding: '2px 6px',
               borderRadius: '6px',
-              border: '1px solid #333333',
-              background: '#171717',
+              border: '1px solid var(--border-hover)',
+              background: 'rgba(255,255,255,0.03)',
               fontSize: '11px',
-              color: '#555555',
+              color: 'var(--text-muted)',
             }}>
               ⌘K
             </kbd>

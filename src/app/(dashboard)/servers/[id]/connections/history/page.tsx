@@ -45,20 +45,20 @@ function formatBytes(bytesStr: string): string {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '16px',
   overflow: 'hidden',
 }
 
 const thStyle: React.CSSProperties = {
   textAlign: 'left', padding: '10px 14px', fontSize: '11px',
-  fontWeight: 600, color: '#555', textTransform: 'uppercase',
+  fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase',
   letterSpacing: '0.05em', background: '#0A0A0A',
 }
 
 const tdStyle: React.CSSProperties = {
-  padding: '10px 14px', fontSize: '13px', color: '#888',
+  padding: '10px 14px', fontSize: '13px', color: 'var(--text-secondary)',
 }
 
 export default function ConnectionHistoryPage() {
@@ -103,16 +103,16 @@ export default function ConnectionHistoryPage() {
               onChange={e => setSearchInput(e.target.value)}
               placeholder="Filter by common name..."
               style={{
-                padding: '6px 12px', background: '#1A1A1A', border: '1px solid #333',
-                borderRadius: '8px', fontSize: '13px', color: '#F0F0F0', outline: 'none',
+                padding: '6px 12px', background: 'var(--elevated)', border: '1px solid var(--border-hover)',
+                borderRadius: '8px', fontSize: '13px', color: 'var(--text-primary)', outline: 'none',
                 fontFamily: 'inherit', width: '220px',
               }}
             />
             <button
               type="submit"
               style={{
-                padding: '6px 14px', background: '#EA7E20', color: '#FFF',
-                fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none',
+                padding: '6px 14px', background: 'var(--button-primary)', color: 'var(--button-primary-text)',
+                fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -127,9 +127,9 @@ export default function ConnectionHistoryPage() {
       </div>
 
       {loading ? (
-        <div style={{ ...cardStyle, padding: '48px', textAlign: 'center', color: '#555' }}>Loading...</div>
+        <div style={{ ...cardStyle, padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading...</div>
       ) : !data || data.connections.length === 0 ? (
-        <div style={{ ...cardStyle, padding: '48px', textAlign: 'center', color: '#555' }}>
+        <div style={{ ...cardStyle, padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
           {search ? `No connections matching "${search}"` : 'No connection history yet'}
         </div>
       ) : (
@@ -150,15 +150,15 @@ export default function ConnectionHistoryPage() {
               </thead>
               <tbody>
                 {data.connections.map(c => (
-                  <tr key={c.id} style={{ borderBottom: '1px solid #1E1E1E' }}>
-                    <td style={{ ...tdStyle, color: '#F0F0F0', fontWeight: 500 }}>{c.commonName}</td>
-                    <td style={{ ...tdStyle, fontFamily: 'ui-monospace, monospace', color: '#22C55E' }}>{c.vpnAddress || '—'}</td>
-                    <td style={{ ...tdStyle, fontFamily: 'ui-monospace, monospace' }}>{c.realAddress.split(':')[0]}</td>
+                  <tr key={c.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ ...tdStyle, color: 'var(--text-primary)', fontWeight: 500 }}>{c.commonName}</td>
+                    <td style={{ ...tdStyle, fontFamily: 'var(--font-mono)', color: '#22C55E' }}>{c.vpnAddress || '—'}</td>
+                    <td style={{ ...tdStyle, fontFamily: 'var(--font-mono)' }}>{c.realAddress.split(':')[0]}</td>
                     <td style={tdStyle}>{new Date(c.connectedAt).toLocaleString()}</td>
                     <td style={tdStyle}>{c.disconnectedAt ? new Date(c.disconnectedAt).toLocaleString() : '—'}</td>
                     <td style={{ ...tdStyle, textAlign: 'right' }}>{formatDuration(c.duration)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: '#22C55E', fontFamily: 'ui-monospace, monospace' }}>{formatBytes(c.bytesIn)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: '#EA7E20', fontFamily: 'ui-monospace, monospace' }}>{formatBytes(c.bytesOut)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: '#22C55E', fontFamily: 'var(--font-mono)' }}>{formatBytes(c.bytesIn)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{formatBytes(c.bytesOut)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -168,7 +168,7 @@ export default function ConnectionHistoryPage() {
           {/* Pagination */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            marginTop: '16px', fontSize: '13px', color: '#888',
+            marginTop: '16px', fontSize: '13px', color: 'var(--text-secondary)',
           }}>
             <span>
               Showing {((data.page - 1) * 50) + 1}–{Math.min(data.page * 50, data.total)} of {data.total}
@@ -178,8 +178,8 @@ export default function ConnectionHistoryPage() {
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={data.page <= 1}
                 style={{
-                  padding: '4px 12px', borderRadius: '6px', border: '1px solid #2A2A2A',
-                  background: 'transparent', color: data.page <= 1 ? '#333' : '#888',
+                  padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--border-strong)',
+                  background: 'transparent', color: data.page <= 1 ? 'var(--border-hover)' : 'var(--text-secondary)',
                   cursor: data.page <= 1 ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: '13px',
                 }}
               >
@@ -189,8 +189,8 @@ export default function ConnectionHistoryPage() {
                 onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
                 disabled={data.page >= data.totalPages}
                 style={{
-                  padding: '4px 12px', borderRadius: '6px', border: '1px solid #2A2A2A',
-                  background: 'transparent', color: data.page >= data.totalPages ? '#333' : '#888',
+                  padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--border-strong)',
+                  background: 'transparent', color: data.page >= data.totalPages ? 'var(--border-hover)' : 'var(--text-secondary)',
                   cursor: data.page >= data.totalPages ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: '13px',
                 }}
               >

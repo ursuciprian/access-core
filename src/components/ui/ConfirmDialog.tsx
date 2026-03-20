@@ -37,18 +37,19 @@ export default function ConfirmDialog({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#111111',
-          border: '1px solid #1E1E1E',
-          borderRadius: '16px',
+          background: 'rgba(18,18,18,0.98)',
+          border: '1px solid var(--border)',
+          borderRadius: '18px',
           padding: '24px',
           minWidth: '360px',
           maxWidth: '480px',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
         }}
       >
-        <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#F0F0F0', marginBottom: '8px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
           {title}
         </h3>
-        <p style={{ fontSize: '13px', color: '#888888', marginBottom: '24px', lineHeight: 1.5 }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.5 }}>
           {message}
         </p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
@@ -57,11 +58,11 @@ export default function ConfirmDialog({
             style={{
               padding: '8px 16px',
               fontSize: '13px',
-              fontWeight: 500,
-              borderRadius: '8px',
-              border: '1px solid #2A2A2A',
+              fontWeight: 600,
+              borderRadius: '10px',
+              border: '1px solid var(--border-strong)',
               background: 'transparent',
-              color: '#888888',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               fontFamily: 'inherit',
             }}
@@ -73,11 +74,11 @@ export default function ConfirmDialog({
             style={{
               padding: '8px 16px',
               fontSize: '13px',
-              fontWeight: 500,
-              borderRadius: '8px',
+              fontWeight: 600,
+              borderRadius: '10px',
               border: 'none',
               background: confirmColor,
-              color: '#FFFFFF',
+              color: confirmColor === 'var(--button-primary)' ? 'var(--button-primary-text)' : '#FFFFFF',
               cursor: 'pointer',
               fontFamily: 'inherit',
             }}

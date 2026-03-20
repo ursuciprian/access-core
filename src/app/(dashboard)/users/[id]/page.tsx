@@ -71,14 +71,22 @@ const ddStyle: React.CSSProperties = { fontSize: '13px', fontWeight: 500, color:
 const certColors: Record<string, { bg: string; color: string }> = {
   ACTIVE: { bg: 'rgba(34,197,94,0.15)', color: '#22C55E' },
   REVOKED: { bg: 'rgba(239,68,68,0.15)', color: '#EF4444' },
-  NONE: { bg: 'rgba(136,136,136,0.15)', color: '#888888' },
+  NONE: { bg: 'rgba(136,136,136,0.15)', color: 'var(--text-secondary)' },
 }
 
 const syncColors: Record<string, { bg: string; color: string }> = {
   SUCCESS: { bg: 'rgba(34,197,94,0.15)', color: '#22C55E' },
   PENDING: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B' },
-  IN_PROGRESS: { bg: 'rgba(234,126,32,0.15)', color: '#EA7E20' },
+  IN_PROGRESS: { bg: 'rgba(234,126,32,0.15)', color: 'var(--accent)' },
   FAILED: { bg: 'rgba(239,68,68,0.15)', color: '#EF4444' },
+}
+
+const primaryButtonStyle: React.CSSProperties = {
+  border: 'none',
+  background: 'var(--button-primary)',
+  color: 'var(--button-primary-text)',
+  fontWeight: 600,
+  fontFamily: 'inherit',
 }
 
 export default function UserDetailPage() {
@@ -333,7 +341,7 @@ export default function UserDetailPage() {
       action: user.certStatus === 'ACTIVE' ? 'regenerate-cert' : 'generate-cert',
       label: user.certStatus === 'ACTIVE' ? 'Regenerate certificate' : 'Generate certificate',
       loadingLabel: user.certStatus === 'ACTIVE' ? 'Regenerating...' : 'Generating...',
-      color: '#EA7E20',
+      color: 'var(--accent)',
       visible: true,
     },
     {
@@ -360,7 +368,7 @@ export default function UserDetailPage() {
         ? { bg: 'rgba(139,92,246,0.15)', color: '#8B5CF6' }
         : isRevoked
           ? { bg: 'rgba(239,68,68,0.15)', color: '#EF4444' }
-          : { bg: 'rgba(136,136,136,0.15)', color: '#888' },
+          : { bg: 'rgba(136,136,136,0.15)', color: 'var(--text-secondary)' },
     }
   }
 
@@ -423,7 +431,7 @@ export default function UserDetailPage() {
               <dd>
                 <span style={badgeStyle(
                   user.isEnabled ? 'rgba(34,197,94,0.15)' : 'rgba(136,136,136,0.15)',
-                  user.isEnabled ? '#22C55E' : '#888888'
+                  user.isEnabled ? '#22C55E' : 'var(--text-secondary)'
                 )}>
                   {user.isEnabled ? 'Enabled' : 'Disabled'}
                 </span>
@@ -452,7 +460,7 @@ export default function UserDetailPage() {
               background: 'rgba(234,126,32,0.1)',
               border: '1px solid rgba(234,126,32,0.22)',
               fontSize: '12px',
-              color: '#EA7E20',
+              color: 'var(--accent)',
               lineHeight: 1.5,
             }}>
               Certificate issuance and revocation are paused because server management is disabled in this environment.
@@ -503,7 +511,7 @@ export default function UserDetailPage() {
               background: 'rgba(234,126,32,0.1)',
               border: '1px solid rgba(234,126,32,0.22)',
               fontSize: '12px',
-              color: '#EA7E20',
+              color: 'var(--accent)',
               lineHeight: 1.5,
             }}>
               CCD pushes are disabled while server management is turned off.
@@ -522,7 +530,7 @@ export default function UserDetailPage() {
             )}
           </dl>
           <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-            <ActionButton label="Push CCD" loadingLabel="Pushing..." action="push-ccd" color="#EA7E20" actionLoading={actionLoading} onAction={handleAction} disabled={!serverManagementEnabled} />
+            <ActionButton label="Push CCD" loadingLabel="Pushing..." action="push-ccd" color="var(--accent)" actionLoading={actionLoading} onAction={handleAction} disabled={!serverManagementEnabled} />
           </div>
         </div>
 
@@ -533,9 +541,9 @@ export default function UserDetailPage() {
             <button
               onClick={() => { setShowGroupAdd(!showGroupAdd); if (!showGroupAdd) fetchAvailableGroups() }}
               style={{
-                padding: '4px 10px', fontSize: '11px', fontWeight: 500, borderRadius: '6px',
-                border: showGroupAdd ? '1px solid #2A2A2A' : 'none',
-                background: showGroupAdd ? 'transparent' : '#EA7E20', color: showGroupAdd ? '#888' : '#FFF',
+                padding: '6px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '10px',
+                border: showGroupAdd ? '1px solid var(--border-strong)' : 'none',
+                background: showGroupAdd ? 'transparent' : 'var(--button-primary)', color: showGroupAdd ? 'var(--text-secondary)' : 'var(--button-primary-text)',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -553,7 +561,7 @@ export default function UserDetailPage() {
                     <select
                       value={selectedGroupId}
                       onChange={(e) => setSelectedGroupId(e.target.value)}
-                      style={{ flex: 1, padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'inherit' }}
+                      style={{ flex: 1, padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }}
                     >
                       <option value="">Select a group...</option>
                       {unjoined.map((g) => (
@@ -564,10 +572,10 @@ export default function UserDetailPage() {
                       onClick={handleAddGroup}
                       disabled={!selectedGroupId || addingGroup}
                       style={{
-                        padding: '6px 12px', fontSize: '12px', fontWeight: 500, borderRadius: '6px',
-                        border: 'none', background: '#EA7E20', color: '#FFF',
+                        ...primaryButtonStyle,
+                        padding: '6px 12px', fontSize: '12px', borderRadius: '10px',
                         cursor: !selectedGroupId || addingGroup ? 'not-allowed' : 'pointer',
-                        opacity: !selectedGroupId || addingGroup ? 0.5 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap',
+                        opacity: !selectedGroupId || addingGroup ? 0.5 : 1, whiteSpace: 'nowrap',
                       }}
                     >
                       {addingGroup ? 'Adding...' : 'Add'}
@@ -617,9 +625,9 @@ export default function UserDetailPage() {
             <button
               onClick={() => setShowTempForm(!showTempForm)}
               style={{
-                padding: '4px 10px', fontSize: '11px', fontWeight: 500, borderRadius: '6px',
-                border: showTempForm ? '1px solid #2A2A2A' : 'none',
-                background: showTempForm ? 'transparent' : '#8B5CF6', color: showTempForm ? '#888' : '#FFF',
+                padding: '6px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '10px',
+                border: showTempForm ? '1px solid var(--border-strong)' : 'none',
+                background: showTempForm ? 'transparent' : 'var(--button-primary)', color: showTempForm ? 'var(--text-secondary)' : 'var(--button-primary-text)',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -644,7 +652,7 @@ export default function UserDetailPage() {
                   <select
                     value={tempForm.groupId}
                     onChange={(e) => setTempForm({ ...tempForm, groupId: e.target.value })}
-                    style={{ padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'inherit' }}
+                    style={{ padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }}
                   >
                     <option value="">Select a temporary group...</option>
                     {grantableGroups.map((group) => (
@@ -663,12 +671,12 @@ export default function UserDetailPage() {
                   min="1"
                   value={tempForm.duration}
                   onChange={(e) => setTempForm({ ...tempForm, duration: e.target.value })}
-                  style={{ width: '70px', padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'inherit' }}
+                  style={{ width: '70px', padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }}
                 />
                 <select
                   value={tempForm.unit}
                   onChange={(e) => setTempForm({ ...tempForm, unit: e.target.value })}
-                  style={{ padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'inherit' }}
+                  style={{ padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }}
                 >
                   <option value="minutes">Minutes</option>
                   <option value="hours">Hours</option>
@@ -680,16 +688,16 @@ export default function UserDetailPage() {
                 placeholder="Reason (optional)"
                 value={tempForm.reason}
                 onChange={(e) => setTempForm({ ...tempForm, reason: e.target.value })}
-                style={{ padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'inherit' }}
+                style={{ padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }}
               />
               <button
                 onClick={handleGrantTemp}
                 disabled={grantingTemp || !tempForm.groupId}
                 style={{
-                  padding: '6px 12px', fontSize: '12px', fontWeight: 500, borderRadius: '6px',
-                  border: 'none', background: '#8B5CF6', color: '#FFF',
+                  ...primaryButtonStyle,
+                  padding: '6px 12px', fontSize: '12px', borderRadius: '10px',
                   cursor: grantingTemp || !tempForm.groupId ? 'not-allowed' : 'pointer',
-                  opacity: grantingTemp || !tempForm.groupId ? 0.5 : 1, fontFamily: 'inherit', alignSelf: 'flex-start',
+                  opacity: grantingTemp || !tempForm.groupId ? 0.5 : 1, alignSelf: 'flex-start',
                 }}
               >
                 {grantingTemp ? 'Granting...' : 'Grant Temporary Access'}
@@ -763,9 +771,9 @@ export default function UserDetailPage() {
             <button
               onClick={() => setShowNetworkSettings(!showNetworkSettings)}
               style={{
-                padding: '4px 10px', fontSize: '11px', fontWeight: 500, borderRadius: '6px',
-                border: showNetworkSettings ? '1px solid #2A2A2A' : 'none',
-                background: showNetworkSettings ? 'transparent' : '#EA7E20', color: showNetworkSettings ? '#888' : '#FFF',
+                padding: '6px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '10px',
+                border: showNetworkSettings ? '1px solid var(--border-strong)' : 'none',
+                background: showNetworkSettings ? 'transparent' : 'var(--button-primary)', color: showNetworkSettings ? 'var(--text-secondary)' : 'var(--button-primary-text)',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -776,7 +784,7 @@ export default function UserDetailPage() {
           {showNetworkSettings && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                   Static IP (optional)
                 </label>
                 <input
@@ -784,16 +792,16 @@ export default function UserDetailPage() {
                   placeholder="e.g. 10.8.0.50"
                   value={networkForm.staticIp}
                   onChange={(e) => setNetworkForm({ ...networkForm, staticIp: e.target.value })}
-                  style={{ width: '100%', padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'ui-monospace, monospace', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-mono)', boxSizing: 'border-box' }}
                 />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '12px', fontWeight: 500, color: '#888888' }}>Allow Internet</span>
+                <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>Allow Internet</span>
                 <button
                   onClick={() => setNetworkForm({ ...networkForm, allowInternet: !networkForm.allowInternet })}
                   style={{
                     width: '40px', height: '22px', borderRadius: '11px', border: 'none', cursor: 'pointer', position: 'relative',
-                    background: networkForm.allowInternet ? '#EA7E20' : '#333',
+                    background: networkForm.allowInternet ? 'var(--accent)' : 'var(--border-hover)',
                     transition: 'background 150ms',
                   }}
                 >
@@ -804,7 +812,7 @@ export default function UserDetailPage() {
                 </button>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                   Max Connections
                 </label>
                 <input
@@ -813,16 +821,16 @@ export default function UserDetailPage() {
                   max={10}
                   value={networkForm.maxConnections}
                   onChange={(e) => setNetworkForm({ ...networkForm, maxConnections: parseInt(e.target.value) || 1 })}
-                  style={{ width: '80px', padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                  style={{ width: '80px', padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
                 />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '12px', fontWeight: 500, color: '#888888' }}>Require 2FA</span>
+                <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>Require 2FA</span>
                 <button
                   onClick={() => setNetworkForm({ ...networkForm, require2fa: !networkForm.require2fa })}
                   style={{
                     width: '40px', height: '22px', borderRadius: '11px', border: 'none', cursor: 'pointer', position: 'relative',
-                    background: networkForm.require2fa ? '#8B5CF6' : '#333',
+                    background: networkForm.require2fa ? '#8B5CF6' : 'var(--border-hover)',
                     transition: 'background 150ms',
                   }}
                 >
@@ -833,7 +841,7 @@ export default function UserDetailPage() {
                 </button>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                   Allowed Source IPs
                 </label>
                 <input
@@ -841,9 +849,9 @@ export default function UserDetailPage() {
                   placeholder="e.g. 203.0.113.0/24, 198.51.100.5"
                   value={networkForm.allowedSourceIps}
                   onChange={(e) => setNetworkForm({ ...networkForm, allowedSourceIps: e.target.value })}
-                  style={{ width: '100%', padding: '6px 8px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '6px', fontSize: '12px', color: '#F0F0F0', outline: 'none', fontFamily: 'ui-monospace, monospace', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '6px 8px', background: 'var(--elevated)', border: '1px solid var(--border-hover)', borderRadius: '6px', fontSize: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-mono)', boxSizing: 'border-box' }}
                 />
-                <span style={{ fontSize: '11px', color: '#555', marginTop: '2px', display: 'block' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', display: 'block' }}>
                   Comma-separated CIDRs or IPs. Leave empty to allow all.
                 </span>
               </div>
@@ -851,10 +859,10 @@ export default function UserDetailPage() {
                 onClick={handleSaveNetwork}
                 disabled={savingNetwork}
                 style={{
-                  padding: '6px 12px', fontSize: '12px', fontWeight: 500, borderRadius: '6px',
-                  border: 'none', background: '#EA7E20', color: '#FFF',
+                  ...primaryButtonStyle,
+                  padding: '6px 12px', fontSize: '12px', borderRadius: '10px',
                   cursor: savingNetwork ? 'not-allowed' : 'pointer', opacity: savingNetwork ? 0.5 : 1,
-                  fontFamily: 'inherit', alignSelf: 'flex-start',
+                  alignSelf: 'flex-start',
                 }}
               >
                 {savingNetwork ? 'Saving...' : 'Save Network Settings'}
@@ -984,11 +992,11 @@ function ActionButton({ label, loadingLabel, action, color, actionLoading, onAct
       style={{
         padding: '6px 12px',
         fontSize: '12px',
-        fontWeight: 500,
-        background: isLoading ? 'var(--elevated)' : color,
-        color: isLoading ? 'var(--text-muted)' : '#FFFFFF',
+        fontWeight: 600,
+        background: isLoading ? 'var(--elevated)' : color === 'var(--accent)' ? 'var(--button-primary)' : color,
+        color: isLoading ? 'var(--text-muted)' : color === 'var(--accent)' ? 'var(--button-primary-text)' : '#FFFFFF',
         border: 'none',
-        borderRadius: 'var(--radius-md)',
+        borderRadius: '10px',
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         opacity: isDisabled && !isLoading ? 0.5 : 1,
         fontFamily: 'inherit',

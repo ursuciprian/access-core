@@ -28,17 +28,17 @@ interface ServerDetail {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '16px',
   padding: '20px',
 }
 
-const dtStyle: React.CSSProperties = { fontSize: '13px', color: '#888888' }
-const ddStyle: React.CSSProperties = { fontSize: '13px', fontWeight: 500, color: '#F0F0F0' }
+const dtStyle: React.CSSProperties = { fontSize: '13px', color: 'var(--text-secondary)' }
+const ddStyle: React.CSSProperties = { fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }
 const monoStyle: React.CSSProperties = {
   ...ddStyle,
-  fontFamily: 'ui-monospace, monospace',
+  fontFamily: 'var(--font-mono)',
   fontSize: '12px',
   overflowWrap: 'anywhere',
   wordBreak: 'break-word',
@@ -48,11 +48,11 @@ const monoStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '8px 12px',
-  backgroundColor: '#1A1A1A',
-  border: '1px solid #333333',
+  backgroundColor: 'var(--elevated)',
+  border: '1px solid var(--border-hover)',
   borderRadius: '8px',
   fontSize: '13px',
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   outline: 'none',
   boxSizing: 'border-box',
   fontFamily: 'inherit',
@@ -62,7 +62,7 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '12px',
   fontWeight: 500,
-  color: '#888888',
+  color: 'var(--text-secondary)',
   marginBottom: '4px',
 }
 
@@ -196,7 +196,7 @@ export default function ServerDetailPage() {
     )
   }
   if (!server) {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: '#555555' }}>Server not found</div>
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: 'var(--text-muted)' }}>Server not found</div>
   }
 
   const transportColors: Record<string, { bg: string; text: string }> = {
@@ -204,13 +204,13 @@ export default function ServerDetailPage() {
     SSH: { bg: 'rgba(234,126,32,0.15)', text: '#60a5fa' },
     AGENT: { bg: 'rgba(20,184,166,0.15)', text: '#2dd4bf' },
   }
-  const tc = transportColors[server.transport] || { bg: 'rgba(136,136,136,0.15)', text: '#888' }
+  const tc = transportColors[server.transport] || { bg: 'rgba(136,136,136,0.15)', text: 'var(--text-secondary)' }
 
   return (
     <div>
       <button
         onClick={() => router.push('/servers')}
-        style={{ fontSize: '13px', color: '#EA7E20', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '16px' }}
+        style={{ fontSize: '13px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '16px' }}
       >
         &larr; Back to Servers
       </button>
@@ -219,15 +219,15 @@ export default function ServerDetailPage() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0' }}>{server.name}</h2>
-            <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 500, background: server.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(136,136,136,0.15)', color: server.isActive ? '#4ade80' : '#555' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>{server.name}</h2>
+            <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 500, background: server.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(136,136,136,0.15)', color: server.isActive ? '#4ade80' : 'var(--text-muted)' }}>
               {server.isActive ? 'Active' : 'Inactive'}
             </span>
             <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 500, background: tc.bg, color: tc.text }}>
               {server.transport}
             </span>
           </div>
-          <p style={{ fontSize: '13px', color: '#888888', marginTop: '4px' }}>{server.hostname}</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>{server.hostname}</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           {serverManagementEnabled && (
@@ -235,7 +235,7 @@ export default function ServerDetailPage() {
               <button
                 onClick={() => server.isActive ? setConfirmDeactivate(true) : handleToggleActive()}
                 style={{
-                  padding: '6px 14px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: '1px solid #2A2A2A',
+                  padding: '6px 14px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: '1px solid var(--border-strong)',
                   background: 'transparent', color: server.isActive ? '#EF4444' : '#22C55E', cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >
@@ -244,10 +244,10 @@ export default function ServerDetailPage() {
               <button
                 onClick={() => setEditing(!editing)}
                 style={{
-                  padding: '6px 14px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none',
-                  background: editing ? 'transparent' : '#EA7E20', color: editing ? '#F0F0F0' : '#FFFFFF',
+                  padding: '8px 14px', fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none',
+                  background: editing ? 'transparent' : 'var(--button-primary)', color: editing ? 'var(--text-primary)' : 'var(--button-primary-text)',
                   cursor: 'pointer', fontFamily: 'inherit',
-                  ...(editing ? { border: '1px solid #2A2A2A' } : {}),
+                  ...(editing ? { border: '1px solid var(--border-strong)' } : {}),
                 }}
               >
                 {editing ? 'Cancel' : 'Edit'}
@@ -266,14 +266,14 @@ export default function ServerDetailPage() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
         {[
-          { label: 'Users', value: server._count.users, href: '/users', color: '#EA7E20' },
+          { label: 'Users', value: server._count.users, href: '/users', color: 'var(--accent)' },
           { label: 'Groups', value: server._count.groups, href: '/groups', color: '#22C55E' },
           { label: 'Sync Jobs', value: server._count.syncJobs, href: '/sync', color: '#F59E0B' },
         ].map((stat) => (
           <Link key={stat.label} href={stat.href} style={{ textDecoration: 'none' }}>
             <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 500, color: '#888888' }}>{stat.label}</span>
-              <span style={{ fontSize: '28px', fontWeight: 600, color: '#F0F0F0' }}>{stat.value}</span>
+              <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>{stat.label}</span>
+              <span style={{ fontSize: '28px', fontWeight: 600, color: 'var(--text-primary)' }}>{stat.value}</span>
             </div>
           </Link>
         ))}
@@ -282,7 +282,7 @@ export default function ServerDetailPage() {
       {editing && serverManagementEnabled ? (
         /* Edit Form */
         <div style={cardStyle}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0', marginBottom: '16px' }}>Edit Server</h3>
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>Edit Server</h3>
           {error && (
             <div style={{ padding: '8px 12px', marginBottom: '16px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', fontSize: '13px' }}>
               {error}
@@ -316,16 +316,16 @@ export default function ServerDetailPage() {
               <label style={labelStyle}>Agent URL</label><input type="text" value={form.agentUrl} onChange={(e) => set('agentUrl', e.target.value)} style={inputStyle} />
             </div>
           )}
-          <div style={{ height: '1px', background: '#1E1E1E', margin: '4px 0 16px' }} />
+          <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0 16px' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-            <div><label style={labelStyle}>CCD Path</label><input type="text" value={form.ccdPath} onChange={(e) => set('ccdPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }} /></div>
-            <div><label style={labelStyle}>EasyRSA Path</label><input type="text" value={form.easyRsaPath} onChange={(e) => set('easyRsaPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }} /></div>
-            <div><label style={labelStyle}>Server Config</label><input type="text" value={form.serverConf} onChange={(e) => set('serverConf', e.target.value)} style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }} /></div>
+            <div><label style={labelStyle}>CCD Path</label><input type="text" value={form.ccdPath} onChange={(e) => set('ccdPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} /></div>
+            <div><label style={labelStyle}>EasyRSA Path</label><input type="text" value={form.easyRsaPath} onChange={(e) => set('easyRsaPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} /></div>
+            <div><label style={labelStyle}>Server Config</label><input type="text" value={form.serverConf} onChange={(e) => set('serverConf', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} /></div>
           </div>
           <button
             onClick={handleSave}
             disabled={saving}
-            style={{ padding: '8px 16px', background: '#EA7E20', color: '#FFF', fontSize: '13px', fontWeight: 500, borderRadius: '10px', border: 'none', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1, fontFamily: 'inherit' }}
+            style={{ padding: '8px 16px', background: 'var(--button-primary)', color: 'var(--button-primary-text)', fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1, fontFamily: 'inherit' }}
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
@@ -335,7 +335,7 @@ export default function ServerDetailPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: '16px' }}>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', marginBottom: '14px' }}>Connection</h3>
+              <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>Connection</h3>
               <dl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <CompactRow
                   label="Transport"
@@ -362,7 +362,7 @@ export default function ServerDetailPage() {
             </div>
 
             <div style={cardStyle}>
-              <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', marginBottom: '14px' }}>Server Paths</h3>
+              <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>Server Paths</h3>
               <dl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <CompactRow label="CCD Directory" value={server.ccdPath} mono />
                 <CompactRow label="EasyRSA" value={server.easyRsaPath} mono />

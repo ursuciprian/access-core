@@ -51,11 +51,11 @@ const sectionTitleStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   flex: 1,
   padding: '8px 12px',
-  background: '#1A1A1A',
-  border: '1px solid #333333',
+  background: 'var(--elevated)',
+  border: '1px solid var(--border-hover)',
   borderRadius: 'var(--radius-md)',
   fontSize: '13px',
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   outline: 'none',
   fontFamily: 'inherit',
 }
@@ -207,13 +207,13 @@ export default function GroupDetailPage() {
               <button
                 onClick={handleSaveEdit}
                 disabled={saving}
-                style={{ padding: '6px 14px', background: '#EA7E20', color: '#FFF', border: 'none', borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 500, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1, fontFamily: 'inherit' }}
+                style={{ padding: '8px 14px', background: 'var(--button-primary)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 'var(--radius-lg)', fontSize: '13px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1, fontFamily: 'inherit' }}
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={() => { setEditing(false); if (group) setEditForm({ name: group.name, description: group.description || '' }) }}
-                style={{ padding: '6px 14px', background: 'transparent', color: '#888', border: '1px solid #2A2A2A', borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ padding: '8px 14px', background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-lg)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 Cancel
               </button>
@@ -229,13 +229,13 @@ export default function GroupDetailPage() {
               <button
                 onClick={handleSyncCcd}
                 disabled={syncingCcd}
-                style={{ padding: '6px 14px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: '#EA7E20', color: '#FFF', cursor: syncingCcd ? 'not-allowed' : 'pointer', opacity: syncingCcd ? 0.5 : 1, fontFamily: 'inherit' }}
+                style={{ padding: '8px 14px', fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none', background: 'var(--button-primary)', color: 'var(--button-primary-text)', cursor: syncingCcd ? 'not-allowed' : 'pointer', opacity: syncingCcd ? 0.5 : 1, fontFamily: 'inherit' }}
               >
                 {syncingCcd ? 'Syncing...' : 'Sync CCD'}
               </button>
               <button
                 onClick={() => setEditing(true)}
-                style={{ padding: '6px 14px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: '#EA7E20', color: '#FFF', cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ padding: '8px 14px', fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none', background: 'var(--button-primary)', color: 'var(--button-primary-text)', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 Edit
               </button>
@@ -297,12 +297,12 @@ export default function GroupDetailPage() {
               disabled={adding}
               style={{
                 padding: '8px 14px',
-                background: '#EA7E20',
-                color: '#FFFFFF',
+                background: 'var(--button-primary)',
+                color: 'var(--button-primary-text)',
                 border: 'none',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-lg)',
                 fontSize: '13px',
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: adding ? 'not-allowed' : 'pointer',
                 opacity: adding ? 0.5 : 1,
                 fontFamily: 'inherit',
@@ -316,7 +316,7 @@ export default function GroupDetailPage() {
               {group.cidrBlocks.map((cidr) => (
                 <li key={cidr.id} style={listItemStyle}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                    <span style={{ fontSize: '13px', fontFamily: 'ui-monospace, monospace', fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-word' }}>{cidr.cidr}</span>
+                    <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-word' }}>{cidr.cidr}</span>
                     {cidr.description && (
                       <span style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{cidr.description}</span>
                     )}
@@ -353,7 +353,7 @@ export default function GroupDetailPage() {
                     >
                       {membership.user.email}
                     </a>
-                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'ui-monospace, monospace', wordBreak: 'break-word' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', wordBreak: 'break-word' }}>
                       {membership.user.commonName}
                     </span>
                   </div>
@@ -364,7 +364,7 @@ export default function GroupDetailPage() {
                       fontSize: '10px',
                       fontWeight: 600,
                       background: membership.source === 'GOOGLE_SYNC' ? 'rgba(234,126,32,0.15)' : 'rgba(136,136,136,0.15)',
-                      color: membership.source === 'GOOGLE_SYNC' ? '#EA7E20' : '#888888',
+                      color: membership.source === 'GOOGLE_SYNC' ? 'var(--accent)' : 'var(--text-secondary)',
                       whiteSpace: 'nowrap',
                       flexShrink: 0,
                     }}
@@ -397,7 +397,7 @@ export default function GroupDetailPage() {
                     >
                       {grant.user.email}
                     </a>
-                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'ui-monospace, monospace', wordBreak: 'break-word' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', wordBreak: 'break-word' }}>
                       {grant.user.commonName}
                     </span>
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
