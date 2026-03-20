@@ -23,7 +23,7 @@ function methodColors(method: string) {
     return { background: 'rgba(168,85,247,0.12)', color: '#C084FC' }
   }
 
-  return { background: 'rgba(234,126,32,0.12)', color: '#EA7E20' }
+  return { background: 'rgba(234,126,32,0.12)', color: 'var(--accent)' }
 }
 
 export default function ProfileActivityPage() {
@@ -36,13 +36,13 @@ export default function ProfileActivityPage() {
       loading={loading}
     >
       {!profile ? (
-        <div style={{ color: '#888888' }}>Unable to load your profile.</div>
+        <div style={{ color: 'var(--text-secondary)' }}>Unable to load your profile.</div>
       ) : (
         <PageGrid minWidth={420}>
           <section style={cardStyle}>
             <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>Recent Login Activity</h3>
-              <p style={{ fontSize: '12px', color: '#555555', margin: '6px 0 0' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Recent Login Activity</h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0' }}>
                 Review the latest sign-ins, their method, and device context.
               </p>
             </div>
@@ -50,7 +50,7 @@ export default function ProfileActivityPage() {
             {recentLogin ? (
               <div style={{ ...listCardStyle, marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0' }}>{formatDate(recentLogin.createdAt)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{formatDate(recentLogin.createdAt)}</div>
                   <span style={{
                     fontSize: '11px',
                     fontWeight: 600,
@@ -69,7 +69,7 @@ export default function ProfileActivityPage() {
                 />
               </div>
             ) : (
-              <p style={{ fontSize: '13px', color: '#888888', margin: '0 0 12px' }}>No login activity has been recorded yet.</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 12px' }}>No login activity has been recorded yet.</p>
             )}
 
             {sessions.length > 1 && (
@@ -77,7 +77,7 @@ export default function ProfileActivityPage() {
                 {sessions.slice(1).map((session) => (
                   <div key={session.id} style={listCardStyle}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0' }}>{formatDate(session.createdAt)}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{formatDate(session.createdAt)}</div>
                       <span style={{
                         fontSize: '11px',
                         fontWeight: 600,

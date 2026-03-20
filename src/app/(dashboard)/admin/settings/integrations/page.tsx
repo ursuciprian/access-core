@@ -22,7 +22,7 @@ export default function AdminIntegrationsSettingsPage() {
     >
       <PageGrid>
         <section style={cardStyle}>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
             Google Workspace
           </p>
           <div style={{ display: 'grid', gap: '16px' }}>
@@ -37,10 +37,10 @@ export default function AdminIntegrationsSettingsPage() {
         </section>
 
         <section style={cardStyle}>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
             Identity Model
           </p>
-          <p style={{ fontSize: '13px', color: '#888888', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
             Google OAuth domain restrictions are environment-backed. Directory sync is controlled here, while LDAP configuration and diagnostics live in the Directory section.
           </p>
         </section>

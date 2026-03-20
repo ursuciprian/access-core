@@ -10,7 +10,7 @@ const shimmerKeyframes = `
 `
 
 const shimmerBackground: React.CSSProperties = {
-  background: 'linear-gradient(90deg, #1A1A1A 25%, #252525 50%, #1A1A1A 75%)',
+  background: 'linear-gradient(90deg, var(--elevated) 25%, rgba(255,255,255,0.04) 50%, var(--elevated) 75%)',
   backgroundSize: '200% 100%',
   animation: 'shimmer 1.5s ease-in-out infinite',
   borderRadius: '6px',
@@ -35,9 +35,9 @@ export function SkeletonCard({ height = '120px' }: { height?: string }) {
       <ShimmerStyle />
       <div
         style={{
-          background: '#111111',
-          border: '1px solid #1E1E1E',
-          borderRadius: '16px',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: '20px',
           padding: '20px',
           height,
           display: 'flex',
@@ -59,15 +59,15 @@ export function SkeletonTable({ rows = 5, columns = 4 }: { rows?: number; column
   return (
     <>
       <ShimmerStyle />
-      <div style={{ background: '#111111', borderRadius: '16px', border: '1px solid #1E1E1E', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)', overflow: 'hidden' }}>
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${columns}, 1fr)`,
             gap: '16px',
             padding: '12px 20px',
-            background: '#1A1A1A',
-            borderBottom: '1px solid #1E1E1E',
+            background: 'var(--elevated)',
+            borderBottom: '1px solid var(--border)',
           }}
         >
           {Array.from({ length: columns }).map((_, i) => (
@@ -82,7 +82,7 @@ export function SkeletonTable({ rows = 5, columns = 4 }: { rows?: number; column
               gridTemplateColumns: `repeat(${columns}, 1fr)`,
               gap: '16px',
               padding: '12px 20px',
-              borderBottom: rowIdx < rows - 1 ? '1px solid #1E1E1E' : 'none',
+              borderBottom: rowIdx < rows - 1 ? '1px solid var(--border)' : 'none',
             }}
           >
             {Array.from({ length: columns }).map((_, colIdx) => (
@@ -101,9 +101,9 @@ export function SkeletonStatCard() {
       <ShimmerStyle />
       <div
         style={{
-          background: '#111111',
-          border: '1px solid #1E1E1E',
-          borderRadius: '16px',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: '20px',
           padding: '20px',
           display: 'flex',
           flexDirection: 'column',

@@ -23,7 +23,7 @@ export default function AdminPlatformSettingsPage() {
     >
       <PageGrid>
         <section style={cardStyle}>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
             Platform
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -36,7 +36,7 @@ export default function AdminPlatformSettingsPage() {
         </section>
 
         <section style={cardStyle}>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
             Portal State
           </p>
           <ToggleField
@@ -48,7 +48,7 @@ export default function AdminPlatformSettingsPage() {
         </section>
 
         <section style={cardStyle}>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
             Environment Flags
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>

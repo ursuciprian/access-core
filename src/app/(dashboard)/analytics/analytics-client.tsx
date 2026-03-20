@@ -41,7 +41,7 @@ export default function AnalyticsClient({
     <section style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <div>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
             Recent Administrative Activity
           </h3>
           <p style={{ fontSize: '12px', color: '#666666', margin: '6px 0 0', lineHeight: 1.5 }}>
@@ -52,17 +52,17 @@ export default function AnalyticsClient({
       </div>
 
       {entries.length === 0 ? (
-        <p style={{ fontSize: '13px', color: '#555555', margin: 0 }}>No administrative activity yet.</p>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>No administrative activity yet.</p>
       ) : (
         <div style={{ overflowX: 'auto', marginInline: '-4px', paddingInline: '4px' }}>
-          <div style={{ border: '1px solid #1E1E1E', borderRadius: '14px', overflow: 'hidden', background: '#0A0A0A', minWidth: '720px' }}>
+          <div style={{ border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden', background: '#0A0A0A', minWidth: '720px' }}>
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'minmax(180px, 0.9fr) minmax(220px, 1.1fr) minmax(180px, 0.9fr) minmax(220px, 1.1fr)',
                 gap: '16px',
                 padding: '12px 14px',
-                borderBottom: '1px solid #1E1E1E',
+                borderBottom: '1px solid var(--border)',
                 background: '#101010',
               }}
             >
@@ -80,7 +80,7 @@ export default function AnalyticsClient({
                   gridTemplateColumns: 'minmax(180px, 0.9fr) minmax(220px, 1.1fr) minmax(180px, 0.9fr) minmax(220px, 1.1fr)',
                   gap: '16px',
                   padding: '12px 14px',
-                  borderBottom: '1px solid #1E1E1E',
+                  borderBottom: '1px solid var(--border)',
                   alignItems: 'center',
                 }}
               >
@@ -91,8 +91,8 @@ export default function AnalyticsClient({
                 </div>
                 <ListValue value={getUserEmail(entry)} muted={!looksLikeEmail(getUserEmail(entry))} />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#F0F0F0' }}>{formatTimestamp(entry.createdAt)}</div>
-                  <div style={{ fontSize: '11px', color: '#888888', marginTop: '4px' }}>{relativeTime(entry.createdAt)}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>{formatTimestamp(entry.createdAt)}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>{relativeTime(entry.createdAt)}</div>
                 </div>
                 <ListValue value={entry.actorEmail} />
               </div>
@@ -110,9 +110,9 @@ export default function AnalyticsClient({
               minHeight: '38px',
               padding: '0 16px',
               borderRadius: '10px',
-              border: '1px solid #2A2A2A',
-              background: loadingMore ? '#151515' : '#111111',
-              color: loadingMore ? '#555555' : '#F0F0F0',
+              border: '1px solid var(--border-strong)',
+              background: loadingMore ? '#151515' : 'var(--surface)',
+              color: loadingMore ? 'var(--text-muted)' : 'var(--text-primary)',
               cursor: loadingMore ? 'not-allowed' : 'pointer',
               fontFamily: 'inherit',
               fontSize: '12px',
@@ -128,8 +128,8 @@ export default function AnalyticsClient({
 }
 
 const cardStyle: CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '16px',
   padding: '20px',
 }
@@ -138,9 +138,9 @@ const metaPillStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   fontSize: '11px',
-  color: '#888888',
+  color: 'var(--text-secondary)',
   background: '#0A0A0A',
-  border: '1px solid #1E1E1E',
+  border: '1px solid var(--border)',
   borderRadius: '9999px',
   padding: '4px 8px',
   whiteSpace: 'nowrap',
@@ -191,7 +191,7 @@ function ListValue({
         style={{
           fontSize: '12px',
           fontWeight: muted ? 500 : 600,
-          color: muted ? '#888888' : '#F0F0F0',
+          color: muted ? 'var(--text-secondary)' : 'var(--text-primary)',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
@@ -251,7 +251,7 @@ function getActionColor(action: string) {
     ACCESS_REQUEST_REJECTED: '#EF4444',
     CERT_GENERATED: '#22C55E',
     CERT_REVOKED: '#EF4444',
-    CERT_REGENERATED: '#EA7E20',
+    CERT_REGENERATED: 'var(--accent)',
     USER_CREATED: '#22C55E',
     USER_UPDATED: '#F59E0B',
     USER_DELETED: '#EF4444',
@@ -260,5 +260,5 @@ function getActionColor(action: string) {
     SYNC_COMPLETED: '#22C55E',
   }
 
-  return colors[action] ?? '#888888'
+  return colors[action] ?? 'var(--text-secondary)'
 }

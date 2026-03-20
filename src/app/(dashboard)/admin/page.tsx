@@ -57,11 +57,11 @@ function timeAgo(dateStr: string): string {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '8px 12px',
-  backgroundColor: '#1A1A1A',
-  border: '1px solid #333333',
+  backgroundColor: 'var(--elevated)',
+  border: '1px solid var(--border-hover)',
   borderRadius: '8px',
   fontSize: '13px',
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   outline: 'none',
   boxSizing: 'border-box',
   fontFamily: 'inherit',
@@ -72,7 +72,7 @@ const thStyle: React.CSSProperties = {
   padding: '12px 20px',
   fontSize: '12px',
   fontWeight: 600,
-  color: '#555555',
+  color: 'var(--text-muted)',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
 }
@@ -274,7 +274,7 @@ export default function AdminPage() {
   }
 
   if (loading) {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: '#555555' }}>Loading...</div>
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: 'var(--text-muted)' }}>Loading...</div>
   }
 
   return (
@@ -285,12 +285,12 @@ export default function AdminPage() {
           onClick={() => { setShowForm(!showForm); setError('') }}
           style={{
             padding: '8px 16px',
-            backgroundColor: showForm ? 'transparent' : '#EA7E20',
-            color: showForm ? '#F0F0F0' : '#FFFFFF',
+            background: showForm ? 'transparent' : 'var(--button-primary)',
+            color: showForm ? 'var(--text-primary)' : 'var(--button-primary-text)',
             fontSize: '14px',
-            fontWeight: 500,
+            fontWeight: 600,
             borderRadius: '12px',
-            border: showForm ? '1px solid #2A2A2A' : 'none',
+            border: showForm ? '1px solid var(--border-strong)' : 'none',
             cursor: 'pointer',
             fontFamily: 'inherit',
           }}
@@ -303,9 +303,9 @@ export default function AdminPage() {
         <form
           onSubmit={handleCreate}
           style={{
-            backgroundColor: '#111111',
+            backgroundColor: 'var(--surface)',
             borderRadius: '16px',
-            border: '1px solid #1E1E1E',
+            border: '1px solid var(--border)',
             padding: '20px',
             marginBottom: '24px',
           }}
@@ -317,15 +317,15 @@ export default function AdminPage() {
           )}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '16px', marginBottom: '16px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Email</label>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>Email</label>
               <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="user@example.com" style={inputStyle} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Password</label>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>Password</label>
               <input type="password" required minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={`Min ${MIN_PASSWORD_LENGTH} characters`} style={inputStyle} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Role</label>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>Role</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} style={{ ...inputStyle, minWidth: '120px' }}>
                 <option value="VIEWER">Viewer</option>
                 <option value="ADMIN">Admin</option>
@@ -336,7 +336,7 @@ export default function AdminPage() {
             type="submit"
             disabled={submitting}
             style={{
-              padding: '8px 16px', backgroundColor: '#EA7E20', color: '#FFFFFF', fontSize: '14px', fontWeight: 500,
+              padding: '8px 16px', background: 'var(--button-primary)', color: 'var(--button-primary-text)', fontSize: '14px', fontWeight: 600,
               borderRadius: '12px', border: 'none', cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1, fontFamily: 'inherit',
             }}
           >
@@ -346,17 +346,17 @@ export default function AdminPage() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0', marginBottom: '24px', borderBottom: '1px solid #1E1E1E' }}>
+      <div style={{ display: 'flex', gap: '0', marginBottom: '24px', borderBottom: '1px solid var(--border)' }}>
         <button
           onClick={() => setActiveTab('users')}
           style={{
             padding: '10px 20px',
             fontSize: '14px',
             fontWeight: 500,
-            color: activeTab === 'users' ? '#F0F0F0' : '#555555',
+            color: activeTab === 'users' ? 'var(--text-primary)' : 'var(--text-muted)',
             background: 'transparent',
             border: 'none',
-            borderBottom: `2px solid ${activeTab === 'users' ? '#EA7E20' : 'transparent'}`,
+            borderBottom: `2px solid ${activeTab === 'users' ? 'var(--accent)' : 'transparent'}`,
             cursor: 'pointer',
             fontFamily: 'inherit',
             marginBottom: '-1px',
@@ -370,10 +370,10 @@ export default function AdminPage() {
             padding: '10px 20px',
             fontSize: '14px',
             fontWeight: 500,
-            color: activeTab === 'pending' ? '#F0F0F0' : '#555555',
+            color: activeTab === 'pending' ? 'var(--text-primary)' : 'var(--text-muted)',
             background: 'transparent',
             border: 'none',
-            borderBottom: `2px solid ${activeTab === 'pending' ? '#EA7E20' : 'transparent'}`,
+            borderBottom: `2px solid ${activeTab === 'pending' ? 'var(--accent)' : 'transparent'}`,
             cursor: 'pointer',
             fontFamily: 'inherit',
             marginBottom: '-1px',
@@ -391,8 +391,8 @@ export default function AdminPage() {
               minWidth: '20px',
               height: '20px',
               borderRadius: '9999px',
-              backgroundColor: '#EA7E20',
-              color: '#FFFFFF',
+              background: 'var(--button-primary)',
+              color: 'var(--button-primary-text)',
               fontSize: '11px',
               fontWeight: 600,
               padding: '0 6px',
@@ -416,10 +416,10 @@ export default function AdminPage() {
             />
           </div>
 
-          <div style={{ backgroundColor: '#111111', borderRadius: '16px', border: '1px solid #1E1E1E', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1E1E1E', backgroundColor: '#1A1A1A' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--elevated)' }}>
                   <th style={thStyle}>Email</th>
                   <th style={thStyle}>Role</th>
                   <th style={thStyle}>Auth Method</th>
@@ -430,8 +430,8 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {filteredApproved.map((admin) => (
-                  <tr key={admin.id} style={{ borderBottom: '1px solid #1E1E1E' }}>
-                    <td style={{ padding: '12px 20px', fontSize: '14px', color: '#F0F0F0', fontWeight: 500 }}>
+                  <tr key={admin.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '12px 20px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>
                       {admin.email}
                     </td>
                     <td style={{ padding: '12px 20px' }}>
@@ -442,19 +442,19 @@ export default function AdminPage() {
                           fontSize: '12px',
                           fontWeight: 500,
                           background: admin.role === 'ADMIN' ? 'rgba(234,126,32,0.15)' : 'rgba(136,136,136,0.15)',
-                          color: admin.role === 'ADMIN' ? '#EA7E20' : '#888888',
+                          color: admin.role === 'ADMIN' ? 'var(--accent)' : 'var(--text-secondary)',
                         }}
                       >
                         {admin.role}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 20px', fontSize: '13px', color: '#888888' }}>
+                    <td style={{ padding: '12px 20px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                       {admin.authMethod}
                     </td>
-                    <td style={{ padding: '12px 20px', fontSize: '13px', color: '#888888' }}>
+                    <td style={{ padding: '12px 20px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                       {admin.lastLoginAt ? timeAgo(admin.lastLoginAt) : 'Never'}
                     </td>
-                    <td style={{ padding: '12px 20px', fontSize: '13px', color: '#888888' }}>
+                    <td style={{ padding: '12px 20px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                       {new Date(admin.createdAt).toLocaleDateString()}
                     </td>
                     <td style={{ padding: '12px 20px', textAlign: 'right' }}>
@@ -467,7 +467,7 @@ export default function AdminPage() {
                             }}
                             style={{
                               padding: '4px 10px', fontSize: '12px', fontWeight: 500, borderRadius: '6px',
-                              border: '1px solid #2A2A2A', background: 'transparent', color: '#888888',
+                              border: '1px solid var(--border-strong)', background: 'transparent', color: 'var(--text-secondary)',
                               cursor: 'pointer', fontFamily: 'inherit',
                             }}
                           >
@@ -491,7 +491,7 @@ export default function AdminPage() {
                           disabled={admin.email === currentUserEmail}
                           style={{
                             padding: '4px 10px', fontSize: '12px', fontWeight: 500, borderRadius: '6px',
-                            border: '1px solid #2A2A2A', background: 'transparent', color: '#888888',
+                            border: '1px solid var(--border-strong)', background: 'transparent', color: 'var(--text-secondary)',
                             cursor: admin.email === currentUserEmail ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                             opacity: admin.email === currentUserEmail ? 0.5 : 1,
                           }}
@@ -500,10 +500,12 @@ export default function AdminPage() {
                         </button>
                         <button
                           onClick={() => setDeleteTarget({ id: admin.id, email: admin.email })}
+                          disabled={admin.email === currentUserEmail}
                           style={{
                             padding: '4px 10px', fontSize: '12px', fontWeight: 500, borderRadius: '6px',
                             border: 'none', background: 'rgba(239,68,68,0.1)', color: '#EF4444',
-                            cursor: 'pointer', fontFamily: 'inherit',
+                            cursor: admin.email === currentUserEmail ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                            opacity: admin.email === currentUserEmail ? 0.5 : 1,
                           }}
                         >
                           Remove
@@ -514,7 +516,7 @@ export default function AdminPage() {
                 ))}
                 {filteredApproved.map((admin) => (
                   resettingUserId === admin.id ? (
-                    <tr key={`${admin.id}-reset`} style={{ borderBottom: '1px solid #1E1E1E', background: '#151515' }}>
+                    <tr key={`${admin.id}-reset`} style={{ borderBottom: '1px solid var(--border)', background: '#151515' }}>
                       <td colSpan={6} style={{ padding: '14px 20px' }}>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end' }}>
                           <input
@@ -528,8 +530,8 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleResetPassword(admin.id)}
                             style={{
-                              padding: '8px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '8px',
-                              border: 'none', background: '#EA7E20', color: '#FFFFFF',
+                              padding: '8px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '12px',
+                              border: 'none', background: 'var(--button-primary)', color: 'var(--button-primary-text)',
                               cursor: 'pointer', fontFamily: 'inherit',
                             }}
                           >
@@ -542,7 +544,7 @@ export default function AdminPage() {
                             }}
                             style={{
                               padding: '8px 12px', fontSize: '12px', fontWeight: 500, borderRadius: '8px',
-                              border: '1px solid #2A2A2A', background: 'transparent', color: '#888888',
+                              border: '1px solid var(--border-strong)', background: 'transparent', color: 'var(--text-secondary)',
                               cursor: 'pointer', fontFamily: 'inherit',
                             }}
                           >
@@ -555,7 +557,7 @@ export default function AdminPage() {
                 ))}
                 {filteredApproved.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={{ padding: '32px 20px', textAlign: 'center', fontSize: '14px', color: '#555555' }}>
+                    <td colSpan={6} style={{ padding: '32px 20px', textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)' }}>
                       {searchQuery ? 'No users match your search' : 'No AccessCore accounts found'}
                     </td>
                   </tr>
@@ -568,10 +570,10 @@ export default function AdminPage() {
 
       {/* Pending Portal Access Tab */}
       {activeTab === 'pending' && (
-        <div style={{ backgroundColor: '#111111', borderRadius: '16px', border: '1px solid #1E1E1E', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
           {pendingUsers.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #1E1E1E', background: '#151515' }}>
-              <div style={{ fontSize: '13px', color: '#888888' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--border)', background: '#151515' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                 {selectedPendingIds.length} selected
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -602,7 +604,7 @@ export default function AdminPage() {
           )}
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #1E1E1E', backgroundColor: '#1A1A1A' }}>
+              <tr style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--elevated)' }}>
                 <th style={{ ...thStyle, width: '44px' }}>
                   <input
                     type="checkbox"
@@ -619,7 +621,7 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {pendingUsers.map((user) => (
-                <tr key={user.id} style={{ borderBottom: '1px solid #1E1E1E' }}>
+                <tr key={user.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '12px 20px' }}>
                     <input
                       type="checkbox"
@@ -628,7 +630,7 @@ export default function AdminPage() {
                       aria-label={`Select ${user.email}`}
                     />
                   </td>
-                  <td style={{ padding: '12px 20px', fontSize: '14px', color: '#F0F0F0', fontWeight: 500 }}>
+                  <td style={{ padding: '12px 20px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>
                     {user.email}
                   </td>
                   <td style={{ padding: '12px 20px' }}>
@@ -639,13 +641,13 @@ export default function AdminPage() {
                         fontSize: '12px',
                         fontWeight: 500,
                         background: 'rgba(136,136,136,0.15)',
-                        color: '#888888',
+                        color: 'var(--text-secondary)',
                       }}
                     >
                       {user.role}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 20px', fontSize: '13px', color: '#888888' }}>
+                  <td style={{ padding: '12px 20px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td style={{ padding: '12px 20px', textAlign: 'right' }}>
@@ -676,7 +678,7 @@ export default function AdminPage() {
               ))}
               {pendingUsers.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ padding: '32px 20px', textAlign: 'center', fontSize: '14px', color: '#555555' }}>
+                  <td colSpan={5} style={{ padding: '32px 20px', textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)' }}>
                     No pending AccessCore access requests
                   </td>
                 </tr>

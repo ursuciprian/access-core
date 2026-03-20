@@ -39,11 +39,11 @@ const defaultForm = {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '8px 12px',
-  backgroundColor: '#1A1A1A',
-  border: '1px solid #333333',
+  backgroundColor: 'var(--elevated)',
+  border: '1px solid var(--border-hover)',
   borderRadius: '8px',
   fontSize: '13px',
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   outline: 'none',
   boxSizing: 'border-box',
   fontFamily: 'inherit',
@@ -52,8 +52,8 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '12px',
-  fontWeight: 500,
-  color: '#888888',
+  fontWeight: 600,
+  color: 'var(--text-secondary)',
   marginBottom: '4px',
 }
 
@@ -187,18 +187,18 @@ export default function ServersPage() {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0' }}>Servers</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>Servers</h2>
         {serverManagementEnabled && (
           <button
             onClick={() => { setShowForm(!showForm); setError('') }}
             style={{
               padding: '8px 16px',
-              backgroundColor: showForm ? 'transparent' : '#EA7E20',
-              color: showForm ? '#F0F0F0' : '#FFFFFF',
+              background: showForm ? 'transparent' : 'linear-gradient(to bottom, var(--accent), var(--accent-strong))',
+              color: showForm ? 'var(--text-primary)' : '#0A0A0A',
               fontSize: '14px',
-              fontWeight: 500,
+              fontWeight: 600,
               borderRadius: '12px',
-              border: showForm ? '1px solid #2A2A2A' : 'none',
+              border: showForm ? '1px solid var(--border-strong)' : 'none',
               cursor: 'pointer',
               fontFamily: 'inherit',
             }}
@@ -218,9 +218,9 @@ export default function ServersPage() {
         <form
           onSubmit={handleCreate}
           style={{
-            backgroundColor: '#111111',
-            borderRadius: '16px',
-            border: '1px solid #1E1E1E',
+            backgroundColor: 'var(--surface)',
+            borderRadius: '20px',
+            border: '1px solid var(--border)',
             padding: '20px',
             marginBottom: '24px',
           }}
@@ -294,21 +294,21 @@ export default function ServersPage() {
           )}
 
           {/* Separator */}
-          <div style={{ height: '1px', background: '#1E1E1E', margin: '4px 0 16px' }} />
+          <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0 16px' }} />
 
           {/* Row 3: Paths */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={labelStyle}>CCD Path</label>
-              <input type="text" required value={form.ccdPath} onChange={(e) => set('ccdPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }} />
+              <input type="text" required value={form.ccdPath} onChange={(e) => set('ccdPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
             </div>
             <div>
               <label style={labelStyle}>EasyRSA Path</label>
-              <input type="text" required value={form.easyRsaPath} onChange={(e) => set('easyRsaPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }} />
+              <input type="text" required value={form.easyRsaPath} onChange={(e) => set('easyRsaPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
             </div>
             <div>
               <label style={labelStyle}>Server Config</label>
-              <input type="text" required value={form.serverConf} onChange={(e) => set('serverConf', e.target.value)} style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', fontSize: '12px' }} />
+              <input type="text" required value={form.serverConf} onChange={(e) => set('serverConf', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
             </div>
           </div>
 
@@ -317,10 +317,10 @@ export default function ServersPage() {
             disabled={submitting}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#EA7E20',
-              color: '#FFFFFF',
+              background: 'linear-gradient(to bottom, var(--accent), var(--accent-strong))',
+              color: '#0A0A0A',
               fontSize: '14px',
-              fontWeight: 500,
+              fontWeight: 600,
               borderRadius: '12px',
               border: 'none',
               cursor: submitting ? 'not-allowed' : 'pointer',
@@ -336,7 +336,7 @@ export default function ServersPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
         {servers.map((server) => {
           const isHovered = hoveredId === server.id
-          const tc = transportColors[server.transport] || { bg: 'rgba(136,136,136,0.15)', text: '#888888' }
+          const tc = transportColors[server.transport] || { bg: 'rgba(136,136,136,0.15)', text: 'var(--text-secondary)' }
           return (
             <Link
               key={server.id}
@@ -347,9 +347,9 @@ export default function ServersPage() {
             >
               <div
                 style={{
-                  backgroundColor: isHovered ? '#1A1A1A' : '#111111',
-                  borderRadius: '16px',
-                  border: `1px solid ${isHovered ? '#2A2A2A' : '#1E1E1E'}`,
+                  backgroundColor: isHovered ? 'var(--elevated)' : 'var(--surface)',
+                  borderRadius: '20px',
+                  border: `1px solid ${isHovered ? 'var(--border-strong)' : 'var(--border)'}`,
                   padding: '20px',
                   transition: 'background-color 0.15s, border-color 0.15s',
                   cursor: 'pointer',
@@ -358,10 +358,10 @@ export default function ServersPage() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>{server.name}</h3>
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{server.name}</h3>
                       {(() => {
                         const status = connStatus[server.id]
-                        const dotColor = status === 'online' ? '#22c55e' : status === 'offline' ? '#ef4444' : '#888888'
+                        const dotColor = status === 'online' ? '#22c55e' : status === 'offline' ? '#ef4444' : 'var(--text-secondary)'
                         const label = status === 'online' ? 'Online' : status === 'offline' ? 'Offline' : 'Checking...'
                         return (
                           <span title={label} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -378,8 +378,8 @@ export default function ServersPage() {
                         )
                       })()}
                     </div>
-                    <p style={{ fontSize: '13px', color: '#888888', margin: '4px 0 0' }}>{server.hostname}</p>
-                    <p style={{ fontSize: '11px', color: '#555555', margin: '6px 0 0' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>{server.hostname}</p>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '6px 0 0' }}>
                       Uptime: {connStatus[server.id] === 'online' ? formatUptime(uptimeByServer[server.id]) : '—'}
                     </p>
                   </div>
@@ -390,23 +390,23 @@ export default function ServersPage() {
                       fontSize: '12px',
                       fontWeight: 500,
                       backgroundColor: server.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(136,136,136,0.15)',
-                      color: server.isActive ? '#4ade80' : '#555555',
+                      color: server.isActive ? '#4ade80' : 'var(--text-muted)',
                     }}
                   >
                     {server.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '12px', borderTop: '1px solid #1E1E1E' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
                   <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 500, backgroundColor: tc.bg, color: tc.text }}>{server.transport}</span>
-                  <span style={{ fontSize: '12px', color: '#888888' }}>{server._count?.users ?? 0} users</span>
-                  <span style={{ fontSize: '12px', color: '#888888' }}>{server._count?.groups ?? 0} groups</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{server._count?.users ?? 0} users</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{server._count?.groups ?? 0} groups</span>
                 </div>
               </div>
             </Link>
           )
         })}
         {servers.length === 0 && (
-          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 0', fontSize: '14px', color: '#555555' }}>
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 0', fontSize: '14px', color: 'var(--text-muted)' }}>
             No servers configured. Click &quot;New Server&quot; to add one.
           </div>
         )}

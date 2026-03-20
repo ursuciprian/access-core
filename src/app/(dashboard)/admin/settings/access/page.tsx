@@ -23,7 +23,7 @@ export default function AdminAccessSettingsPage() {
     >
       <PageGrid>
         <section style={cardStyle}>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>
             New User Defaults
           </p>
           <div style={{ display: 'grid', gap: '16px' }}>
@@ -68,10 +68,10 @@ export default function AdminAccessSettingsPage() {
         </section>
 
         <section style={cardStyle}>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
             First Login Behavior
           </p>
-          <p style={{ fontSize: '13px', color: '#888888', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
             When a non-admin user signs in for the first time, AccessCore auto-creates an access request against the selected default VPN server.
             If no default server is selected, the first active server is used as fallback.
           </p>

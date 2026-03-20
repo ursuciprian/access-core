@@ -97,12 +97,12 @@ export default function GroupsPage() {
           onClick={() => setShowForm(!showForm)}
           style={{
             padding: '8px 16px',
-            backgroundColor: showForm ? 'transparent' : '#EA7E20',
-            color: showForm ? '#F0F0F0' : '#FFFFFF',
+            background: showForm ? 'transparent' : 'linear-gradient(to bottom, var(--accent), var(--accent-strong))',
+            color: showForm ? 'var(--text-primary)' : '#0A0A0A',
             fontSize: '14px',
-            fontWeight: 500,
+            fontWeight: 600,
             borderRadius: '12px',
-            border: showForm ? '1px solid #2A2A2A' : 'none',
+            border: showForm ? '1px solid var(--border-strong)' : 'none',
             cursor: 'pointer',
           }}
         >
@@ -114,16 +114,16 @@ export default function GroupsPage() {
         <form
           onSubmit={handleCreate}
           style={{
-            backgroundColor: '#111111',
-            borderRadius: '16px',
-            border: '1px solid #1E1E1E',
+            backgroundColor: 'var(--surface)',
+            borderRadius: '20px',
+            border: '1px solid var(--border)',
             padding: '20px',
             marginBottom: '24px',
           }}
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '16px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Name</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Name</label>
               <input
                 type="text"
                 required
@@ -132,18 +132,18 @@ export default function GroupsPage() {
                 style={{
                   width: '100%',
                   padding: '8px 12px',
-                  backgroundColor: '#1A1A1A',
-                  border: '1px solid #333333',
+                  backgroundColor: 'var(--elevated)',
+                  border: '1px solid var(--border-hover)',
                   borderRadius: '8px',
                   fontSize: '14px',
-                  color: '#F0F0F0',
+                  color: 'var(--text-primary)',
                   outline: 'none',
                   boxSizing: 'border-box',
                 }}
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Description</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Description</label>
               <input
                 type="text"
                 value={form.description}
@@ -151,18 +151,18 @@ export default function GroupsPage() {
                 style={{
                   width: '100%',
                   padding: '8px 12px',
-                  backgroundColor: '#1A1A1A',
-                  border: '1px solid #333333',
+                  backgroundColor: 'var(--elevated)',
+                  border: '1px solid var(--border-hover)',
                   borderRadius: '8px',
                   fontSize: '14px',
-                  color: '#F0F0F0',
+                  color: 'var(--text-primary)',
                   outline: 'none',
                   boxSizing: 'border-box',
                 }}
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#888888', marginBottom: '4px' }}>Server</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Server</label>
               <select
                 required
                 value={form.serverId}
@@ -170,11 +170,11 @@ export default function GroupsPage() {
                 style={{
                   width: '100%',
                   padding: '8px 12px',
-                  backgroundColor: '#1A1A1A',
-                  border: '1px solid #333333',
+                  backgroundColor: 'var(--elevated)',
+                  border: '1px solid var(--border-hover)',
                   borderRadius: '8px',
                   fontSize: '14px',
-                  color: '#F0F0F0',
+                  color: 'var(--text-primary)',
                   outline: 'none',
                   boxSizing: 'border-box',
                   fontFamily: 'inherit',
@@ -192,10 +192,10 @@ export default function GroupsPage() {
             disabled={submitting}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#EA7E20',
-              color: '#FFFFFF',
+              background: 'linear-gradient(to bottom, var(--accent), var(--accent-strong))',
+              color: '#0A0A0A',
               fontSize: '14px',
-              fontWeight: 500,
+              fontWeight: 600,
               borderRadius: '12px',
               border: 'none',
               cursor: submitting ? 'not-allowed' : 'pointer',
@@ -209,7 +209,7 @@ export default function GroupsPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(180px, 240px)', gap: 12, marginBottom: 16, alignItems: 'end' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 12, color: '#888', lineHeight: 1 }}>Search</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1 }}>Search</span>
           <input
             type="text"
             placeholder="Search groups..."
@@ -218,10 +218,10 @@ export default function GroupsPage() {
             style={{
               width: '100%',
               padding: '8px 12px',
-              background: '#1A1A1A',
-              border: '1px solid #333',
+              background: 'var(--elevated)',
+              border: '1px solid var(--border-hover)',
               borderRadius: 8,
-              color: '#F0F0F0',
+              color: 'var(--text-primary)',
               fontSize: 14,
               outline: 'none',
               boxSizing: 'border-box',
@@ -229,17 +229,17 @@ export default function GroupsPage() {
           />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 12, color: '#888', lineHeight: 1 }}>Server</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1 }}>Server</span>
           <select
             value={serverFilter}
             onChange={(e) => setServerFilter(e.target.value)}
             style={{
               width: '100%',
               padding: '8px 12px',
-              background: '#1A1A1A',
-              border: '1px solid #333',
+              background: 'var(--elevated)',
+              border: '1px solid var(--border-hover)',
               borderRadius: 8,
-              color: '#F0F0F0',
+              color: 'var(--text-primary)',
               fontSize: 14,
               outline: 'none',
               boxSizing: 'border-box',
@@ -253,36 +253,36 @@ export default function GroupsPage() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: '#111111', borderRadius: '16px', border: '1px solid #1E1E1E', overflow: 'hidden' }}>
+      <div style={{ backgroundColor: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #1E1E1E', backgroundColor: '#1A1A1A' }}>
-              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 600, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Name</th>
-              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 600, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</th>
-              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 600, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Server</th>
-              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 600, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CIDR Blocks</th>
-              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 600, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Members</th>
-              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 600, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Temporary Members</th>
+            <tr style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--elevated)' }}>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Name</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Server</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>CIDR Blocks</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Members</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Temporary Members</th>
             </tr>
           </thead>
           <tbody>
             {filteredGroups.map((group) => (
-              <tr key={group.id} style={{ borderBottom: '1px solid #1E1E1E' }}>
+              <tr key={group.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '12px 20px' }}>
-                  <Link href={`/groups/${group.id}`} style={{ fontSize: '14px', color: '#EA7E20', fontWeight: 500, textDecoration: 'none' }}>
+                  <Link href={`/groups/${group.id}`} style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
                     {group.name}
                   </Link>
                 </td>
-                <td style={{ padding: '12px 20px', fontSize: '14px', color: '#888888' }}>{group.description || '-'}</td>
-                <td style={{ padding: '12px 20px', fontSize: '14px', color: '#F0F0F0' }}>{group.server.name}</td>
-                <td style={{ padding: '12px 20px', fontSize: '14px', color: '#F0F0F0' }}>{group._count?.cidrBlocks ?? 0}</td>
-                <td style={{ padding: '12px 20px', fontSize: '14px', color: '#F0F0F0' }}>{group._count?.users ?? 0}</td>
-                <td style={{ padding: '12px 20px', fontSize: '14px', color: '#F0F0F0' }}>{group.temporaryMemberCount ?? 0}</td>
+                <td style={{ padding: '12px 20px', fontSize: '14px', color: 'var(--text-secondary)' }}>{group.description || '-'}</td>
+                <td style={{ padding: '12px 20px', fontSize: '14px', color: 'var(--text-primary)' }}>{group.server.name}</td>
+                <td style={{ padding: '12px 20px', fontSize: '14px', color: 'var(--text-primary)' }}>{group._count?.cidrBlocks ?? 0}</td>
+                <td style={{ padding: '12px 20px', fontSize: '14px', color: 'var(--text-primary)' }}>{group._count?.users ?? 0}</td>
+                <td style={{ padding: '12px 20px', fontSize: '14px', color: 'var(--text-primary)' }}>{group.temporaryMemberCount ?? 0}</td>
               </tr>
             ))}
             {filteredGroups.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ padding: '20px 32px', textAlign: 'center', fontSize: '14px', color: '#555555' }}>No groups found</td>
+                <td colSpan={6} style={{ padding: '20px 32px', textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)' }}>No groups found</td>
               </tr>
             )}
           </tbody>

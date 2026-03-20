@@ -42,37 +42,39 @@ const styles = {
   title: {
     fontSize: 20,
     fontWeight: 600,
-    color: 'var(--text-primary, #F0F0F0)',
+    color: 'var(--text-primary, var(--text-primary))',
     margin: 0,
   } as CSSProperties,
 
   primaryButton: {
     padding: '8px 16px',
-    backgroundColor: 'var(--accent, #EA7E20)',
-    color: '#FFFFFF',
+    background: 'var(--button-primary)',
+    color: 'var(--button-primary-text)',
     fontSize: 14,
-    fontWeight: 500,
+    fontWeight: 600,
     borderRadius: 'var(--radius-lg, 12px)',
     border: 'none',
     cursor: 'pointer',
+    fontFamily: 'inherit',
   } as CSSProperties,
 
   primaryButtonDisabled: {
     padding: '8px 16px',
-    backgroundColor: 'var(--accent, #EA7E20)',
-    color: '#FFFFFF',
+    background: 'var(--button-primary)',
+    color: 'var(--button-primary-text)',
     fontSize: 14,
-    fontWeight: 500,
+    fontWeight: 600,
     borderRadius: 'var(--radius-lg, 12px)',
     border: 'none',
     cursor: 'not-allowed',
     opacity: 0.5,
+    fontFamily: 'inherit',
   } as CSSProperties,
 
   formContainer: {
-    backgroundColor: 'var(--surface, #111111)',
+    backgroundColor: 'var(--surface, var(--surface))',
     borderRadius: 'var(--radius-xl, 16px)',
-    border: '1px solid var(--border, #1E1E1E)',
+    border: '1px solid var(--border, var(--border))',
     padding: 20,
     marginBottom: 24,
   } as CSSProperties,
@@ -88,26 +90,26 @@ const styles = {
     display: 'block',
     fontSize: 14,
     fontWeight: 500,
-    color: 'var(--text-secondary, #888888)',
+    color: 'var(--text-secondary, var(--text-secondary))',
     marginBottom: 4,
   } as CSSProperties,
 
   input: {
     width: '100%',
     padding: '8px 12px',
-    backgroundColor: 'var(--elevated, #1A1A1A)',
-    border: '1px solid #333333',
+    backgroundColor: 'var(--elevated, var(--elevated))',
+    border: '1px solid var(--border-hover)',
     borderRadius: 'var(--radius-md, 8px)',
     fontSize: 14,
-    color: 'var(--text-primary, #F0F0F0)',
+    color: 'var(--text-primary, var(--text-primary))',
     outline: 'none',
     boxSizing: 'border-box' as const,
   } as CSSProperties,
 
   tableWrapper: {
-    backgroundColor: 'var(--surface, #111111)',
+    backgroundColor: 'var(--surface, var(--surface))',
     borderRadius: 'var(--radius-xl, 16px)',
-    border: '1px solid var(--border, #1E1E1E)',
+    border: '1px solid var(--border, var(--border))',
     overflow: 'hidden',
   } as CSSProperties,
 
@@ -121,33 +123,33 @@ const styles = {
     padding: '12px 20px',
     fontSize: 12,
     fontWeight: 600,
-    color: 'var(--text-muted, #555555)',
+    color: 'var(--text-muted, var(--text-muted))',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
-    backgroundColor: 'var(--elevated, #1A1A1A)',
-    borderBottom: '1px solid var(--border, #1E1E1E)',
+    backgroundColor: 'var(--elevated, var(--elevated))',
+    borderBottom: '1px solid var(--border, var(--border))',
   } as CSSProperties,
 
   tr: {
-    borderBottom: '1px solid var(--border, #1E1E1E)',
+    borderBottom: '1px solid var(--border, var(--border))',
   } as CSSProperties,
 
   td: {
     padding: '12px 20px',
     fontSize: 14,
-    color: 'var(--text-secondary, #888888)',
+    color: 'var(--text-secondary, var(--text-secondary))',
   } as CSSProperties,
 
   link: {
     fontSize: 14,
-    color: 'var(--accent, #EA7E20)',
+    color: 'var(--accent, var(--accent))',
     fontWeight: 500,
     textDecoration: 'none',
   } as CSSProperties,
 
   textPrimary: {
     fontSize: 14,
-    color: 'var(--text-primary, #F0F0F0)',
+    color: 'var(--text-primary, var(--text-primary))',
   } as CSSProperties,
 
   badgeActive: {
@@ -177,7 +179,7 @@ const styles = {
     fontSize: 12,
     fontWeight: 500,
     backgroundColor: 'rgba(100, 116, 139, 0.15)',
-    color: 'var(--text-muted, #555555)',
+    color: 'var(--text-muted, var(--text-muted))',
   } as CSSProperties,
 
   badgeFlagged: {
@@ -194,7 +196,7 @@ const styles = {
     padding: '32px 20px',
     textAlign: 'center' as const,
     fontSize: 14,
-    color: 'var(--text-muted, #555555)',
+    color: 'var(--text-muted, var(--text-muted))',
   } as CSSProperties,
 
   loadingContainer: {
@@ -202,13 +204,13 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     height: 256,
-    color: 'var(--text-muted, #555555)',
+    color: 'var(--text-muted, var(--text-muted))',
     fontSize: 14,
   } as CSSProperties,
 
   dashText: {
     fontSize: 14,
-    color: 'var(--text-muted, #555555)',
+    color: 'var(--text-muted, var(--text-muted))',
   } as CSSProperties,
 
   bulkBar: {
@@ -225,39 +227,41 @@ const styles = {
   bulkCount: {
     fontSize: 14,
     fontWeight: 600,
-    color: '#EA7E20',
+    color: 'var(--accent)',
     marginRight: 8,
   } as CSSProperties,
 
   bulkButton: {
     padding: '6px 14px',
-    backgroundColor: '#EA7E20',
-    color: '#FFFFFF',
+    background: 'var(--button-primary)',
+    color: 'var(--button-primary-text)',
     fontSize: 13,
-    fontWeight: 500,
+    fontWeight: 600,
     borderRadius: 'var(--radius-md, 8px)',
     border: 'none',
     cursor: 'pointer',
+    fontFamily: 'inherit',
   } as CSSProperties,
 
   bulkButtonDisabled: {
     padding: '6px 14px',
-    backgroundColor: '#EA7E20',
-    color: '#FFFFFF',
+    background: 'var(--button-primary)',
+    color: 'var(--button-primary-text)',
     fontSize: 13,
-    fontWeight: 500,
+    fontWeight: 600,
     borderRadius: 'var(--radius-md, 8px)',
     border: 'none',
     cursor: 'not-allowed',
     opacity: 0.5,
+    fontFamily: 'inherit',
   } as CSSProperties,
 
   bulkSelect: {
     padding: '6px 10px',
-    backgroundColor: 'var(--elevated, #1A1A1A)',
-    color: 'var(--text-primary, #F0F0F0)',
+    backgroundColor: 'var(--elevated, var(--elevated))',
+    color: 'var(--text-primary, var(--text-primary))',
     fontSize: 13,
-    border: '1px solid #333333',
+    border: '1px solid var(--border-hover)',
     borderRadius: 'var(--radius-md, 8px)',
     outline: 'none',
   } as CSSProperties,
@@ -265,7 +269,7 @@ const styles = {
   checkbox: {
     width: 16,
     height: 16,
-    accentColor: '#EA7E20',
+    accentColor: 'var(--accent)',
     cursor: 'pointer',
   } as CSSProperties,
 
@@ -274,9 +278,9 @@ const styles = {
     padding: '12px 12px',
     fontSize: 12,
     fontWeight: 600,
-    color: 'var(--text-muted, #555555)',
-    backgroundColor: 'var(--elevated, #1A1A1A)',
-    borderBottom: '1px solid var(--border, #1E1E1E)',
+    color: 'var(--text-muted, var(--text-muted))',
+    backgroundColor: 'var(--elevated, var(--elevated))',
+    borderBottom: '1px solid var(--border, var(--border))',
     width: 44,
   } as CSSProperties,
 
@@ -311,9 +315,9 @@ const styles = {
   clearButton: {
     padding: '4px 10px',
     backgroundColor: 'transparent',
-    color: 'var(--text-muted, #555555)',
+    color: 'var(--text-muted, var(--text-muted))',
     fontSize: 12,
-    border: '1px solid #333333',
+    border: '1px solid var(--border-hover)',
     borderRadius: 'var(--radius-md, 8px)',
     cursor: 'pointer',
     marginLeft: 'auto',
@@ -683,25 +687,25 @@ export default function UsersPage() {
           style={{
             flex: 1,
             padding: '8px 12px',
-            background: '#1A1A1A',
-            border: '1px solid #333',
+            background: 'var(--elevated)',
+            border: '1px solid var(--border-hover)',
             borderRadius: 8,
-            color: '#F0F0F0',
+            color: 'var(--text-primary)',
             fontSize: 14,
             outline: 'none',
           }}
         />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: 12, color: '#888', marginBottom: 2 }}>Server</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>Server</span>
           <select
             value={serverFilter}
             onChange={(e) => updateParams({ server: e.target.value })}
             style={{
               padding: '8px 12px',
-              background: '#1A1A1A',
-              border: '1px solid #333',
+              background: 'var(--elevated)',
+              border: '1px solid var(--border-hover)',
               borderRadius: 8,
-              color: '#F0F0F0',
+              color: 'var(--text-primary)',
               fontSize: 14,
               outline: 'none',
               minWidth: 140,
@@ -714,16 +718,16 @@ export default function UsersPage() {
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: 12, color: '#888', marginBottom: 2 }}>Cert Status</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>Cert Status</span>
           <select
             value={certStatus}
             onChange={(e) => updateParams({ certStatus: e.target.value })}
             style={{
               padding: '8px 12px',
-              background: '#1A1A1A',
-              border: '1px solid #333',
+              background: 'var(--elevated)',
+              border: '1px solid var(--border-hover)',
               borderRadius: 8,
-              color: '#F0F0F0',
+              color: 'var(--text-primary)',
               fontSize: 14,
               outline: 'none',
               minWidth: 130,
@@ -736,15 +740,15 @@ export default function UsersPage() {
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: 12, color: '#888', marginBottom: 2 }}>Flagged</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>Flagged</span>
           <button
             onClick={() => updateParams({ flagged: flagged ? '' : 'true' })}
             style={{
               padding: '8px 12px',
-              background: flagged ? 'rgba(234, 126, 32, 0.15)' : '#1A1A1A',
-              border: flagged ? '1px solid #EA7E20' : '1px solid #333',
+              background: flagged ? 'rgba(234, 126, 32, 0.15)' : 'var(--elevated)',
+              border: flagged ? '1px solid var(--accent)' : '1px solid var(--border-hover)',
               borderRadius: 8,
-              color: flagged ? '#EA7E20' : '#F0F0F0',
+              color: flagged ? 'var(--accent)' : 'var(--text-primary)',
               fontSize: 14,
               cursor: 'pointer',
               outline: 'none',
@@ -791,7 +795,7 @@ export default function UsersPage() {
                     {user.email}
                   </Link>
                 </td>
-                <td style={{ ...styles.td, color: 'var(--text-primary, #F0F0F0)' }}>{user.commonName}</td>
+                <td style={{ ...styles.td, color: 'var(--text-primary, var(--text-primary))' }}>{user.commonName}</td>
                 <td style={styles.td}>{certBadge(user.certStatus)}</td>
                 <td style={styles.td}>
                   {user.isFlagged ? (
@@ -815,10 +819,10 @@ export default function UsersPage() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '12px 20px',
-          backgroundColor: 'var(--elevated, #1A1A1A)',
-          borderTop: '1px solid var(--border, #1E1E1E)',
+          backgroundColor: 'var(--elevated, var(--elevated))',
+          borderTop: '1px solid var(--border, var(--border))',
           fontSize: 14,
-          color: 'var(--text-secondary, #888888)',
+          color: 'var(--text-secondary, var(--text-secondary))',
         }}>
           <span>{total} user{total !== 1 ? 's' : ''} total</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -828,10 +832,10 @@ export default function UsersPage() {
               style={{
                 padding: '6px 14px',
                 backgroundColor: 'transparent',
-                border: page <= 1 ? '1px solid #222' : '1px solid #333',
+                border: page <= 1 ? '1px solid #222' : '1px solid var(--border-hover)',
                 borderRadius: 'var(--radius-md, 8px)',
                 fontSize: 13,
-                color: page <= 1 ? '#444' : 'var(--text-primary, #F0F0F0)',
+                color: page <= 1 ? 'var(--text-faint)' : 'var(--text-primary, var(--text-primary))',
                 cursor: page <= 1 ? 'not-allowed' : 'pointer',
               }}
             >
@@ -844,10 +848,10 @@ export default function UsersPage() {
               style={{
                 padding: '6px 14px',
                 backgroundColor: 'transparent',
-                border: page >= totalPages ? '1px solid #222' : '1px solid #333',
+                border: page >= totalPages ? '1px solid #222' : '1px solid var(--border-hover)',
                 borderRadius: 'var(--radius-md, 8px)',
                 fontSize: 13,
-                color: page >= totalPages ? '#444' : 'var(--text-primary, #F0F0F0)',
+                color: page >= totalPages ? 'var(--text-faint)' : 'var(--text-primary, var(--text-primary))',
                 cursor: page >= totalPages ? 'not-allowed' : 'pointer',
               }}
             >

@@ -25,7 +25,7 @@ export default function ApprovalGate({ children }: { children: React.ReactNode }
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        height: '100vh', color: '#555',
+        height: '100vh', color: 'var(--text-muted)',
       }}>
         Loading...
       </div>
