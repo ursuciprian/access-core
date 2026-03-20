@@ -11,9 +11,9 @@ const OPERATIONS_SECTIONS = [
 ]
 
 const shellCardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
-  borderRadius: '16px',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
+  borderRadius: '20px',
   padding: '20px',
 }
 
@@ -35,8 +35,8 @@ export function OperationsShell({
       <section style={shellCardStyle}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>{title}</h2>
-            <p style={{ fontSize: '13px', color: '#888888', margin: '6px 0 0', lineHeight: 1.5 }}>{description}</p>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.03em' }}>{title}</h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.5 }}>{description}</p>
           </div>
           {actions ? <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>{actions}</div> : null}
         </div>
@@ -54,9 +54,9 @@ export function OperationsShell({
                   fontSize: '13px',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  color: active ? '#EA7E20' : '#888888',
-                  background: active ? 'rgba(234,126,32,0.12)' : '#151515',
-                  border: active ? '1px solid rgba(234,126,32,0.24)' : '1px solid #1E1E1E',
+                  color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                  background: active ? 'rgba(255,183,125,0.12)' : 'var(--elevated)',
+                  border: active ? '1px solid rgba(255,183,125,0.24)' : '1px solid var(--border)',
                 }}
               >
                 {section.label}

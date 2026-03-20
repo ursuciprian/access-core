@@ -2,7 +2,6 @@
 
 import { SessionProvider, useSession, signIn } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface ServerOption {
@@ -35,7 +34,6 @@ export default function RequestAccessPage() {
 
 function RequestAccessContent() {
   const { data: session, status: authStatus } = useSession()
-  const router = useRouter()
   const [servers, setServers] = useState<ServerOption[]>([])
   const [groups, setGroups] = useState<GroupOption[]>([])
   const [existing, setExisting] = useState<ExistingRequest[]>([])
@@ -47,27 +45,20 @@ function RequestAccessContent() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [visibleActivityCount, setVisibleActivityCount] = useState(10)
-
-  const role = (session?.user as Record<string, unknown>)?.role as string
+  const ownRequestsUrl = '/api/access-requests?mine=true'
 
   useEffect(() => {
     if (authStatus !== 'authenticated') return
 
-    // If admin, redirect to dashboard
-    if (role === 'ADMIN') {
-      router.push('/')
-      return
-    }
-
     Promise.all([
       fetch('/api/servers/public').then(r => r.json()),
-      fetch('/api/access-requests').then(r => r.json()),
+      fetch(ownRequestsUrl).then(r => r.json()),
     ]).then(([serversData, requestsData]) => {
       setServers(Array.isArray(serversData) ? serversData : [])
       setExisting(Array.isArray(requestsData) ? requestsData : [])
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [authStatus, role, router])
+  }, [authStatus])
 
   useEffect(() => {
     if (!selectedServer) {
@@ -155,7 +146,7 @@ function RequestAccessContent() {
       setSelectedGroups([])
       setReason('')
       // Refresh existing requests
-      const updated = await fetch('/api/access-requests').then(r => r.json())
+      const updated = await fetch(ownRequestsUrl).then(r => r.json())
       setExisting(Array.isArray(updated) ? updated : [])
     } else {
       const data = await res.json()
@@ -171,7 +162,7 @@ function RequestAccessContent() {
   }
 
   const statusColors: Record<string, { bg: string; text: string }> = {
-    PENDING: { bg: 'rgba(234,126,32,0.15)', text: '#EA7E20' },
+    PENDING: { bg: 'rgba(255,183,125,0.15)', text: 'var(--accent)' },
     PROCESSING: { bg: 'rgba(59,130,246,0.15)', text: '#60A5FA' },
     APPROVED: { bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
     FAILED: { bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
@@ -180,7 +171,7 @@ function RequestAccessContent() {
 
   if (authStatus === 'loading') {
     return (
-      <div style={{ minHeight: '100vh', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
         Loading...
       </div>
     )
@@ -189,25 +180,27 @@ function RequestAccessContent() {
   // Unauthenticated: show sign-in screen
   if (authStatus === 'unauthenticated') {
     return (
-      <div style={{ minHeight: '100vh', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
         <div style={{
-          width: '100%', maxWidth: '400px', background: '#111', border: '1px solid #1E1E1E',
-          borderRadius: '16px', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: '24px',
+          width: '100%', maxWidth: '400px', background: 'rgba(18,18,18,0.94)', border: '1px solid var(--border)',
+          borderRadius: '20px', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: '24px',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
         }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{
               width: '48px', height: '48px', margin: '0 auto 16px',
-              background: 'rgba(234,126,32,0.15)', borderRadius: '12px',
+              background: 'linear-gradient(180deg, rgba(255,183,125,0.18), rgba(255,140,0,0.10))', borderRadius: '14px',
+              border: '1px solid rgba(255,183,125,0.18)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA7E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
-            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0', marginBottom: '6px' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px', letterSpacing: '-0.03em' }}>
               Request VPN Access
             </h1>
-            <p style={{ fontSize: '13px', color: '#888' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               Sign in with your Google account to request VPN access.
             </p>
           </div>
@@ -216,14 +209,14 @@ function RequestAccessContent() {
             type="button"
             onClick={() => signIn('google', { callbackUrl: '/request-access' })}
             style={{
-              width: '100%', background: '#1A1A1A', border: '1px solid #333',
-              borderRadius: '8px', padding: '12px 18px', fontSize: '14px',
-              fontWeight: 500, color: '#F0F0F0', cursor: 'pointer',
+              width: '100%', background: 'var(--elevated)', border: '1px solid var(--border-hover)',
+              borderRadius: '10px', padding: '12px 18px', fontSize: '14px',
+              fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer',
               fontFamily: 'inherit', display: 'flex', alignItems: 'center',
               justifyContent: 'center', gap: '10px', transition: 'border-color 150ms',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#555' }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#333' }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--text-secondary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)' }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -234,7 +227,7 @@ function RequestAccessContent() {
             Sign in with Google
           </button>
 
-          <p style={{ fontSize: '11px', color: '#444', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center' }}>
             Your administrator will review your access request.
           </p>
         </div>
@@ -244,20 +237,20 @@ function RequestAccessContent() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
         Loading...
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0A0A', padding: '40px 24px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '40px 24px' }}>
       <div style={{ maxWidth: '640px', margin: '0 auto' }}>
         <Link
           href="/"
           style={{
             fontSize: '13px',
-            color: '#EA7E20',
+            color: 'var(--accent)',
             textDecoration: 'none',
             display: 'inline-block',
             marginBottom: '16px',
@@ -270,17 +263,18 @@ function RequestAccessContent() {
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{
             width: '48px', height: '48px', margin: '0 auto 16px',
-            background: 'rgba(234,126,32,0.15)', borderRadius: '12px',
+            background: 'linear-gradient(180deg, rgba(255,183,125,0.18), rgba(255,140,0,0.10))', borderRadius: '14px',
+            border: '1px solid rgba(255,183,125,0.18)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA7E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </div>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#F0F0F0', marginBottom: '8px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.03em' }}>
             Request VPN Access
           </h1>
-          <p style={{ fontSize: '14px', color: '#888' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
             Submit a request to your administrator for VPN access.
           </p>
         </div>
@@ -309,15 +303,15 @@ function RequestAccessContent() {
 
         {/* Request form */}
         <form onSubmit={handleSubmit} style={{
-          background: '#111', borderRadius: '16px', border: '1px solid #1E1E1E',
+          background: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)',
           padding: '24px', marginBottom: '24px',
         }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#F0F0F0', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
             New Request
           </h2>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               VPN Server
             </label>
             <select
@@ -325,9 +319,9 @@ function RequestAccessContent() {
               onChange={e => setSelectedServer(e.target.value)}
               required
               style={{
-                width: '100%', padding: '10px 12px', background: '#1A1A1A',
-                border: '1px solid #333', borderRadius: '8px', fontSize: '14px',
-                color: '#F0F0F0', outline: 'none', fontFamily: 'inherit',
+                width: '100%', padding: '10px 12px', background: 'var(--elevated)',
+                border: '1px solid var(--border-hover)', borderRadius: '10px', fontSize: '14px',
+                color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit',
               }}
             >
               <option value="">Select a server...</option>
@@ -351,7 +345,7 @@ function RequestAccessContent() {
                     ? 'rgba(59,130,246,0.1)'
                     : selectedServerRequest.status === 'FAILED'
                       ? 'rgba(245,158,11,0.12)'
-                      : 'rgba(234,126,32,0.12)',
+                      : 'rgba(255,183,125,0.12)',
               border: `1px solid ${
                 selectedServerRequest.status === 'APPROVED'
                   ? 'rgba(34,197,94,0.25)'
@@ -359,7 +353,7 @@ function RequestAccessContent() {
                     ? 'rgba(59,130,246,0.25)'
                     : selectedServerRequest.status === 'FAILED'
                       ? 'rgba(245,158,11,0.25)'
-                      : 'rgba(234,126,32,0.25)'
+                      : 'rgba(255,183,125,0.25)'
               }`,
               color:
                 selectedServerRequest.status === 'APPROVED'
@@ -368,7 +362,7 @@ function RequestAccessContent() {
                     ? '#60A5FA'
                     : selectedServerRequest.status === 'FAILED'
                       ? '#F59E0B'
-                      : '#EA7E20',
+                      : 'var(--accent)',
               fontSize: '13px',
               lineHeight: 1.5,
             }}>
@@ -384,22 +378,22 @@ function RequestAccessContent() {
 
           {groups.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888', marginBottom: '8px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>
                 Request Access to Groups (optional)
               </label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {groups.map(g => (
                   <label key={g.id} style={{
                     display: 'flex', alignItems: 'center', gap: '6px',
-                    padding: '6px 12px', background: selectedGroups.includes(g.id) ? 'rgba(234,126,32,0.15)' : '#1A1A1A',
-                    border: `1px solid ${selectedGroups.includes(g.id) ? 'rgba(234,126,32,0.3)' : '#333'}`,
-                    borderRadius: '8px', cursor: 'pointer', fontSize: '13px', color: '#F0F0F0',
+                    padding: '6px 12px', background: selectedGroups.includes(g.id) ? 'rgba(255,183,125,0.15)' : 'var(--elevated)',
+                    border: `1px solid ${selectedGroups.includes(g.id) ? 'rgba(255,183,125,0.3)' : 'var(--border-hover)'}`,
+                    borderRadius: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--text-primary)',
                   }}>
                     <input
                       type="checkbox"
                       checked={selectedGroups.includes(g.id)}
                       onChange={() => toggleGroup(g.id)}
-                      style={{ accentColor: '#EA7E20' }}
+                      style={{ accentColor: 'var(--accent)' }}
                     />
                     {g.name}
                   </label>
@@ -409,7 +403,7 @@ function RequestAccessContent() {
           )}
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#888', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Reason for Access
             </label>
             <textarea
@@ -418,9 +412,9 @@ function RequestAccessContent() {
               placeholder="Why do you need VPN access?"
               rows={3}
               style={{
-                width: '100%', padding: '10px 12px', background: '#1A1A1A',
-                border: '1px solid #333', borderRadius: '8px', fontSize: '14px',
-                color: '#F0F0F0', outline: 'none', fontFamily: 'inherit',
+                width: '100%', padding: '10px 12px', background: 'var(--elevated)',
+                border: '1px solid var(--border-hover)', borderRadius: '10px', fontSize: '14px',
+                color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit',
                 resize: 'vertical', boxSizing: 'border-box',
               }}
             />
@@ -430,9 +424,9 @@ function RequestAccessContent() {
             type="submit"
             disabled={submitting || !selectedServer || Boolean(selectedServerRequest)}
             style={{
-              padding: '10px 20px', background: submitting ? '#1A1A1A' : '#EA7E20',
-              color: submitting ? '#555' : '#FFF', fontSize: '14px', fontWeight: 600,
-              borderRadius: '8px', border: 'none',
+              padding: '10px 20px', background: submitting ? 'var(--elevated)' : 'linear-gradient(to bottom, var(--accent), var(--accent-strong))',
+              color: submitting ? 'var(--text-muted)' : '#0A0A0A', fontSize: '14px', fontWeight: 700,
+              borderRadius: '10px', border: 'none',
               cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
             }}
           >
@@ -453,19 +447,19 @@ function RequestAccessContent() {
         {/* Request activity */}
         {activeRequestActivity.length > 0 && (
           <div style={{
-            background: '#111', borderRadius: '16px', border: '1px solid #1E1E1E',
+            background: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)',
             padding: '24px',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>
+                <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                   Request Activity
                 </h2>
-                <p style={{ fontSize: '12px', color: '#666666', margin: '6px 0 0', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
                   Recent requests that are still pending review, provisioning, failed, or rejected.
                 </p>
               </div>
-              <span style={{ fontSize: '12px', color: '#888888' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                 Showing {Math.min(visibleRequestActivity.length, activeRequestActivity.length)} of {activeRequestActivity.length}
               </span>
             </div>
@@ -474,11 +468,11 @@ function RequestAccessContent() {
                 const sc = statusColors[r.status] || statusColors.PENDING
                 return (
                   <div key={r.id} style={{
-                    padding: '14px', background: '#1A1A1A', borderRadius: '10px',
-                    border: '1px solid #2A2A2A',
+                    padding: '14px', background: 'var(--elevated)', borderRadius: '12px',
+                    border: '1px solid var(--border-strong)',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                         {r.server.name}
                       </span>
                       <span style={{
@@ -488,11 +482,11 @@ function RequestAccessContent() {
                         {r.status}
                       </span>
                     </div>
-                    <span style={{ fontSize: '12px', color: '#666' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                       {new Date(r.createdAt).toLocaleDateString()}
                     </span>
                     {r.reviewNote && (
-                      <p style={{ fontSize: '13px', color: '#888', marginTop: '6px', fontStyle: 'italic' }}>
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '6px', fontStyle: 'italic' }}>
                         &quot;{r.reviewNote}&quot;
                       </p>
                     )}
@@ -513,8 +507,8 @@ function RequestAccessContent() {
                   marginTop: '16px',
                   padding: '10px 14px',
                   background: 'transparent',
-                  color: '#888888',
-                  border: '1px solid #2A2A2A',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-strong)',
                   borderRadius: '10px',
                   fontSize: '13px',
                   fontWeight: 500,
@@ -528,7 +522,7 @@ function RequestAccessContent() {
           </div>
         )}
 
-        <p style={{ fontSize: '11px', color: '#444', textAlign: 'center', marginTop: '24px' }}>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px' }}>
           Access requests are reviewed by your VPN administrator.
         </p>
       </div>

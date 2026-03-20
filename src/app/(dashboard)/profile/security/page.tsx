@@ -51,13 +51,13 @@ export default function ProfileSecurityPage() {
       loading={loading}
     >
       {!profile ? (
-        <div style={{ color: '#888888' }}>Unable to load your profile.</div>
+        <div style={{ color: 'var(--text-secondary)' }}>Unable to load your profile.</div>
       ) : (
         <PageGrid minWidth={420}>
           <section style={cardStyle}>
             <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>Security & Sign-in</h3>
-              <p style={{ fontSize: '12px', color: '#555555', margin: '6px 0 0', lineHeight: 1.5 }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Security & Sign-in</h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
                 Review your latest sign-in and update your password when this account supports it.
               </p>
             </div>
@@ -75,10 +75,10 @@ export default function ProfileSecurityPage() {
             </div>
 
             <section style={{ marginBottom: '16px' }}>
-              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', marginBottom: '14px' }}>Multi-Factor Authentication</h4>
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>Multi-Factor Authentication</h4>
               {!profile.mfaAvailable ? (
                 <div style={listCardStyle}>
-                  <div style={{ fontSize: '13px', color: '#888888', lineHeight: 1.6 }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                     TOTP-based MFA is disabled by environment configuration.
                   </div>
                 </div>
@@ -93,8 +93,8 @@ export default function ProfileSecurityPage() {
                     ]}
                   />
                   <form onSubmit={handleStartMfaReconfigure} style={{ ...listCardStyle, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0' }}>Reconfigure authenticator</div>
-                    <div style={{ fontSize: '12px', color: '#888888', lineHeight: 1.6 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Reconfigure authenticator</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                       Changing phones? Enter a current authenticator code to generate a new QR code and move MFA to your new device.
                     </div>
                     <div>
@@ -105,7 +105,7 @@ export default function ProfileSecurityPage() {
                         autoComplete="one-time-code"
                         value={reconfigureCurrentCode}
                         onChange={(event) => setReconfigureCurrentCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                        style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.2em', textAlign: 'center' }}
+                        style={{ ...inputStyle, fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textAlign: 'center' }}
                         required
                       />
                     </div>
@@ -132,7 +132,7 @@ export default function ProfileSecurityPage() {
 
                   {!profile.mfaRequired && (
                     <form onSubmit={handleDisableMfa} style={{ ...listCardStyle, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ fontSize: '12px', color: '#888888', lineHeight: 1.6 }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                         Enter a current authenticator code to disable MFA for this account.
                       </div>
                       <div>
@@ -143,7 +143,7 @@ export default function ProfileSecurityPage() {
                           autoComplete="one-time-code"
                           value={disableMfaCode}
                           onChange={(event) => setDisableMfaCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                          style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.2em', textAlign: 'center' }}
+                          style={{ ...inputStyle, fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textAlign: 'center' }}
                           required
                         />
                       </div>
@@ -160,7 +160,7 @@ export default function ProfileSecurityPage() {
               ) : (
                 <div style={{ display: 'grid', gap: '12px' }}>
                   <div style={listCardStyle}>
-                    <div style={{ fontSize: '13px', color: '#888888', lineHeight: 1.6, marginBottom: '12px' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '12px' }}>
                       Protect your AccessCore account with a 6-digit authenticator code after sign-in.
                     </div>
                     <button
@@ -189,7 +189,7 @@ export default function ProfileSecurityPage() {
             </section>
 
             <section>
-              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', marginBottom: '14px' }}>Change Password</h4>
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>Change Password</h4>
               {profile.hasPassword ? (
                 <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
@@ -230,7 +230,7 @@ export default function ProfileSecurityPage() {
                 </form>
               ) : (
                 <div style={listCardStyle}>
-                  <div style={{ fontSize: '13px', color: '#888888', lineHeight: 1.6 }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                     This account signs in through {formatMethod(profile.authMethod)} only, so password changes are not available here.
                   </div>
                 </div>

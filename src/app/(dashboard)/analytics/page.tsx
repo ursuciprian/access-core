@@ -224,7 +224,7 @@ export default async function AnalyticsPage() {
   const topOperators = actorBreakdown.slice(0, 3)
   const operatorSeries = topOperators.map((operator, index) => ({
     label: operator.email,
-    color: ['#60A5FA', '#22C55E', '#EA7E20'][index] ?? '#888888',
+    color: ['#60A5FA', '#22C55E', 'var(--accent)'][index] ?? 'var(--text-secondary)',
     points: activityByDay.map((day) => ({
       date: day.date,
       value: sevenDayLogs.filter((log) => log.actorEmail === operator.email && formatDateKey(log.createdAt) === day.date).length,
@@ -234,9 +234,9 @@ export default async function AnalyticsPage() {
   const data: AnalyticsViewData = {
     activeServerCount: allServers.length,
     metrics: [
-      { label: '7-Day Events', value: String(sevenDayTotal), accent: '#EA7E20', helper: 'Audit events logged in the last week.' },
+      { label: '7-Day Events', value: String(sevenDayTotal), accent: 'var(--accent)', helper: 'Audit events logged in the last week.' },
       { label: 'Live Sessions', value: String(activeConnections), accent: '#22C55E', helper: 'Current active connections across all servers.' },
-      { label: 'VPN Users', value: String(totalUsers), accent: '#F0F0F0', helper: 'Tracked VPN identities across the fleet.' },
+      { label: 'VPN Users', value: String(totalUsers), accent: 'var(--text-primary)', helper: 'Tracked VPN identities across the fleet.' },
       {
         label: 'Open Requests',
         value: String(pendingRequests + processingRequests + failedRequests),

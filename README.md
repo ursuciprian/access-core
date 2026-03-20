@@ -123,6 +123,9 @@ src/
 | Dashboard | ![Admin dashboard](./docs/screenshots/admin-dashboard.png) |
 | Groups | ![Groups](./docs/screenshots/groups.png) |
 | Group Management | ![Group management](./docs/screenshots/group-management.png) |
+| Create User | ![Create user](./docs/screenshots/create-user.png) |
+| Create Group | ![Create group](./docs/screenshots/create-group.png) |
+| Settings | ![Settings](./docs/screenshots/settings-platform.png) |
 | MFA | ![MFA enabled](./docs/screenshots/mfa-enabled.png) |
 
 See [docs/screenshots/README.md](./docs/screenshots/README.md) for the screenshot asset index.

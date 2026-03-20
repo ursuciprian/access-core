@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { notifyAccessRequestPendingCountChanged } from '@/lib/access-request-events'
 
 interface AccessRequest {
   id: string
@@ -24,16 +25,16 @@ export default function AccessRequestsPage() {
   const [reviewNote, setReviewNote] = useState<Record<string, string>>({})
   const [processing, setProcessing] = useState<string | null>(null)
 
-  const fetchRequests = () => {
+  const fetchRequests = useCallback(() => {
     const url = filter === 'ALL' ? '/api/access-requests' : `/api/access-requests?status=${filter}`
     fetch(url)
       .then(r => r.json())
       .then(data => setRequests(Array.isArray(data) ? data : []))
       .catch(() => setRequests([]))
       .finally(() => setLoading(false))
-  }
+  }, [filter])
 
-  useEffect(() => { fetchRequests() }, [filter])
+  useEffect(() => { fetchRequests() }, [fetchRequests])
 
   const handleAction = async (id: string, action: 'approve' | 'reject') => {
     setProcessing(id)
@@ -44,12 +45,13 @@ export default function AccessRequestsPage() {
     })
     if (res.ok) {
       fetchRequests()
+      notifyAccessRequestPendingCountChanged()
     }
     setProcessing(null)
   }
 
   const statusColors: Record<string, { bg: string; text: string }> = {
-    PENDING: { bg: 'rgba(234,126,32,0.15)', text: '#EA7E20' },
+    PENDING: { bg: 'rgba(255,183,125,0.15)', text: 'var(--accent)' },
     PROCESSING: { bg: 'rgba(59,130,246,0.15)', text: '#60A5FA' },
     APPROVED: { bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
     FAILED: { bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
@@ -59,7 +61,7 @@ export default function AccessRequestsPage() {
   const filters: Array<'ALL' | 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REJECTED'> = ['ALL', 'PENDING', 'PROCESSING', 'APPROVED', 'FAILED', 'REJECTED']
 
   if (loading) {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: '#555' }}>Loading...</div>
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: 'var(--text-muted)' }}>Loading...</div>
   }
 
   return (
@@ -75,8 +77,8 @@ export default function AccessRequestsPage() {
                 padding: '6px 14px', fontSize: '12px', fontWeight: 500,
                 borderRadius: '8px', border: 'none', cursor: 'pointer',
                 fontFamily: 'inherit',
-                background: filter === f ? 'rgba(234,126,32,0.15)' : 'transparent',
-                color: filter === f ? '#EA7E20' : '#888',
+                background: filter === f ? 'rgba(255,183,125,0.15)' : 'transparent',
+                color: filter === f ? 'var(--accent)' : 'var(--text-secondary)',
               }}
             >
               {f === 'ALL' ? 'All' : f.charAt(0) + f.slice(1).toLowerCase()}
@@ -87,8 +89,8 @@ export default function AccessRequestsPage() {
 
       {requests.length === 0 ? (
         <div style={{
-          textAlign: 'center', padding: '48px 0', fontSize: '14px', color: '#555',
-          background: '#111', borderRadius: '16px', border: '1px solid #1E1E1E',
+          textAlign: 'center', padding: '48px 0', fontSize: '14px', color: 'var(--text-muted)',
+          background: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)',
         }}>
           No {filter === 'ALL' ? '' : filter.toLowerCase()} access requests.
         </div>
@@ -98,13 +100,13 @@ export default function AccessRequestsPage() {
             const sc = statusColors[r.status] || statusColors.PENDING
             return (
               <div key={r.id} style={{
-                background: '#111', borderRadius: '16px', border: '1px solid #1E1E1E',
+                background: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)',
                 padding: '20px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '15px', fontWeight: 600, color: '#F0F0F0' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
                         {r.email}
                       </span>
                       <span style={{
@@ -114,40 +116,40 @@ export default function AccessRequestsPage() {
                         {r.status}
                       </span>
                     </div>
-                    {r.name && <p style={{ fontSize: '13px', color: '#888', margin: 0 }}>{r.name}</p>}
+                    {r.name && <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>{r.name}</p>}
                   </div>
-                  <span style={{ fontSize: '12px', color: '#555' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                     {new Date(r.createdAt).toLocaleString()}
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                  <div style={{ fontSize: '13px', color: '#888' }}>
-                    <span style={{ color: '#555' }}>Server:</span>{' '}
-                    <span style={{ color: '#F0F0F0' }}>{r.server.name}</span>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Server:</span>{' '}
+                    <span style={{ color: 'var(--text-primary)' }}>{r.server.name}</span>
                   </div>
                   {r.groupIds.length > 0 && (
-                    <div style={{ fontSize: '13px', color: '#888' }}>
-                      <span style={{ color: '#555' }}>Groups:</span>{' '}
-                      <span style={{ color: '#F0F0F0' }}>{r.groupIds.length} requested</span>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Groups:</span>{' '}
+                      <span style={{ color: 'var(--text-primary)' }}>{r.groupIds.length} requested</span>
                     </div>
                   )}
                 </div>
 
                 {r.reason && (
                   <div style={{
-                    padding: '10px 14px', background: '#1A1A1A', borderRadius: '8px',
-                    fontSize: '13px', color: '#CCC', marginBottom: '12px',
-                    borderLeft: '3px solid #333',
+                    padding: '10px 14px', background: 'var(--elevated)', borderRadius: '10px',
+                    fontSize: '13px', color: 'var(--text-primary)', marginBottom: '12px',
+                    borderLeft: '3px solid var(--border-hover)',
                   }}>
                     {r.reason}
                   </div>
                 )}
 
                 {(r.status === 'PENDING' || r.status === 'FAILED') && (
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', paddingTop: '8px', borderTop: '1px solid #1E1E1E' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', fontSize: '11px', color: '#555', marginBottom: '4px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                         Note (optional)
                       </label>
                       <input
@@ -156,9 +158,9 @@ export default function AccessRequestsPage() {
                         onChange={e => setReviewNote(prev => ({ ...prev, [r.id]: e.target.value }))}
                         placeholder="Add a note..."
                         style={{
-                          width: '100%', padding: '7px 10px', background: '#1A1A1A',
-                          border: '1px solid #333', borderRadius: '6px', fontSize: '13px',
-                          color: '#F0F0F0', outline: 'none', fontFamily: 'inherit',
+                          width: '100%', padding: '7px 10px', background: 'var(--elevated)',
+                          border: '1px solid var(--border-hover)', borderRadius: '8px', fontSize: '13px',
+                          color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit',
                           boxSizing: 'border-box',
                         }}
                       />
@@ -167,13 +169,13 @@ export default function AccessRequestsPage() {
                       onClick={() => handleAction(r.id, 'approve')}
                       disabled={processing === r.id}
                       style={{
-                        padding: '8px 16px', background: '#22C55E', color: '#FFF',
-                        fontSize: '13px', fontWeight: 600, borderRadius: '8px',
+                        padding: '8px 16px', background: 'var(--button-primary)', color: 'var(--button-primary-text)',
+                        fontSize: '13px', fontWeight: 600, borderRadius: '12px',
                         border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                      opacity: processing === r.id ? 0.5 : 1,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                        opacity: processing === r.id ? 0.5 : 1,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {r.status === 'FAILED' ? 'Retry Provisioning' : 'Approve'}
                     </button>
                     <button
@@ -182,7 +184,7 @@ export default function AccessRequestsPage() {
                       style={{
                         padding: '8px 16px', background: 'transparent',
                         color: '#EF4444', fontSize: '13px', fontWeight: 600,
-                        borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)',
+                        borderRadius: '12px', border: '1px solid rgba(239,68,68,0.3)',
                         cursor: 'pointer', fontFamily: 'inherit',
                         opacity: processing === r.id ? 0.5 : 1,
                         whiteSpace: 'nowrap',
@@ -197,18 +199,18 @@ export default function AccessRequestsPage() {
                   <div style={{
                     marginTop: '12px',
                     paddingTop: '10px',
-                    borderTop: '1px solid #1E1E1E',
+                    borderTop: '1px solid var(--border)',
                     fontSize: '12px',
-                    color: '#60A5FA',
+                        color: '#60A5FA',
                   }}>
                     Access is being provisioned. The request will only become approved once certificate generation succeeds.
                   </div>
                 )}
 
                 {r.reviewedBy && (
-                  <div style={{ fontSize: '12px', color: '#555', marginTop: '8px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
                     Reviewed by {r.reviewedBy} on {new Date(r.reviewedAt!).toLocaleString()}
-                    {r.reviewNote && <span style={{ color: '#888' }}> — &quot;{r.reviewNote}&quot;</span>}
+                    {r.reviewNote && <span style={{ color: 'var(--text-secondary)' }}> — &quot;{r.reviewNote}&quot;</span>}
                   </div>
                 )}
               </div>

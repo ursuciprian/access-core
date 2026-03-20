@@ -9,15 +9,15 @@ interface ServerSectionNavProps {
 }
 
 const containerStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
-  borderRadius: '16px',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
+  borderRadius: '20px',
   padding: '18px 20px',
 }
 
 const descriptionStyle: React.CSSProperties = {
   fontSize: '12px',
-  color: '#555555',
+  color: 'var(--text-muted)',
   margin: '6px 0 0',
   lineHeight: 1.5,
 }
@@ -26,11 +26,11 @@ function navItemStyle(active: boolean): React.CSSProperties {
   return {
     padding: '8px 14px',
     fontSize: '13px',
-    fontWeight: 500,
+    fontWeight: 600,
     borderRadius: '10px',
-    border: active ? '1px solid #EA7E20' : '1px solid #2A2A2A',
-    background: active ? 'rgba(234,126,32,0.12)' : 'transparent',
-    color: active ? '#EA7E20' : '#888888',
+    border: active ? '1px solid rgba(255,183,125,0.24)' : '1px solid var(--border-strong)',
+    background: active ? 'rgba(255,183,125,0.12)' : 'transparent',
+    color: active ? 'var(--accent)' : 'var(--text-secondary)',
     textDecoration: 'none',
     whiteSpace: 'nowrap',
     transition: 'border-color 150ms ease, color 150ms ease, background 150ms ease',
@@ -79,7 +79,7 @@ export default function ServerSectionNav({
   return (
     <section style={containerStyle}>
       <div style={{ marginBottom: '14px' }}>
-        <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>Operations</h3>
+        <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Operations</h3>
         <p style={descriptionStyle}>
           Open the server tools for sessions, routing, logs, drift checks, and imports.
         </p>

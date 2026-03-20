@@ -3,6 +3,8 @@ import { NextRequest } from 'next/server'
 const {
   prismaMock,
   logAuditMock,
+  executeCommandMock,
+  revokeCertMock,
 } = vi.hoisted(() => ({
   prismaMock: {
     vpnUser: {
@@ -18,6 +20,8 @@ const {
     },
   },
   logAuditMock: vi.fn(),
+  executeCommandMock: vi.fn(),
+  revokeCertMock: vi.fn(),
 }))
 
 vi.mock('next-auth', () => ({
@@ -43,12 +47,12 @@ vi.mock('@/lib/audit', () => ({
 }))
 
 vi.mock('@/lib/cert-service', () => ({
-  revokeCert: vi.fn(),
+  revokeCert: revokeCertMock,
 }))
 
 vi.mock('@/lib/transport', () => ({
   getTransport: vi.fn(() => ({
-    executeCommand: vi.fn(),
+    executeCommand: executeCommandMock,
   })),
 }))
 
@@ -69,6 +73,7 @@ function makeParams(id: string) {
 describe('POST /api/users/[id]/resolve-flag', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    executeCommandMock.mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' })
     prismaMock.vpnUser.findUnique.mockResolvedValue({
       id: 'user-1',
       email: 'alice@example.com',
@@ -78,6 +83,8 @@ describe('POST /api/users/[id]/resolve-flag', () => {
       server: {
         id: 'server-1',
         ccdPath: '/etc/openvpn/ccd',
+        easyRsaPath: '/etc/openvpn/easy-rsa',
+        serverConf: '/etc/openvpn/server.conf',
       },
     })
     prismaMock.vpnUser.update.mockResolvedValue({
@@ -111,6 +118,36 @@ describe('POST /api/users/[id]/resolve-flag', () => {
         }),
       })
     )
+  })
+
+  it('shell-escapes the CCD removal command for revoke actions', async () => {
+    const response = await POST(makeRequest({ action: 'revoke' }), makeParams('user-1'))
+
+    expect(response.status).toBe(200)
+    expect(executeCommandMock).toHaveBeenCalledWith("rm -f '/etc/openvpn/ccd/alice'")
+    expect(revokeCertMock).toHaveBeenCalled()
+  })
+
+  it('rejects revoke actions when the common name is invalid', async () => {
+    prismaMock.vpnUser.findUnique.mockResolvedValue({
+      id: 'user-1',
+      email: 'alice@example.com',
+      commonName: "alice;rm -rf /",
+      isFlagged: true,
+      certStatus: 'ACTIVE',
+      server: {
+        id: 'server-1',
+        ccdPath: '/etc/openvpn/ccd',
+        easyRsaPath: '/etc/openvpn/easy-rsa',
+        serverConf: '/etc/openvpn/server.conf',
+      },
+    })
+
+    const response = await POST(makeRequest({ action: 'revoke' }), makeParams('user-1'))
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({ error: 'Invalid common name' })
+    expect(executeCommandMock).not.toHaveBeenCalled()
   })
 
   it('returns 400 when action is missing', async () => {

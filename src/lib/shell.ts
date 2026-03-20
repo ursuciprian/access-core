@@ -8,6 +8,10 @@ export function buildCatCommand(path: string) {
   return `cat ${shellEscape(path)}`
 }
 
+export function buildRemoveFileCommand(path: string) {
+  return `rm -f ${shellEscape(path)}`
+}
+
 export function buildOpenVpnKillCommand(commonName: string) {
   const cnValidation = validateCommonName(commonName)
   if (!cnValidation.success) {

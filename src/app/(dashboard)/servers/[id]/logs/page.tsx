@@ -64,12 +64,12 @@ export default function ServerLogsPage() {
     const lower = line.toLowerCase()
     if (lower.includes('error')) return '#EF4444'
     if (lower.includes('warn')) return '#F59E0B'
-    return '#888888'
+    return 'var(--text-secondary)'
   }
 
   const cardStyle: React.CSSProperties = {
-    background: '#111111',
-    border: '1px solid #1E1E1E',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
     borderRadius: '16px',
     padding: '20px',
   }
@@ -90,12 +90,12 @@ export default function ServerLogsPage() {
               fontWeight: 500,
               borderRadius: '8px',
               border: autoRefresh
-                ? '1px solid #EA7E20'
-                : '1px solid #2A2A2A',
+                ? '1px solid var(--accent)'
+                : '1px solid var(--border-strong)',
               background: autoRefresh
                 ? 'rgba(234,126,32,0.15)'
                 : 'transparent',
-              color: autoRefresh ? '#EA7E20' : '#888888',
+              color: autoRefresh ? 'var(--accent)' : 'var(--text-secondary)',
               cursor: serverManagementEnabled ? 'pointer' : 'not-allowed',
               opacity: serverManagementEnabled ? 1 : 0.5,
               fontFamily: 'inherit',
@@ -170,13 +170,13 @@ export default function ServerLogsPage() {
                 borderRadius: '8px',
                 border:
                   activeTab === tab.key
-                    ? '1px solid #EA7E20'
-                    : '1px solid #2A2A2A',
+                    ? '1px solid var(--accent)'
+                    : '1px solid var(--border-strong)',
                 background:
                   activeTab === tab.key
                     ? 'rgba(234,126,32,0.15)'
                     : 'transparent',
-                color: activeTab === tab.key ? '#EA7E20' : '#888888',
+                color: activeTab === tab.key ? 'var(--accent)' : 'var(--text-secondary)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
               }}
@@ -195,14 +195,14 @@ export default function ServerLogsPage() {
           style={{
             width: '100%',
             padding: '8px 12px',
-            backgroundColor: '#1A1A1A',
-            border: '1px solid #333333',
+            backgroundColor: 'var(--elevated)',
+            border: '1px solid var(--border-hover)',
             borderRadius: '8px',
             fontSize: '13px',
-            color: '#F0F0F0',
+            color: 'var(--text-primary)',
             outline: 'none',
             boxSizing: 'border-box',
-            fontFamily: 'ui-monospace, monospace',
+            fontFamily: 'var(--font-mono)',
             marginBottom: '16px',
           }}
         />
@@ -211,21 +211,21 @@ export default function ServerLogsPage() {
         <div
           style={{
             background: '#0A0A0A',
-            border: '1px solid #1E1E1E',
+            border: '1px solid var(--border)',
             borderRadius: '8px',
             padding: '16px',
             maxHeight: '600px',
             overflowY: 'auto',
-            fontFamily: 'ui-monospace, monospace',
+            fontFamily: 'var(--font-mono)',
             fontSize: '12px',
             lineHeight: '1.6',
           }}
         >
           {loading ? (
-            <span style={{ color: '#555555' }}>Loading logs...</span>
+            <span style={{ color: 'var(--text-muted)' }}>Loading logs...</span>
           ) : filteredLines.length === 0 ||
             (filteredLines.length === 1 && filteredLines[0] === '') ? (
-            <span style={{ color: '#555555' }}>No log data available</span>
+            <span style={{ color: 'var(--text-muted)' }}>No log data available</span>
           ) : (
             filteredLines.map((line, i) => (
               <div key={i} style={{ color: getLineColor(line), whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>

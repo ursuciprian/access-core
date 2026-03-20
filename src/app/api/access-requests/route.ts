@@ -45,12 +45,39 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'desc' },
   })
 
-  const response =
-    mine && status === 'APPROVED'
-      ? requests.filter((request, index, all) => {
-          return index === all.findIndex((candidate) => candidate.serverId === request.serverId)
-        })
-      : requests
+  let response = requests
+
+  if (mine) {
+    const enabledAccess = await prisma.vpnUser.findMany({
+      where: {
+        email: session.user.email,
+        isEnabled: true,
+      },
+      select: {
+        serverId: true,
+      },
+    })
+
+    const enabledServerIds = new Set(enabledAccess.map((entry) => entry.serverId))
+
+    response = requests.filter((request) => {
+      if (request.status !== 'APPROVED') {
+        return true
+      }
+
+      return enabledServerIds.has(request.serverId)
+    })
+
+    response = response.filter((request, index, all) => {
+      if (request.status !== 'APPROVED') {
+        return true
+      }
+
+      return index === all.findIndex((candidate) => (
+        candidate.status === request.status && candidate.serverId === request.serverId
+      ))
+    })
+  }
 
   return NextResponse.json(response)
 }
@@ -131,7 +158,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  if (existingRequest?.status === 'APPROVED') {
+  if (existingRequest?.status === 'APPROVED' && existingAccess) {
     return NextResponse.json(
       { error: 'You already have an approved request for this server' },
       { status: 409 }

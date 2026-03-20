@@ -13,7 +13,7 @@ interface ServerSubpageHeaderProps {
 
 const backLinkStyle: React.CSSProperties = {
   fontSize: '13px',
-  color: '#EA7E20',
+  color: 'var(--accent)',
   textDecoration: 'none',
   display: 'inline-block',
   marginBottom: '16px',
@@ -22,13 +22,13 @@ const backLinkStyle: React.CSSProperties = {
 const titleStyle: React.CSSProperties = {
   fontSize: '20px',
   fontWeight: 600,
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   margin: 0,
 }
 
 const descriptionStyle: React.CSSProperties = {
   fontSize: '13px',
-  color: '#888888',
+  color: 'var(--text-secondary)',
   margin: '6px 0 0',
   lineHeight: 1.5,
 }

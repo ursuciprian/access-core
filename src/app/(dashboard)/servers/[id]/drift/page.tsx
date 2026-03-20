@@ -119,14 +119,15 @@ export default function DriftPage() {
           disabled={checking || reconciling}
           style={{
             padding: '0.5rem 1rem',
-            background: '#EA7E20',
-            color: '#FFFFFF',
-            borderRadius: 'var(--radius-lg)',
+            background: 'var(--button-primary)',
+            color: 'var(--button-primary-text)',
+            borderRadius: '12px',
             fontSize: '0.875rem',
-            fontWeight: 500,
+            fontWeight: 600,
             border: 'none',
             cursor: checking || reconciling ? 'not-allowed' : 'pointer',
             opacity: checking || reconciling ? 0.5 : 1,
+            fontFamily: 'inherit',
           }}
         >
           {checking ? 'Checking...' : 'Check Drift'}
@@ -138,14 +139,15 @@ export default function DriftPage() {
             disabled={reconciling || checking}
             style={{
               padding: '0.5rem 1rem',
-              background: '#F59E0B',
-              color: '#FFFFFF',
-              borderRadius: 'var(--radius-lg)',
+              background: 'var(--button-primary)',
+              color: 'var(--button-primary-text)',
+              borderRadius: '12px',
               fontSize: '0.875rem',
-              fontWeight: 500,
+              fontWeight: 600,
               border: 'none',
               cursor: reconciling || checking ? 'not-allowed' : 'pointer',
               opacity: reconciling || checking ? 0.5 : 1,
+              fontFamily: 'inherit',
             }}
           >
             {reconciling ? 'Reconciling...' : 'Reconcile'}
@@ -212,7 +214,7 @@ export default function DriftPage() {
               }}
             >
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#60A5FA' }}>{result.mismatched.length}</div>
-              <div style={{ fontSize: '0.875rem', color: '#EA7E20' }}>Mismatched files</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--accent)' }}>Mismatched files</div>
               <div style={{ fontSize: '0.75rem', color: '#2563EB', marginTop: '0.125rem' }}>Content differs</div>
             </div>
           </div>
@@ -240,7 +242,7 @@ export default function DriftPage() {
                       color: '#FBBF24',
                       borderRadius: 'var(--radius-full)',
                       fontSize: '0.75rem',
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--font-mono)',
                     }}
                   >
                     {cn}
@@ -273,7 +275,7 @@ export default function DriftPage() {
                       color: '#F87171',
                       borderRadius: 'var(--radius-full)',
                       fontSize: '0.75rem',
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--font-mono)',
                     }}
                   >
                     {cn}
@@ -320,7 +322,7 @@ export default function DriftPage() {
                         textAlign: 'left',
                       }}
                     >
-                      <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                         {item.cn}
                       </span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
@@ -342,7 +344,7 @@ export default function DriftPage() {
                           <pre
                             style={{
                               fontSize: '0.75rem',
-                              fontFamily: 'monospace',
+                              fontFamily: 'var(--font-mono)',
                               color: 'var(--text-secondary)',
                               whiteSpace: 'pre-wrap',
                               wordBreak: 'break-all',
@@ -359,7 +361,7 @@ export default function DriftPage() {
                           <pre
                             style={{
                               fontSize: '0.75rem',
-                              fontFamily: 'monospace',
+                              fontFamily: 'var(--font-mono)',
                               color: 'var(--text-secondary)',
                               whiteSpace: 'pre-wrap',
                               wordBreak: 'break-all',
