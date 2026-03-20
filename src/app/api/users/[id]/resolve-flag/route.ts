@@ -7,6 +7,8 @@ import { z } from 'zod/v4'
 import { logAudit } from '@/lib/audit'
 import { revokeCert } from '@/lib/cert-service'
 import { getTransport } from '@/lib/transport'
+import { validateCommonName, serverPathSchema } from '@/lib/validation'
+import { buildRemoveFileCommand } from '@/lib/shell'
 
 const resolveFlagSchema = z.object({
   action: z.enum(['revoke', 'dismiss', 'reassign']),
@@ -56,6 +58,16 @@ export async function POST(
 
   try {
     if (parsed.data.action === 'revoke') {
+      const cnValidation = validateCommonName(user.commonName)
+      if (!cnValidation.success) {
+        return NextResponse.json({ error: 'Invalid common name' }, { status: 400 })
+      }
+
+      const ccdPathValidation = serverPathSchema.safeParse(user.server.ccdPath)
+      if (!ccdPathValidation.success) {
+        return NextResponse.json({ error: 'Invalid CCD path' }, { status: 400 })
+      }
+
       if (user.certStatus === 'ACTIVE') {
         await revokeCert(user.server, user.commonName)
       }
@@ -63,7 +75,7 @@ export async function POST(
       // Remove CCD file
       const transport = getTransport(user.server)
       await transport.executeCommand(
-        `rm -f ${user.server.ccdPath}/${user.commonName}`
+        buildRemoveFileCommand(`${user.server.ccdPath}/${user.commonName}`)
       )
 
       const updatedUser = await prisma.vpnUser.update({

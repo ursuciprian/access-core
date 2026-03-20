@@ -8,7 +8,11 @@ This directory contains the screenshot assets used by the public README and docu
 - `admin-dashboard.png` - Main admin dashboard
 - `groups.png` - Group inventory view
 - `group-management.png` - Group detail and policy management
-- `mfa-enabled.png` - MFA enrollment and enabled state
+- `create-user.png` - User creation (New User) form
+- `create-group.png` - Group creation (New Group) form
+- `mfa-setup.png` - MFA enrollment setup screen
+- `mfa-enabled.png` - MFA enrollment setup screen (captured on localhost)
+- `settings-platform.png` - Admin Settings (Platform tab)
 
 ## Notes
 

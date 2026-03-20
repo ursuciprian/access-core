@@ -23,37 +23,37 @@ export default function MyAccessPage() {
   }, [])
 
   if (loading) {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: '#555' }}>Loading...</div>
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: 'var(--text-muted)' }}>Loading...</div>
   }
 
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0', marginBottom: '4px' }}>Assigned Access</h2>
-        <p style={{ fontSize: '14px', color: '#888', margin: 0 }}>Download your VPN configuration files and certificates.</p>
+        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>Assigned Access</h2>
+        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>Download your VPN configuration files and certificates.</p>
       </div>
 
       {approved.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '48px 0',
-          background: '#111', borderRadius: '16px', border: '1px solid #1E1E1E',
+          background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)',
         }}>
           <div style={{
             width: '48px', height: '48px', margin: '0 auto 16px',
             background: 'rgba(234,126,32,0.15)', borderRadius: '12px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA7E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </div>
-          <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>No approved access yet.</p>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '12px' }}>No approved access yet.</p>
           <a
             href="/request-access"
             style={{
               display: 'inline-block', padding: '8px 20px',
-              background: '#EA7E20', color: '#FFF', fontSize: '14px',
-              fontWeight: 600, borderRadius: '8px', textDecoration: 'none',
+              background: 'var(--button-primary)', color: 'var(--button-primary-text)', fontSize: '14px',
+              fontWeight: 600, borderRadius: '12px', textDecoration: 'none',
             }}
           >
             Request Access
@@ -63,7 +63,7 @@ export default function MyAccessPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
           {approved.map(a => (
             <div key={a.id} style={{
-              background: '#111', borderRadius: '16px', border: '1px solid #1E1E1E',
+              background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)',
               padding: '24px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -78,10 +78,10 @@ export default function MyAccessPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                     {a.server.name}
                   </h3>
-                  <p style={{ fontSize: '13px', color: '#888', margin: '2px 0 0' }}>{a.server.hostname}</p>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '2px 0 0' }}>{a.server.hostname}</p>
                 </div>
               </div>
 
@@ -91,13 +91,13 @@ export default function MyAccessPage() {
                   href={`/api/servers/${a.server.id}/download-config`}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '10px 14px', background: '#1A1A1A', borderRadius: '8px',
-                    border: '1px solid #2A2A2A', textDecoration: 'none',
-                    fontSize: '13px', fontWeight: 500, color: '#F0F0F0',
+                    padding: '10px 14px', background: 'var(--elevated)', borderRadius: '8px',
+                    border: '1px solid var(--border-strong)', textDecoration: 'none',
+                    fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)',
                     cursor: 'pointer', transition: 'border-color 150ms',
                   }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EA7E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
                     <line x1="12" y1="15" x2="12" y2="3" />
@@ -107,10 +107,10 @@ export default function MyAccessPage() {
 
                 {/* OpenVPN Connect links */}
                 <div style={{
-                  padding: '12px 14px', background: '#1A1A1A', borderRadius: '8px',
-                  border: '1px solid #2A2A2A',
+                  padding: '12px 14px', background: 'var(--elevated)', borderRadius: '8px',
+                  border: '1px solid var(--border-strong)',
                 }}>
-                  <p style={{ fontSize: '12px', color: '#555', marginBottom: '8px', fontWeight: 500 }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 500 }}>
                     INSTALL OPENVPN CLIENT
                   </p>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -129,7 +129,7 @@ export default function MyAccessPage() {
                         style={{
                           padding: '4px 10px', background: 'rgba(234,126,32,0.1)',
                           border: '1px solid rgba(234,126,32,0.2)', borderRadius: '6px',
-                          fontSize: '12px', color: '#EA7E20', textDecoration: 'none',
+                          fontSize: '12px', color: 'var(--accent)', textDecoration: 'none',
                           fontWeight: 500,
                         }}
                       >
@@ -140,7 +140,7 @@ export default function MyAccessPage() {
                 </div>
               </div>
 
-              <p style={{ fontSize: '11px', color: '#444', marginTop: '12px' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '12px' }}>
                 Approved on {new Date(a.createdAt).toLocaleDateString()}
               </p>
             </div>

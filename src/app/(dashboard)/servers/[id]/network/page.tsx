@@ -18,8 +18,8 @@ interface NetworkSettings {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '16px',
   padding: '20px',
 }
@@ -27,11 +27,11 @@ const cardStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '8px 12px',
-  backgroundColor: '#1A1A1A',
-  border: '1px solid #333333',
+  backgroundColor: 'var(--elevated)',
+  border: '1px solid var(--border-hover)',
   borderRadius: '8px',
   fontSize: '13px',
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   outline: 'none',
   boxSizing: 'border-box',
   fontFamily: 'inherit',
@@ -41,14 +41,14 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '12px',
   fontWeight: 500,
-  color: '#888888',
+  color: 'var(--text-secondary)',
   marginBottom: '4px',
 }
 
 const sectionTitleStyle: React.CSSProperties = {
   fontSize: '13px',
   fontWeight: 600,
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   marginBottom: '16px',
 }
 
@@ -63,7 +63,7 @@ const selectStyle: React.CSSProperties = {
 
 const hintStyle: React.CSSProperties = {
   fontSize: '11px',
-  color: '#555555',
+  color: 'var(--text-muted)',
   marginTop: '4px',
 }
 
@@ -159,8 +159,8 @@ export default function ServerNetworkPage() {
   if (loading) {
     return (
       <div>
-        <div style={{ height: '14px', width: '120px', background: '#1A1A1A', borderRadius: '4px', marginBottom: '24px' }} />
-        <div style={{ height: '24px', width: '240px', background: '#1A1A1A', borderRadius: '4px', marginBottom: '24px' }} />
+        <div style={{ height: '14px', width: '120px', background: 'var(--elevated)', borderRadius: '4px', marginBottom: '24px' }} />
+        <div style={{ height: '24px', width: '240px', background: 'var(--elevated)', borderRadius: '4px', marginBottom: '24px' }} />
         <div style={{ ...cardStyle, height: '400px' }} />
       </div>
     )
@@ -250,7 +250,7 @@ export default function ServerNetworkPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
             <div>
-              <span style={{ fontSize: '13px', fontWeight: 500, color: '#F0F0F0' }}>Split Tunnel</span>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Split Tunnel</span>
               <p style={{ ...hintStyle, marginTop: '2px' }}>Only route VPN-specific traffic through the tunnel</p>
             </div>
             <button
@@ -265,7 +265,7 @@ export default function ServerNetworkPage() {
                 cursor: serverManagementEnabled ? 'pointer' : 'not-allowed',
                 opacity: serverManagementEnabled ? 1 : 0.5,
                 position: 'relative',
-                background: form.splitTunnel ? '#EA7E20' : '#333333',
+                background: form.splitTunnel ? 'var(--accent)' : 'var(--border-hover)',
                 transition: 'background 0.2s',
                 flexShrink: 0,
               }}
@@ -342,11 +342,11 @@ export default function ServerNetworkPage() {
             disabled={saving || !serverManagementEnabled}
             style={{
               padding: '8px 20px',
-              background: '#EA7E20',
-              color: '#FFFFFF',
+              background: 'var(--button-primary)',
+              color: 'var(--button-primary-text)',
               fontSize: '13px',
-              fontWeight: 500,
-              borderRadius: '10px',
+              fontWeight: 600,
+              borderRadius: '12px',
               border: 'none',
               cursor: saving || !serverManagementEnabled ? 'not-allowed' : 'pointer',
               opacity: saving || !serverManagementEnabled ? 0.5 : 1,

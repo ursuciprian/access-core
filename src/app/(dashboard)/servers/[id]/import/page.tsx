@@ -144,7 +144,7 @@ export default function ImportPage() {
     const styles: Record<string, React.CSSProperties> = {
       ACTIVE: { background: 'rgba(34,197,94,0.15)', color: '#22C55E' },
       REVOKED: { background: 'rgba(239,68,68,0.15)', color: '#EF4444' },
-      NONE: { background: 'rgba(255,255,255,0.06)', color: '#555555' },
+      NONE: { background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)' },
     }
     return (
       <span
@@ -206,8 +206,8 @@ export default function ImportPage() {
                 justifyContent: 'center',
                 fontSize: '12px',
                 fontWeight: 600,
-                background: Number(s) <= step ? '#EA7E20' : '#1A1A1A',
-                color: Number(s) <= step ? '#FFFFFF' : '#555555',
+                background: Number(s) <= step ? 'var(--accent)' : 'var(--elevated)',
+                color: Number(s) <= step ? '#FFFFFF' : 'var(--text-muted)',
               }}
             >
               {s}
@@ -215,7 +215,7 @@ export default function ImportPage() {
             <span
               style={{
                 fontSize: '0.875rem',
-                color: Number(s) <= step ? '#F0F0F0' : '#555555',
+                color: Number(s) <= step ? 'var(--text-primary)' : 'var(--text-muted)',
                 fontWeight: Number(s) <= step ? 500 : 400,
               }}
             >
@@ -226,7 +226,7 @@ export default function ImportPage() {
                 style={{
                   width: '32px',
                   height: '1px',
-                  background: '#1E1E1E',
+                  background: 'var(--border)',
                   margin: '0 4px',
                 }}
               />
@@ -255,16 +255,16 @@ export default function ImportPage() {
       {step === 1 && (
         <div
           style={{
-            background: '#111111',
+            background: 'var(--surface)',
             borderRadius: '16px',
-            border: '1px solid #1E1E1E',
+            border: '1px solid var(--border)',
             padding: '24px',
           }}
         >
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#F0F0F0', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
             Step 1: Discover Existing Users
           </h3>
-          <p style={{ fontSize: '0.875rem', color: '#888888', marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
             Scan the server CCD directory and EasyRSA to list all known VPN clients.
           </p>
           <button
@@ -272,14 +272,15 @@ export default function ImportPage() {
             disabled={discovering || !serverManagementEnabled}
             style={{
               padding: '8px 16px',
-              background: (discovering || !serverManagementEnabled) ? 'rgba(234,126,32,0.5)' : '#EA7E20',
-              color: '#FFFFFF',
-              borderRadius: '8px',
+              background: 'var(--button-primary)',
+              color: 'var(--button-primary-text)',
+              borderRadius: '12px',
               fontSize: '0.875rem',
-              fontWeight: 500,
+              fontWeight: 600,
               border: 'none',
               cursor: (discovering || !serverManagementEnabled) ? 'not-allowed' : 'pointer',
               opacity: (discovering || !serverManagementEnabled) ? 0.5 : 1,
+              fontFamily: 'inherit',
             }}
           >
             {discovering ? 'Discovering...' : 'Discover'}
@@ -291,37 +292,37 @@ export default function ImportPage() {
       {step === 2 && (
         <div
           style={{
-            background: '#111111',
+            background: 'var(--surface)',
             borderRadius: '16px',
-            border: '1px solid #1E1E1E',
+            border: '1px solid var(--border)',
             padding: '24px',
           }}
         >
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#F0F0F0', marginBottom: '1rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem' }}>
             Step 2: Map Users ({discovered.length} found)
           </h3>
 
           {discovered.length === 0 ? (
-            <p style={{ fontSize: '0.875rem', color: '#888888' }}>No CCD files found on the server.</p>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No CCD files found on the server.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #1E1E1E' }}>
-                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: '#888888', background: '#1A1A1A' }}>Common Name</th>
-                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: '#888888', background: '#1A1A1A' }}>Cert Status</th>
-                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: '#888888', background: '#1A1A1A' }}>Routes</th>
-                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: '#888888', background: '#1A1A1A' }}>Email</th>
-                      <th style={{ textAlign: 'left', padding: '8px 0', fontWeight: 500, color: '#888888', background: '#1A1A1A' }}>Groups</th>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: 'var(--text-secondary)', background: 'var(--elevated)' }}>Common Name</th>
+                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: 'var(--text-secondary)', background: 'var(--elevated)' }}>Cert Status</th>
+                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: 'var(--text-secondary)', background: 'var(--elevated)' }}>Routes</th>
+                      <th style={{ textAlign: 'left', padding: '8px 16px 8px 0', fontWeight: 500, color: 'var(--text-secondary)', background: 'var(--elevated)' }}>Email</th>
+                      <th style={{ textAlign: 'left', padding: '8px 0', fontWeight: 500, color: 'var(--text-secondary)', background: 'var(--elevated)' }}>Groups</th>
                     </tr>
                   </thead>
                   <tbody>
                     {discovered.map((user, i) => (
-                      <tr key={user.commonName} style={{ borderBottom: '1px solid #1E1E1E' }}>
-                        <td style={{ padding: '12px 16px 12px 0', fontFamily: 'monospace', fontSize: '12px', color: '#F0F0F0' }}>{user.commonName}</td>
+                      <tr key={user.commonName} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '12px 16px 12px 0', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-primary)' }}>{user.commonName}</td>
                         <td style={{ padding: '12px 16px 12px 0' }}>{certStatusBadge(user.certStatus)}</td>
-                        <td style={{ padding: '12px 16px 12px 0', fontSize: '12px', color: '#888888' }}>
+                        <td style={{ padding: '12px 16px 12px 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
                           {user.routes.length > 0 ? user.routes.join(', ') : <span style={{ fontStyle: 'italic' }}>none</span>}
                         </td>
                         <td style={{ padding: '12px 16px 12px 0' }}>
@@ -334,11 +335,11 @@ export default function ImportPage() {
                             style={{
                               width: '176px',
                               padding: '4px 8px',
-                              background: '#1A1A1A',
-                              border: '1px solid #333333',
+                              background: 'var(--elevated)',
+                              border: '1px solid var(--border-hover)',
                               borderRadius: '4px',
                               fontSize: '12px',
-                              color: '#F0F0F0',
+                              color: 'var(--text-primary)',
                               outline: 'none',
                             }}
                           />
@@ -352,13 +353,13 @@ export default function ImportPage() {
                                   checked={mappings[i]?.groupIds.includes(g.id) ?? false}
                                   onChange={() => toggleGroup(i, g.id)}
                                   disabled={!serverManagementEnabled}
-                                  style={{ width: '14px', height: '14px', accentColor: '#EA7E20' }}
+                                  style={{ width: '14px', height: '14px', accentColor: 'var(--accent)' }}
                                 />
-                                <span style={{ fontSize: '12px', color: '#F0F0F0' }}>{g.name}</span>
+                                <span style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{g.name}</span>
                               </label>
                             ))}
                             {groups.length === 0 && (
-                              <span style={{ fontSize: '12px', color: '#555555', fontStyle: 'italic' }}>No groups available</span>
+                              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No groups available</span>
                             )}
                           </div>
                         </td>
@@ -374,8 +375,8 @@ export default function ImportPage() {
                   style={{
                     padding: '8px 16px',
                     background: 'transparent',
-                    border: '1px solid #1E1E1E',
-                    color: '#F0F0F0',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-primary)',
                     borderRadius: '8px',
                     fontSize: '0.875rem',
                     fontWeight: 500,
@@ -389,14 +390,15 @@ export default function ImportPage() {
                   disabled={importing || !serverManagementEnabled || mappings.every((m) => !m.email)}
                   style={{
                     padding: '8px 16px',
-                    background: (importing || !serverManagementEnabled || mappings.every((m) => !m.email)) ? 'rgba(234,126,32,0.5)' : '#EA7E20',
-                    color: '#FFFFFF',
-                    borderRadius: '8px',
+                    background: 'var(--button-primary)',
+                    color: 'var(--button-primary-text)',
+                    borderRadius: '12px',
                     fontSize: '0.875rem',
-                    fontWeight: 500,
+                    fontWeight: 600,
                     border: 'none',
                     cursor: (importing || !serverManagementEnabled || mappings.every((m) => !m.email)) ? 'not-allowed' : 'pointer',
                     opacity: (importing || !serverManagementEnabled || mappings.every((m) => !m.email)) ? 0.5 : 1,
+                    fontFamily: 'inherit',
                   }}
                 >
                   {importing ? 'Importing...' : 'Import Users'}
@@ -411,13 +413,13 @@ export default function ImportPage() {
       {step === 3 && summary && (
         <div
           style={{
-            background: '#111111',
+            background: 'var(--surface)',
             borderRadius: '16px',
-            border: '1px solid #1E1E1E',
+            border: '1px solid var(--border)',
             padding: '24px',
           }}
         >
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#F0F0F0', marginBottom: '1rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem' }}>
             Step 3: Import Results
           </h3>
 
@@ -452,7 +454,7 @@ export default function ImportPage() {
 
           {summary.errors.length > 0 && (
             <div>
-              <h4 style={{ fontSize: '0.875rem', fontWeight: 500, color: '#F0F0F0', marginBottom: '8px' }}>Errors</h4>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '8px' }}>Errors</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {summary.errors.map((e) => (
                   <div
@@ -465,7 +467,7 @@ export default function ImportPage() {
                       fontSize: '12px',
                     }}
                   >
-                    <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#F0F0F0' }}>{e.cn}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)' }}>{e.cn}</span>
                     <span style={{ color: '#EF4444', marginLeft: '8px' }}>{e.error}</span>
                   </div>
                 ))}
@@ -479,8 +481,8 @@ export default function ImportPage() {
               marginTop: '16px',
               padding: '8px 16px',
               background: 'transparent',
-              border: '1px solid #1E1E1E',
-              color: '#F0F0F0',
+              border: '1px solid var(--border)',
+              color: 'var(--text-primary)',
               borderRadius: '8px',
               fontSize: '0.875rem',
               fontWeight: 500,

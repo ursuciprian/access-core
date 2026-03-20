@@ -20,7 +20,7 @@ export default function MfaQrCode({ value, size = 180 }: MfaQrCodeProps) {
       margin: 1,
       width: size,
       color: {
-        dark: '#111111',
+        dark: '#121212',
         light: '#F8F8F8',
       },
     })
@@ -47,15 +47,15 @@ export default function MfaQrCode({ value, size = 180 }: MfaQrCodeProps) {
           width: `${size}px`,
           height: `${size}px`,
           borderRadius: '12px',
-          border: '1px solid #2A2A2A',
-          background: '#1A1A1A',
+          border: '1px solid var(--border-strong)',
+          background: 'var(--elevated)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
           padding: '12px',
           fontSize: '12px',
-          color: '#888888',
+          color: 'var(--text-secondary)',
           lineHeight: 1.5,
         }}
       >
@@ -71,13 +71,13 @@ export default function MfaQrCode({ value, size = 180 }: MfaQrCodeProps) {
           width: `${size}px`,
           height: `${size}px`,
           borderRadius: '12px',
-          border: '1px solid #2A2A2A',
-          background: '#1A1A1A',
+          border: '1px solid var(--border-strong)',
+          background: 'var(--elevated)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '12px',
-          color: '#888888',
+          color: 'var(--text-secondary)',
         }}
       >
         Generating QR...
@@ -95,7 +95,7 @@ export default function MfaQrCode({ value, size = 180 }: MfaQrCodeProps) {
         width: `${size}px`,
         height: `${size}px`,
         borderRadius: '12px',
-        border: '1px solid #2A2A2A',
+        border: '1px solid var(--border-strong)',
         background: '#F8F8F8',
         display: 'block',
       }}

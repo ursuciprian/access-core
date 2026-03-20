@@ -47,3 +47,4 @@ SECURITY-AUDIT-REPORT*.md
 # local assistant/editor configs
 .claude/
 .observer.lock
+.new_concept

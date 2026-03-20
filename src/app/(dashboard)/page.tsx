@@ -47,13 +47,6 @@ interface ViewerStats {
   recentRequests: { id: string; serverName: string; status: string; createdAt: string; reviewNote: string | null }[]
 }
 
-interface AuditEntry {
-  id: string
-  action: string
-  actorEmail: string
-  createdAt: string
-}
-
 interface VpnServer {
   id: string
   name: string
@@ -123,34 +116,9 @@ function formatUptime(seconds: number | null | undefined): string {
   return `${Math.max(minutes, 1)}m`
 }
 
-const ACTION_COLORS: Record<string, string> = {
-  SERVER_CREATED: '#22C55E',
-  SYNC_STARTED: '#3B82F6',
-  SYNC_COMPLETED: '#8B5CF6',
-  USER_CREATED: '#22C55E',
-  USER_UPDATED: '#F59E0B',
-  USER_DELETED: '#EF4444',
-  CERT_GENERATED: '#22C55E',
-  CERT_REVOKED: '#EF4444',
-  CERT_REGENERATED: '#EA7E20',
-  CCD_PUSHED: '#EA7E20',
-  CONFIG_DOWNLOADED: '#3B82F6',
-  ACCESS_REQUEST_CREATED: '#F59E0B',
-  ACCESS_REQUEST_PROVISIONING_STARTED: '#60A5FA',
-  ACCESS_REQUEST_APPROVED: '#22C55E',
-  ACCESS_REQUEST_PROVISIONING_FAILED: '#F59E0B',
-  ACCESS_REQUEST_REJECTED: '#EF4444',
-  TEMP_ACCESS_GRANTED: '#8B5CF6',
-  TEMP_ACCESS_REVOKED: '#EF4444',
-}
-
-function getActionColor(action: string): string {
-  return ACTION_COLORS[action] ?? '#888888'
-}
-
 const cardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '16px',
   padding: '20px',
 }
@@ -159,7 +127,6 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [viewerStats, setViewerStats] = useState<ViewerStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([])
   const [servers, setServers] = useState<VpnServer[]>([])
   const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>({})
   const [pushingServers, setPushingServers] = useState<Record<string, boolean>>({})
@@ -187,10 +154,8 @@ export default function DashboardPage() {
       setLastRefresh(new Date())
 
       Promise.all([
-        fetch('/api/audit?take=10').then((r) => r.json()).catch(() => ({ logs: [] })),
         fetch('/api/servers').then((r) => r.json()).catch(() => []),
-      ]).then(([auditData, serversData]) => {
-        setAuditEntries(Array.isArray(auditData?.logs) ? auditData.logs.slice(0, 10) : [])
+      ]).then(([serversData]) => {
         const serverList: VpnServer[] = Array.isArray(serversData) ? serversData : []
         setServers(serverList)
 
@@ -288,7 +253,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div>
-        <div style={{ height: '20px', width: '120px', background: '#1A1A1A', borderRadius: '4px', marginBottom: '24px' }} />
+        <div style={{ height: '20px', width: '120px', background: 'var(--elevated)', borderRadius: '4px', marginBottom: '24px' }} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
           {[1,2,3,4].map((i) => <div key={i} style={{ ...cardStyle, height: '90px' }} />)}
         </div>
@@ -317,16 +282,16 @@ export default function DashboardPage() {
     return (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0' }}>AccessCore Overview</h2>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>AccessCore Overview</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '11px', color: '#555555' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               Updated {lastRefresh.toLocaleTimeString()}
             </span>
             <button
               onClick={() => fetchData(false)}
               style={{
                 padding: '4px 10px', fontSize: '11px', fontWeight: 500, borderRadius: '6px',
-                border: '1px solid #2A2A2A', background: 'transparent', color: '#888888',
+                border: '1px solid var(--border-strong)', background: 'transparent', color: 'var(--text-secondary)',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -339,7 +304,7 @@ export default function DashboardPage() {
           <div style={{ display: 'grid', gridTemplateColumns: viewerHeroColumns, gap: '16px', alignItems: 'start' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>Portal Access</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Portal Access</h3>
                 <StatusBadge
                   label={
                     viewerStats.approvedServers.length > 0
@@ -357,14 +322,14 @@ export default function DashboardPage() {
                   }
                 />
               </div>
-              <p style={{ fontSize: '18px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>
+              <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                 {viewerStats.approvedServers.length > 0
                   ? 'Your VPN access is ready.'
                   : viewerStats.pendingRequestCount > 0
                     ? 'Your access request is in progress.'
                     : 'Request VPN access to get started.'}
               </p>
-              <p style={{ fontSize: '13px', color: '#888888', margin: '8px 0 0', lineHeight: 1.6, maxWidth: '720px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '8px 0 0', lineHeight: 1.6, maxWidth: '720px' }}>
                 {viewerStats.approvedServers.length > 0
                   ? 'Open My VPN to view your approved servers and download the configuration you need.'
                   : viewerStats.pendingRequestCount > 0
@@ -380,7 +345,7 @@ export default function DashboardPage() {
                     borderRadius: '10px',
                     border: '1px solid rgba(234,126,32,0.22)',
                     background: 'rgba(234,126,32,0.12)',
-                    color: '#EA7E20',
+                    color: 'var(--accent)',
                     textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -439,16 +404,16 @@ export default function DashboardPage() {
     <div>
       {/* Header with auto-refresh indicator */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0' }}>Overview</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>Overview</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '11px', color: '#555555' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
             Updated {lastRefresh.toLocaleTimeString()}
           </span>
           <button
             onClick={() => fetchData(false)}
             style={{
               padding: '4px 10px', fontSize: '11px', fontWeight: 500, borderRadius: '6px',
-              border: '1px solid #2A2A2A', background: 'transparent', color: '#888888',
+              border: '1px solid var(--border-strong)', background: 'transparent', color: 'var(--text-secondary)',
               cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
@@ -461,14 +426,14 @@ export default function DashboardPage() {
         <section style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '18px' }}>
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>Network Overview</h3>
-              <p style={{ fontSize: '12px', color: '#555555', margin: '6px 0 0' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Network Overview</h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0' }}>
                 Live posture for connected users, server availability, request backlog, and sync activity.
               </p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '12px', color: '#555555' }}>Last sync</div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', marginTop: '4px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Last sync</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
                 {stats?.lastSync ? relativeTime(stats.lastSync) : 'Never'}
               </div>
             </div>
@@ -483,8 +448,8 @@ export default function DashboardPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: detailPillColumns, gap: '10px', marginTop: '14px' }}>
             <DetailPill label="Bandwidth In" value={formatBytes(stats?.totalBandwidthIn ?? 0)} color="#22C55E" />
-            <DetailPill label="Bandwidth Out" value={formatBytes(stats?.totalBandwidthOut ?? 0)} color="#EA7E20" />
-            <DetailPill label="Today's Events" value={String(stats?.todayAuditCount ?? 0)} color="#EA7E20" />
+            <DetailPill label="Bandwidth Out" value={formatBytes(stats?.totalBandwidthOut ?? 0)} color="var(--accent)" />
+            <DetailPill label="Today's Events" value={String(stats?.todayAuditCount ?? 0)} color="var(--accent)" />
             <DetailPill label="Flagged Users" value={String(stats?.pendingFlags ?? 0)} color="#EF4444" />
           </div>
         </section>
@@ -492,8 +457,8 @@ export default function DashboardPage() {
         <section style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>Certificate & Access Health</h3>
-              <p style={{ fontSize: '12px', color: '#555555', margin: '6px 0 0' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Certificate & Access Health</h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0' }}>
                 Certificate coverage, revocations, expirations, and account issues that need attention.
               </p>
             </div>
@@ -515,7 +480,7 @@ export default function DashboardPage() {
             <MiniStat label="Active" value={stats?.activeCerts ?? 0} color="#22C55E" />
             <MiniStat label="Expiring Soon" value={stats?.expiringCerts ?? 0} color="#F59E0B" />
             <MiniStat label="Revoked" value={stats?.revokedCerts ?? 0} color="#EF4444" />
-            <MiniStat label="No Certificate" value={stats?.noCerts ?? 0} color="#555555" />
+            <MiniStat label="No Certificate" value={stats?.noCerts ?? 0} color="var(--text-muted)" />
             <MiniStat label="Disabled Users" value={stats?.disabledUsers ?? 0} color="#EF4444" />
             <MiniStat label="Flagged Users" value={stats?.pendingFlags ?? 0} color="#EF4444" />
           </div>
@@ -542,7 +507,7 @@ export default function DashboardPage() {
 
       {/* Connected Users Table */}
       <div style={{ ...cardStyle, marginTop: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <ConnectionIcon size={16} />
           Connected Users
           {(stats?.activeConnections ?? 0) > 0 && (
@@ -555,12 +520,12 @@ export default function DashboardPage() {
           )}
         </h3>
         {(!stats?.connectedUsers || stats.connectedUsers.length === 0) ? (
-          <p style={{ color: '#555555', fontSize: '13px' }}>No users currently connected</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No users currently connected</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1E1E1E' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
                   <th style={thStyle}>User</th>
                   <th style={thStyle}>VPN IP</th>
                   <th style={thStyle}>Real IP</th>
@@ -573,28 +538,28 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {(showAllUsers ? stats.connectedUsers : stats.connectedUsers.slice(0, 5)).map((user, i) => (
-                  <tr key={`${user.commonName}-${i}`} style={{ borderBottom: '1px solid #1E1E1E' }}>
+                  <tr key={`${user.commonName}-${i}`} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={tdStyle}>
-                      <span style={{ color: '#F0F0F0', fontWeight: 500 }}>{user.commonName}</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{user.commonName}</span>
                     </td>
-                    <td style={{ ...tdStyle, fontFamily: 'ui-monospace, monospace', color: '#22C55E' }}>
+                    <td style={{ ...tdStyle, fontFamily: 'var(--font-mono)', color: '#22C55E' }}>
                       {user.vpnAddress || '—'}
                     </td>
-                    <td style={{ ...tdStyle, fontFamily: 'ui-monospace, monospace', color: '#888888' }}>
+                    <td style={{ ...tdStyle, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                       {user.realAddress.split(':')[0]}
                     </td>
                     <td style={tdStyle}>
-                      <Link href={`/servers/${user.serverId}`} style={{ color: '#EA7E20', textDecoration: 'none', fontSize: '12px' }}>
+                      <Link href={`/servers/${user.serverId}`} style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '12px' }}>
                         {user.serverName}
                       </Link>
                     </td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: '#22C55E', fontFamily: 'ui-monospace, monospace' }}>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: '#22C55E', fontFamily: 'var(--font-mono)' }}>
                       {formatBytes(user.bytesIn)}
                     </td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: '#EA7E20', fontFamily: 'ui-monospace, monospace' }}>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
                       {formatBytes(user.bytesOut)}
                     </td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: '#888888' }}>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--text-secondary)' }}>
                       {connectedDuration(user.connectedSince)}
                     </td>
                     <td style={{ ...tdStyle, textAlign: 'center', padding: '6px 8px' }}>
@@ -607,7 +572,7 @@ export default function DashboardPage() {
                           height: '24px',
                           background: 'transparent',
                           border: 'none',
-                          color: '#555555',
+                          color: 'var(--text-muted)',
                           cursor: killing ? 'not-allowed' : 'pointer',
                           fontSize: '16px',
                           fontWeight: 700,
@@ -620,7 +585,7 @@ export default function DashboardPage() {
                           transition: 'color 0.15s',
                         }}
                         onMouseEnter={(e) => { (e.target as HTMLElement).style.color = '#EF4444' }}
-                        onMouseLeave={(e) => { (e.target as HTMLElement).style.color = '#555555' }}
+                        onMouseLeave={(e) => { (e.target as HTMLElement).style.color = 'var(--text-muted)' }}
                       >
                         ×
                       </button>
@@ -632,19 +597,19 @@ export default function DashboardPage() {
             {/* Bandwidth totals + expand toggle */}
             <div style={{
               display: 'flex', gap: '24px', paddingTop: '12px', marginTop: '4px',
-              borderTop: '1px solid #1E1E1E', alignItems: 'center', justifyContent: 'space-between',
+              borderTop: '1px solid var(--border)', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <span style={{ fontSize: '12px', color: '#555555' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                 Total received: <strong style={{ color: '#22C55E' }}>{formatBytes(stats?.totalBandwidthIn ?? 0)}</strong>
                 {' / '}
-                sent: <strong style={{ color: '#EA7E20' }}>{formatBytes(stats?.totalBandwidthOut ?? 0)}</strong>
+                sent: <strong style={{ color: 'var(--accent)' }}>{formatBytes(stats?.totalBandwidthOut ?? 0)}</strong>
               </span>
               {stats.connectedUsers.length > 5 && (
                 <button
                   onClick={() => setShowAllUsers(!showAllUsers)}
                   style={{
-                    background: 'transparent', border: '1px solid #2A2A2A', borderRadius: '6px',
-                    padding: '4px 10px', fontSize: '11px', color: '#EA7E20', cursor: 'pointer',
+                    background: 'transparent', border: '1px solid var(--border-strong)', borderRadius: '6px',
+                    padding: '4px 10px', fontSize: '11px', color: 'var(--accent)', cursor: 'pointer',
                     fontFamily: 'inherit',
                   }}
                 >
@@ -660,12 +625,12 @@ export default function DashboardPage() {
       <div style={{ display: 'grid', gridTemplateColumns: lowerRowColumns, gap: '16px', marginTop: '16px' }}>
         {/* Servers with Push CCD */}
         <div style={cardStyle}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ServerIcon size={16} />
             Servers
           </h3>
           {servers.length === 0 ? (
-            <p style={{ color: '#555555', fontSize: '13px' }}>No servers configured</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No servers configured</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {servers.map((server) => {
@@ -678,36 +643,36 @@ export default function DashboardPage() {
 
                 return (
                   <div key={server.id} style={{
-                    background: '#0A0A0A', border: '1px solid #1E1E1E', borderRadius: '12px',
+                    background: '#0A0A0A', border: '1px solid var(--border)', borderRadius: '12px',
                     padding: '14px', display: 'flex', alignItems: 'center', gap: '12px',
                   }}>
                     <div style={{
                       width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0,
-                      background: statusLoading ? '#555555' : isOnline ? '#22C55E' : '#EF4444',
+                      background: statusLoading ? 'var(--text-muted)' : isOnline ? '#22C55E' : '#EF4444',
                       boxShadow: statusLoading ? 'none' : isOnline ? '0 0 8px #22C55E80' : '0 0 8px #EF444480',
                     }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <Link href={`/servers/${server.id}`} style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', textDecoration: 'none' }}>
+                      <Link href={`/servers/${server.id}`} style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', textDecoration: 'none' }}>
                         {server.name}
                       </Link>
-                      <div style={{ fontSize: '11px', color: '#555555', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {server.hostname}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexShrink: 0 }}>
                       <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 600, color: connCount > 0 ? '#22C55E' : '#555555' }}>{connCount}</div>
-                        <div style={{ fontSize: '10px', color: '#555555' }}>online</div>
+                        <div style={{ fontSize: '16px', fontWeight: 600, color: connCount > 0 ? '#22C55E' : 'var(--text-muted)' }}>{connCount}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>online</div>
                       </div>
                       <div style={{ textAlign: 'center', minWidth: '54px' }}>
-                        <div style={{ fontSize: '14px', fontWeight: 600, color: isOnline ? '#F0F0F0' : '#555555' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: isOnline ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                           {isOnline ? formatUptime(status?.uptimeSeconds) : '—'}
                         </div>
-                        <div style={{ fontSize: '10px', color: '#555555' }}>uptime</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>uptime</div>
                       </div>
                       <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 600, color: '#888888' }}>{server._count.users}</div>
-                        <div style={{ fontSize: '10px', color: '#555555' }}>users</div>
+                        <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-secondary)' }}>{server._count.users}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>users</div>
                       </div>
                       <button
                         onClick={() => handlePushAllCcd(server.id, server.name)}
@@ -715,8 +680,8 @@ export default function DashboardPage() {
                         title="Push All CCDs"
                         style={{
                           width: '32px', height: '32px', borderRadius: '8px', border: 'none',
-                          background: isPushing ? '#333333' : 'rgba(234,126,32,0.15)',
-                          color: '#EA7E20', cursor: isPushing ? 'not-allowed' : 'pointer',
+                          background: isPushing ? 'var(--border-hover)' : 'rgba(234,126,32,0.15)',
+                          color: 'var(--accent)', cursor: isPushing ? 'not-allowed' : 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           opacity: isPushing ? 0.5 : 1,
                         }}
@@ -736,11 +701,11 @@ export default function DashboardPage() {
           )}
 
           {/* Last sync */}
-          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #1E1E1E', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: '#555555' }}>
+          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               Last sync: {stats?.lastSync ? relativeTime(stats.lastSync) : 'Never'}
             </span>
-            <Link href="/sync" style={{ fontSize: '11px', color: '#EA7E20', textDecoration: 'none' }}>
+            <Link href="/sync" style={{ fontSize: '11px', color: 'var(--accent)', textDecoration: 'none' }}>
               History
             </Link>
           </div>
@@ -748,7 +713,7 @@ export default function DashboardPage() {
 
         {/* Activity Chart */}
         <div style={cardStyle}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ActivityIcon size={16} />
             Activity (7 days)
           </h3>
@@ -757,20 +722,20 @@ export default function DashboardPage() {
               const heightPct = maxActivity > 0 ? (day.count / maxActivity) * 100 : 0
               return (
                 <div key={day.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#F0F0F0' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {day.count > 0 ? day.count : ''}
                   </span>
                   <div style={{
                     width: '100%', maxWidth: '40px',
                     height: `${Math.max(heightPct, 4)}%`,
                     background: day.count > 0
-                      ? 'linear-gradient(180deg, #EA7E20 0%, #EA7E2060 100%)'
-                      : '#1E1E1E',
+                      ? 'linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%)'
+                      : 'var(--border)',
                     borderRadius: '6px 6px 2px 2px',
                     transition: 'height 0.3s ease',
                     minHeight: '4px',
                   }} />
-                  <span style={{ fontSize: '11px', color: '#555555' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                     {formatShortDay(day.date)}
                   </span>
                 </div>
@@ -778,43 +743,10 @@ export default function DashboardPage() {
             })}
           </div>
 
-          {/* Recent Activity Feed below chart */}
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #1E1E1E' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#888888' }}>Recent</span>
-              <Link href="/audit" style={{ fontSize: '11px', color: '#EA7E20', textDecoration: 'none' }}>
-                View all
-              </Link>
-            </div>
-            {auditEntries.length === 0 ? (
-              <p style={{ color: '#555555', fontSize: '13px' }}>No recent activity</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {auditEntries.slice(0, 6).map((entry) => (
-                  <div key={entry.id} style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '8px 0', borderBottom: '1px solid #1E1E1E',
-                  }}>
-                    <span style={{
-                      fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px',
-                      background: `${getActionColor(entry.action)}18`, color: getActionColor(entry.action),
-                      whiteSpace: 'nowrap', flexShrink: 0,
-                    }}>
-                      {entry.action.replace(/_/g, ' ')}
-                    </span>
-                    <span style={{
-                      fontSize: '12px', color: '#888888', overflow: 'hidden',
-                      textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0,
-                    }}>
-                      {entry.actorEmail}
-                    </span>
-                    <span style={{ fontSize: '11px', color: '#555555', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                      {relativeTime(entry.createdAt)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <Link href="/audit" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>
+              View Activity
+            </Link>
           </div>
         </div>
       </div>
@@ -836,12 +768,12 @@ export default function DashboardPage() {
 
 const thStyle: React.CSSProperties = {
   textAlign: 'left', padding: '8px 12px', fontSize: '11px',
-  fontWeight: 600, color: '#555555', textTransform: 'uppercase',
+  fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase',
   letterSpacing: '0.05em',
 }
 
 const tdStyle: React.CSSProperties = {
-  padding: '10px 12px', fontSize: '13px', color: '#888888',
+  padding: '10px 12px', fontSize: '13px', color: 'var(--text-secondary)',
 }
 
 function StatCard({ title, value, color, subtitle, href }: {
@@ -877,8 +809,8 @@ function StatCard({ title, value, color, subtitle, href }: {
         </span>
       </div>
       <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <div style={{ fontSize: '12px', fontWeight: 500, color: '#888888' }}>{title}</div>
-        <div style={{ fontSize: '11px', color: '#555555', marginTop: '2px', minHeight: '30px', lineHeight: 1.35 }}>
+        <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>{title}</div>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', minHeight: '30px', lineHeight: 1.35 }}>
           {subtitle ?? '\u00A0'}
         </div>
       </div>
@@ -892,11 +824,11 @@ function DetailPill({ label, value, color }: { label: string; value: string; col
   return (
     <div style={{
       background: '#0A0A0A',
-      border: '1px solid #1E1E1E',
+      border: '1px solid var(--border)',
       borderRadius: '12px',
       padding: '12px 14px',
     }}>
-      <div style={{ fontSize: '10px', color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
         {label}
       </div>
       <div style={{ fontSize: '14px', fontWeight: 600, color }}>
@@ -920,21 +852,21 @@ function InfoRow({
   return (
     <div style={{
       background: '#0A0A0A',
-      border: '1px solid #1E1E1E',
+      border: '1px solid var(--border)',
       borderRadius: '12px',
       padding: '13px 14px',
       display: 'grid',
       gap: '6px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '11px', color: '#555555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {label}
         </span>
         <span style={{ fontSize: '13px', fontWeight: 600, color: tone }}>
           {value}
         </span>
       </div>
-      <div style={{ fontSize: '12px', color: '#888888', lineHeight: 1.45 }}>
+      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
         {helper}
       </div>
     </div>
@@ -982,7 +914,7 @@ function HealthNotice({ visible, color, message }: { visible: boolean; color: st
 
 function ServerIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#EA7E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="2" width="20" height="8" rx="2" ry="2" /><rect x="2" y="14" width="20" height="8" rx="2" ry="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" />
     </svg>
   )
@@ -998,7 +930,7 @@ function ConnectionIcon({ size = 16 }: { size?: number }) {
 
 function ActivityIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#EA7E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
     </svg>
   )
@@ -1015,12 +947,12 @@ function PushIcon({ size = 16 }: { size?: number }) {
 function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div style={{
-      background: '#0A0A0A', border: '1px solid #1E1E1E', borderRadius: '10px',
+      background: '#0A0A0A', border: '1px solid var(--border)', borderRadius: '10px',
       padding: '10px 14px', textAlign: 'center', minHeight: '86px',
       display: 'flex', flexDirection: 'column', justifyContent: 'center',
     }}>
       <div style={{ fontSize: '18px', fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: '10px', color: '#555555', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
     </div>
   )
 }

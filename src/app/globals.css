@@ -1,27 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* -- Brand accent (OpenVPN orange) -- */
-  --accent: #EA7E20;
-  --accent-dim: rgba(234, 126, 32, 0.15);
-  --accent-mid: rgba(234, 126, 32, 0.30);
+  /* -- Typography -- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* -- Brand accent (concept palette) -- */
+  --accent: #FFB77D;
+  --accent-strong: #FF8C00;
+  --accent-dim: rgba(255, 183, 125, 0.15);
+  --accent-mid: rgba(255, 183, 125, 0.30);
+  --button-primary: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+  --button-primary-text: #120B06;
 
   /* -- Surface scale -- */
   --bg: #0A0A0A;
-  --surface: #111111;
-  --surface-2: #141414;
-  --elevated: #1A1A1A;
+  --surface: #121212;
+  --surface-2: #161616;
+  --elevated: #191919;
+  --surface-lowest: #050505;
 
   /* -- Borders -- */
-  --border: #1E1E1E;
+  --border: #24201c;
   --border-strong: #2A2A2A;
-  --border-hover: #333333;
+  --border-hover: #3A342F;
 
   /* -- Text -- */
-  --text-primary: #F0F0F0;
-  --text-secondary: #888888;
-  --text-muted: #555555;
-  --text-faint: #333333;
+  --text-primary: #E5E2E1;
+  --text-secondary: #A48C7A;
+  --text-muted: #73665C;
+  --text-faint: #4B443F;
+
+  /* -- Supporting colors -- */
+  --success: #7DDC7A;
+  --secondary: #F3AEFF;
+  --error-soft: #FFB4AB;
 
   /* -- Border radius -- */
   --radius-xs: 4px;
@@ -45,6 +60,9 @@
 }
 
 @theme inline {
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -56,9 +74,18 @@
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
   --color-text-faint: var(--text-faint);
-  --color-success: #22C55E;
-  --color-error: #EF4444;
-  --color-warning: #F59E0B;
+  --color-success: var(--success);
+  --color-error: var(--error-soft);
+  --color-warning: var(--accent-strong);
+  --color-primary: var(--accent);
+  --color-primary-dark: var(--accent-strong);
+  --color-surface-low: var(--surface);
+  --color-surface-lowest: var(--surface-lowest);
+  --color-on-surface: var(--text-primary);
+  --color-on-surface-variant: var(--text-secondary);
+  --color-outline: var(--border-strong);
+  --color-tertiary: var(--success);
+  --color-secondary: var(--secondary);
 }
 
 * {
@@ -71,8 +98,72 @@ html,
 body {
   background: var(--bg);
   color: var(--text-primary);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at top right, rgba(255, 183, 125, 0.07), transparent 28%),
+    radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.028) 1px, transparent 0);
+  background-size: auto, 24px 24px;
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(255, 183, 125, 0.25);
+  color: var(--text-primary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.glass-panel {
+  background: rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.monolith-gradient {
+  background: linear-gradient(to bottom, var(--accent), var(--accent-strong));
+}
+
+.tech-grid {
+  background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.glow-primary {
+  box-shadow: 0 0 20px rgba(255, 183, 125, 0.15);
+}
+
+.glow-primary-hover:hover {
+  box-shadow: 0 0 30px rgba(255, 183, 125, 0.25);
 }
 
 /* Custom scrollbar */
@@ -84,11 +175,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222222;
+  background: rgba(164, 140, 122, 0.26);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #333333;
+  background: rgba(164, 140, 122, 0.42);
 }
 
 /* Focus ring */
@@ -105,7 +196,7 @@ body {
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #111111 25%, #1A1A1A 50%, #111111 75%);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--elevated) 50%, var(--surface) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }

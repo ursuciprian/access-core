@@ -83,13 +83,13 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#111111', border: '1px solid #1E1E1E', borderRadius: '16px',
+          background: 'rgba(18,18,18,0.98)', border: '1px solid var(--border)', borderRadius: '18px',
           width: '100%', maxWidth: '520px', overflow: 'hidden',
           boxShadow: '0 16px 64px rgba(0,0,0,0.6)',
         }}
       >
         {/* Search input */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', borderBottom: '1px solid #1E1E1E' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
           <SearchIcon />
           <input
             ref={inputRef}
@@ -99,25 +99,25 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
             placeholder="Search users, servers, groups..."
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              fontSize: '14px', color: '#F0F0F0', fontFamily: 'inherit',
+              fontSize: '14px', color: 'var(--text-primary)', fontFamily: 'inherit',
             }}
           />
           <kbd style={{
-            padding: '2px 6px', borderRadius: '4px', border: '1px solid #333',
-            fontSize: '11px', color: '#555', background: '#1A1A1A',
+            padding: '2px 6px', borderRadius: '6px', border: '1px solid var(--border-hover)',
+            fontSize: '11px', color: 'var(--text-muted)', background: 'var(--elevated)',
           }}>ESC</kbd>
         </div>
 
         {/* Results */}
         <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
           {loading && (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#555', fontSize: '13px' }}>
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
               Searching...
             </div>
           )}
 
           {!loading && results && allItems.length === 0 && (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#555', fontSize: '13px' }}>
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
               No results for &ldquo;{query}&rdquo;
             </div>
           )}
@@ -134,7 +134,7 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
                     {showHeader && (
                       <div style={{
                         padding: '8px 8px 4px', fontSize: '11px', fontWeight: 600,
-                        color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em',
+                        color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em',
                       }}>
                         {typeLabel[item.type]}
                       </div>
@@ -145,7 +145,7 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
                         padding: '8px 10px', borderRadius: '8px', border: 'none',
-                        background: idx === selectedIndex ? '#1E1E1E' : 'transparent',
+                        background: idx === selectedIndex ? 'rgba(255,255,255,0.05)' : 'transparent',
                         cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
                       }}
                     >
@@ -154,14 +154,14 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
-                          fontSize: '13px', fontWeight: 500, color: '#F0F0F0',
+                          fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)',
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {item.label}
                         </div>
                         {item.sub && (
                           <div style={{
-                            fontSize: '11px', color: '#555',
+                            fontSize: '11px', color: 'var(--text-muted)',
                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           }}>
                             {item.sub}
@@ -169,7 +169,7 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
                         )}
                       </div>
                       {idx === selectedIndex && (
-                        <span style={{ fontSize: '11px', color: '#555', flexShrink: 0 }}>↵</span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>↵</span>
                       )}
                     </button>
                   </div>
@@ -179,7 +179,7 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
           )}
 
           {!loading && !results && (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#444', fontSize: '12px' }}>
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
               Type at least 2 characters to search
             </div>
           )}
@@ -191,7 +191,7 @@ export default function SearchOverlay({ open, onClose }: { open: boolean; onClos
 
 function SearchIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   )

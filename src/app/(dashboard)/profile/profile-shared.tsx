@@ -72,27 +72,27 @@ const PROFILE_SECTIONS = [
 ]
 
 export const cardStyle: React.CSSProperties = {
-  background: '#111111',
-  border: '1px solid #1E1E1E',
-  borderRadius: '16px',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
+  borderRadius: '20px',
   padding: '20px',
 }
 
 export const listCardStyle: React.CSSProperties = {
-  background: '#151515',
-  border: '1px solid #1E1E1E',
-  borderRadius: '14px',
+  background: 'var(--elevated)',
+  border: '1px solid var(--border)',
+  borderRadius: '16px',
   padding: '16px',
 }
 
 export const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '10px 12px',
-  backgroundColor: '#1A1A1A',
-  border: '1px solid #333333',
-  borderRadius: '8px',
+  backgroundColor: 'var(--elevated)',
+  border: '1px solid var(--border-hover)',
+  borderRadius: '10px',
   fontSize: '13px',
-  color: '#F0F0F0',
+  color: 'var(--text-primary)',
   outline: 'none',
   boxSizing: 'border-box',
   fontFamily: 'inherit',
@@ -101,16 +101,16 @@ export const inputStyle: React.CSSProperties = {
 export const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '12px',
-  fontWeight: 500,
-  color: '#888888',
+  fontWeight: 600,
+  color: 'var(--text-secondary)',
   marginBottom: '6px',
 }
 
 export function actionButtonStyle(disabled: boolean, danger = false): React.CSSProperties {
   return {
     padding: '10px 14px',
-    background: danger ? 'rgba(239,68,68,0.12)' : '#EA7E20',
-    color: danger ? '#EF4444' : '#FFFFFF',
+    background: danger ? 'rgba(239,68,68,0.12)' : 'linear-gradient(to bottom, var(--accent), var(--accent-strong))',
+    color: danger ? '#EF4444' : '#0A0A0A',
     border: danger ? '1px solid rgba(239,68,68,0.22)' : 'none',
     borderRadius: '10px',
     fontSize: '13px',
@@ -157,8 +157,8 @@ export function ProfileShell({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F0F0F0', margin: 0 }}>{title}</h2>
-        <p style={{ fontSize: '13px', color: '#888888', margin: '6px 0 0', lineHeight: 1.5 }}>{description}</p>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.03em' }}>{title}</h2>
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.5 }}>{description}</p>
       </div>
 
       <div style={{ ...cardStyle, padding: '12px' }}>
@@ -175,9 +175,9 @@ export function ProfileShell({
                   fontSize: '13px',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  color: active ? '#EA7E20' : '#888888',
-                  background: active ? 'rgba(234,126,32,0.12)' : '#151515',
-                  border: active ? '1px solid rgba(234,126,32,0.24)' : '1px solid #1E1E1E',
+                  color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                  background: active ? 'rgba(255,183,125,0.12)' : 'var(--elevated)',
+                  border: active ? '1px solid rgba(255,183,125,0.24)' : '1px solid var(--border)',
                 }}
               >
                 {section.label}
@@ -188,7 +188,7 @@ export function ProfileShell({
       </div>
 
       {loading ? (
-        <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px', color: '#555555' }}>
+        <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px', color: 'var(--text-muted)' }}>
           Loading profile...
         </div>
       ) : (
@@ -209,7 +209,7 @@ export function PageGrid({ children, minWidth = 360 }: { children: React.ReactNo
 export function ListPanel({ title, rows }: { title: string; rows: Array<{ label: string; value: string }> }) {
   return (
     <div style={{ ...listCardStyle, height: '100%' }}>
-      <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0F0F0', marginBottom: '12px' }}>{title}</div>
+      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>{title}</div>
       <ListRows rows={rows} />
     </div>
   )
@@ -220,8 +220,8 @@ export function ListRows({ rows }: { rows: Array<{ label: string; value: string 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {rows.map((row) => (
         <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'flex-start' }}>
-          <div style={{ fontSize: '12px', color: '#666666' }}>{row.label}</div>
-          <div style={{ fontSize: '13px', color: '#F0F0F0', lineHeight: 1.5, textAlign: 'right', maxWidth: '62%' }}>{row.value}</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{row.label}</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5, textAlign: 'right', maxWidth: '62%' }}>{row.value}</div>
         </div>
       ))}
     </div>
@@ -239,7 +239,7 @@ export function StatusBadge({ value }: { value: string }) {
       fontSize: '11px',
       fontWeight: 600,
       background: active ? 'rgba(34,197,94,0.15)' : revoked ? 'rgba(239,68,68,0.15)' : 'rgba(136,136,136,0.15)',
-      color: active ? '#22C55E' : revoked ? '#EF4444' : '#888888',
+      color: active ? '#22C55E' : revoked ? '#EF4444' : 'var(--text-secondary)',
       whiteSpace: 'nowrap',
     }}>
       {value}
@@ -488,7 +488,7 @@ export function MfaSetupCard({
 }) {
   return (
     <form onSubmit={onSubmit} style={{ ...listCardStyle, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <div style={{ fontSize: '12px', color: '#888888', lineHeight: 1.6 }}>{description}</div>
+      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{description}</div>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <MfaQrCode value={setup.otpauthUri} size={168} />
       </div>
@@ -506,7 +506,7 @@ export function MfaSetupCard({
           autoComplete="one-time-code"
           value={code}
           onChange={(event) => onCodeChange(event.target.value.replace(/\D/g, '').slice(0, 6))}
-          style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.2em', textAlign: 'center' }}
+          style={{ ...inputStyle, fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textAlign: 'center' }}
           required
         />
       </div>
