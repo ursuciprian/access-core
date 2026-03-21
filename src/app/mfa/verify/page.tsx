@@ -1,15 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SessionProvider, signOut, useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+
+function getSafeCallbackUrl(value: string | null) {
+  return value?.startsWith('/') ? value : '/'
+}
 
 function MfaVerifyContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: session, status, update } = useSession()
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const callbackUrl = getSafeCallbackUrl(searchParams.get('callbackUrl'))
+
+  useEffect(() => {
+    if (status === 'loading') {
+      return
+    }
+
+    if (!session?.user) {
+      router.replace('/login')
+      return
+    }
+
+    const user = session.user as Record<string, unknown>
+    if (user.mfaEnabled === true && user.mfaVerified === true) {
+      router.replace(callbackUrl)
+    }
+  }, [callbackUrl, router, session, status])
 
   async function handleVerify(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -30,7 +52,7 @@ function MfaVerifyContent() {
       }
 
       await update({ mfaVerified: true, mfaEnabled: true })
-      router.push('/')
+      router.replace(callbackUrl)
     } finally {
       setLoading(false)
     }
@@ -40,8 +62,7 @@ function MfaVerifyContent() {
     return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-secondary)' }}>Loading...</div>
   }
 
-  if (!session?.user) {
-    router.push('/login')
+  if (!session?.user || ((session.user as Record<string, unknown>).mfaEnabled === true && (session.user as Record<string, unknown>).mfaVerified === true)) {
     return null
   }
 

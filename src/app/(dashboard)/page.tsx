@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/ToastProvider'
+import type { DashboardAlertItem, DashboardAlertSeverity } from '@/lib/dashboard-alerts'
 
 interface ConnectedUser {
   commonName: string
@@ -36,6 +37,7 @@ interface DashboardStats {
   todayAuditCount: number
   disabledUsers: number
   certWarningDays?: number
+  alerts?: DashboardAlertItem[]
 }
 
 interface ViewerStats {
@@ -505,6 +507,43 @@ export default function DashboardPage() {
         </section>
       </div>
 
+      <section style={{ ...cardStyle, marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          <div>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Priority Alerts</h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
+              High-signal certificate and access risks that deserve an admin review.
+            </p>
+          </div>
+          <Link href="/audit" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>
+            View Audit Trail
+          </Link>
+        </div>
+
+        {(stats?.alerts?.length ?? 0) === 0 ? (
+          <div style={{
+            background: '#0A0A0A',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            color: '#22C55E',
+            fontSize: '13px',
+          }}>
+            <StatusDot color="#22C55E" />
+            <span>No priority alerts right now. Certificate and access posture look healthy.</span>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {stats?.alerts?.map((alert) => (
+              <AlertRow key={alert.id} alert={alert} />
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* Connected Users Table */}
       <div style={{ ...cardStyle, marginTop: '16px' }}>
         <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -908,6 +947,103 @@ function HealthNotice({ visible, color, message }: { visible: boolean; color: st
       <span>{message}</span>
     </div>
   )
+}
+
+function AlertRow({ alert }: { alert: DashboardAlertItem }) {
+  const severityColor = getAlertSeverityColor(alert.severity)
+
+  return (
+    <div style={{
+      background: '#0A0A0A',
+      border: `1px solid ${severityColor}22`,
+      borderRadius: '12px',
+      padding: '14px',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: '16px',
+      flexWrap: 'wrap',
+    }}>
+      <div style={{ display: 'grid', gap: '8px', minWidth: 0, flex: '1 1 320px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '11px',
+            fontWeight: 700,
+            color: severityColor,
+            background: `${severityColor}18`,
+            borderRadius: '9999px',
+            padding: '4px 8px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+          }}>
+            <StatusDot color={severityColor} />
+            {alert.severity}
+          </span>
+          <span style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            color: severityColor,
+            background: `${severityColor}10`,
+            border: `1px solid ${severityColor}22`,
+            borderRadius: '9999px',
+            padding: '4px 8px',
+          }}>
+            {alert.count}
+          </span>
+        </div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{alert.title}</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55 }}>{alert.message}</div>
+      </div>
+
+      <Link
+        href={alert.href}
+        style={{
+          minHeight: '36px',
+          padding: '0 12px',
+          borderRadius: '10px',
+          border: `1px solid ${severityColor}26`,
+          background: `${severityColor}12`,
+          color: severityColor,
+          textDecoration: 'none',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '12px',
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {alert.ctaLabel}
+      </Link>
+    </div>
+  )
+}
+
+function StatusDot({ color }: { color: string }) {
+  return (
+    <span style={{
+      width: '8px',
+      height: '8px',
+      borderRadius: '9999px',
+      background: color,
+      display: 'inline-block',
+      flexShrink: 0,
+    }} />
+  )
+}
+
+function getAlertSeverityColor(severity: DashboardAlertSeverity) {
+  switch (severity) {
+    case 'critical':
+      return '#EF4444'
+    case 'warning':
+      return '#F59E0B'
+    default:
+      return '#60A5FA'
+  }
 }
 
 /* ---- SVG Icons ---- */
