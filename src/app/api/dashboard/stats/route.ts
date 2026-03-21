@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { parseStatusLog } from '@/lib/connections'
 import { getEffectiveSystemSettings } from '@/lib/system-settings'
 import { requireApprovedUser } from '@/lib/rbac'
+import { buildDashboardAlerts } from '@/lib/dashboard-alerts'
 
 export const GET = requireApprovedUser()(async (_request, session) => {
   const { prisma } = await import('@/lib/prisma')
@@ -11,11 +12,14 @@ export const GET = requireApprovedUser()(async (_request, session) => {
 
   const certWarningDate = new Date()
   certWarningDate.setDate(certWarningDate.getDate() + settings.certExpiryWarnDays)
+  const now = new Date()
+  const stalePendingCutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  const staleProcessingCutoff = new Date(now.getTime() - 30 * 60 * 1000)
 
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
-  const [totalUsers, activeCerts, pendingFlags, lastSyncJob, serverCount, pendingRequests, revokedCerts, noCerts, expiringCerts, todayAuditCount, disabledUsers] =
+  const [totalUsers, activeCerts, pendingFlags, lastSyncJob, serverCount, pendingRequests, revokedCerts, noCerts, expiringCerts, todayAuditCount, disabledUsers, failedProvisioningCount, stalePendingRequestCount, staleProcessingRequestCount, earliestExpiringCert, oldestFailedProvisioning, latestFlaggedUser] =
     await Promise.all([
       prisma.vpnUser.count(),
       prisma.vpnUser.count({ where: { certStatus: 'ACTIVE' } }),
@@ -37,6 +41,51 @@ export const GET = requireApprovedUser()(async (_request, session) => {
       }),
       prisma.auditLog.count({ where: { createdAt: { gte: todayStart } } }),
       prisma.vpnUser.count({ where: { isEnabled: false } }),
+      prisma.accessRequest.count({ where: { status: 'FAILED' } }),
+      prisma.accessRequest.count({
+        where: {
+          status: 'PENDING',
+          createdAt: { lte: stalePendingCutoff },
+        },
+      }),
+      prisma.accessRequest.count({
+        where: {
+          status: 'PROCESSING',
+          updatedAt: { lte: staleProcessingCutoff },
+        },
+      }),
+      prisma.vpnUser.findFirst({
+        where: {
+          certStatus: 'ACTIVE',
+          certExpiresAt: { lte: certWarningDate, not: null },
+        },
+        orderBy: { certExpiresAt: 'asc' },
+        select: {
+          email: true,
+          commonName: true,
+          certExpiresAt: true,
+          server: { select: { name: true } },
+        },
+      }),
+      prisma.accessRequest.findFirst({
+        where: { status: 'FAILED' },
+        orderBy: { updatedAt: 'asc' },
+        select: {
+          email: true,
+          updatedAt: true,
+          server: { select: { name: true } },
+        },
+      }),
+      prisma.vpnUser.findFirst({
+        where: { isFlagged: true },
+        orderBy: { flaggedAt: 'desc' },
+        select: {
+          email: true,
+          commonName: true,
+          flaggedAt: true,
+          server: { select: { name: true } },
+        },
+      }),
     ])
 
   // Get active connections across all servers (admin only)
@@ -155,6 +204,39 @@ export const GET = requireApprovedUser()(async (_request, session) => {
     activityByDay.push({ date: dateStr, count })
   }
 
+  const alerts = buildDashboardAlerts({
+    certWarningDays: settings.certExpiryWarnDays,
+    expiringCertCount: expiringCerts,
+    earliestExpiringCert: earliestExpiringCert
+      ? {
+          email: earliestExpiringCert.email,
+          commonName: earliestExpiringCert.commonName,
+          certExpiresAt: earliestExpiringCert.certExpiresAt,
+          serverName: earliestExpiringCert.server.name,
+        }
+      : undefined,
+    failedProvisioningCount,
+    oldestFailedProvisioning: oldestFailedProvisioning
+      ? {
+          email: oldestFailedProvisioning.email,
+          timestamp: oldestFailedProvisioning.updatedAt,
+          serverName: oldestFailedProvisioning.server.name,
+        }
+      : undefined,
+    flaggedUserCount: pendingFlags,
+    latestFlaggedUser: latestFlaggedUser
+      ? {
+          email: latestFlaggedUser.email,
+          commonName: latestFlaggedUser.commonName,
+          timestamp: latestFlaggedUser.flaggedAt,
+          serverName: latestFlaggedUser.server.name,
+        }
+      : undefined,
+    disabledUserCount: disabledUsers,
+    stalePendingRequestCount,
+    staleProcessingRequestCount,
+  })
+
   return NextResponse.json({
     role: 'ADMIN',
     totalUsers,
@@ -175,5 +257,6 @@ export const GET = requireApprovedUser()(async (_request, session) => {
     todayAuditCount,
     disabledUsers,
     certWarningDays: settings.certExpiryWarnDays,
+    alerts,
   })
 })
