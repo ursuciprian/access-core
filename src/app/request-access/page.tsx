@@ -167,6 +167,7 @@ function RequestAccessContent() {
     APPROVED: { bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
     FAILED: { bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
     REJECTED: { bg: 'rgba(239,68,68,0.15)', text: '#EF4444' },
+    EXPIRED: { bg: 'rgba(148,163,184,0.16)', text: '#CBD5E1' },
   }
 
   if (authStatus === 'loading') {

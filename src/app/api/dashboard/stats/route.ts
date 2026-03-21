@@ -5,10 +5,14 @@ import { parseStatusLog } from '@/lib/connections'
 import { getEffectiveSystemSettings } from '@/lib/system-settings'
 import { requireApprovedUser } from '@/lib/rbac'
 import { buildDashboardAlerts } from '@/lib/dashboard-alerts'
+import { runAccessLifecycleAutomation } from '@/lib/access-lifecycle'
 
 export const GET = requireApprovedUser()(async (_request, session) => {
   const { prisma } = await import('@/lib/prisma')
   const settings = await getEffectiveSystemSettings()
+  const isAdmin = (session.user as Record<string, unknown>).role === 'ADMIN'
+  const lifecycleAutomation = isAdmin ? await runAccessLifecycleAutomation() : null
+  const formatDateKey = (date: Date) => date.toISOString().slice(0, 10)
 
   const certWarningDate = new Date()
   certWarningDate.setDate(certWarningDate.getDate() + settings.certExpiryWarnDays)
@@ -94,8 +98,8 @@ export const GET = requireApprovedUser()(async (_request, session) => {
   let totalBandwidthOut = 0
   const serverConnections: Record<string, number> = {}
   const connectedUsers: { commonName: string; realAddress: string; vpnAddress: string; bytesIn: number; bytesOut: number; connectedSince: string; serverId: string; serverName: string }[] = []
-
-  const isAdmin = (session.user as Record<string, unknown>).role === 'ADMIN'
+  let inboundTrafficTrend: { date: string; value: number }[] = []
+  let outboundTrafficTrend: { date: string; value: number }[] = []
 
   // Viewer-specific dashboard data
   if (!isAdmin) {
@@ -155,6 +159,29 @@ export const GET = requireApprovedUser()(async (_request, session) => {
       where: { isActive: true },
       select: { id: true, name: true },
     })
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+
+    const recentConnections = await prisma.vpnConnection.findMany({
+      where: {
+        OR: [
+          { connectedAt: { gte: sevenDaysAgo } },
+          { disconnectedAt: { gte: sevenDaysAgo } },
+          {
+            connectedAt: { lte: new Date() },
+            disconnectedAt: null,
+          },
+        ],
+      },
+      select: {
+        connectedAt: true,
+        disconnectedAt: true,
+        bytesIn: true,
+        bytesOut: true,
+      },
+      orderBy: { connectedAt: 'asc' },
+    })
 
     const connectionResults = await Promise.allSettled(
       servers.map(async (s) => {
@@ -179,6 +206,37 @@ export const GET = requireApprovedUser()(async (_request, session) => {
         }
       }
     }
+
+    const todayKey = formatDateKey(new Date())
+    inboundTrafficTrend = Array.from({ length: 7 }, (_, index) => {
+      const dayStart = new Date(sevenDaysAgo)
+      dayStart.setDate(sevenDaysAgo.getDate() + index)
+      dayStart.setHours(0, 0, 0, 0)
+      const dateKey = formatDateKey(dayStart)
+
+      const historicalBytesIn = recentConnections.reduce((sum, connection) => {
+        if (formatDateKey(connection.connectedAt) !== dateKey) return sum
+        return sum + Number(connection.bytesIn)
+      }, 0)
+
+      const value = dateKey === todayKey ? Math.max(historicalBytesIn, totalBandwidthIn) : historicalBytesIn
+      return { date: dateKey, value }
+    })
+
+    outboundTrafficTrend = Array.from({ length: 7 }, (_, index) => {
+      const dayStart = new Date(sevenDaysAgo)
+      dayStart.setDate(sevenDaysAgo.getDate() + index)
+      dayStart.setHours(0, 0, 0, 0)
+      const dateKey = formatDateKey(dayStart)
+
+      const historicalBytesOut = recentConnections.reduce((sum, connection) => {
+        if (formatDateKey(connection.connectedAt) !== dateKey) return sum
+        return sum + Number(connection.bytesOut)
+      }, 0)
+
+      const value = dateKey === todayKey ? Math.max(historicalBytesOut, totalBandwidthOut) : historicalBytesOut
+      return { date: dateKey, value }
+    })
   }
 
   // Activity history: count audit entries per day for last 7 days
@@ -248,6 +306,8 @@ export const GET = requireApprovedUser()(async (_request, session) => {
     activeConnections,
     totalBandwidthIn,
     totalBandwidthOut,
+    inboundTrafficTrend,
+    outboundTrafficTrend,
     serverConnections,
     connectedUsers,
     activityByDay,
@@ -258,5 +318,6 @@ export const GET = requireApprovedUser()(async (_request, session) => {
     disabledUsers,
     certWarningDays: settings.certExpiryWarnDays,
     alerts,
+    lifecycleAutomation,
   })
 })

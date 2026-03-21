@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { SessionProvider, signOut, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+import { getPostVerifyDestination } from './navigation'
 
 function getSafeCallbackUrl(value: string | null) {
   return value?.startsWith('/') ? value : '/'
@@ -16,6 +18,8 @@ function MfaVerifyContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const callbackUrl = getSafeCallbackUrl(searchParams.get('callbackUrl'))
+  const isApproved = Boolean((session?.user as Record<string, unknown> | undefined)?.isApproved)
+  const destination = getPostVerifyDestination({ callbackUrl, isApproved })
 
   useEffect(() => {
     if (status === 'loading') {
@@ -29,9 +33,9 @@ function MfaVerifyContent() {
 
     const user = session.user as Record<string, unknown>
     if (user.mfaEnabled === true && user.mfaVerified === true) {
-      router.replace(callbackUrl)
+      router.replace(destination)
     }
-  }, [callbackUrl, router, session, status])
+  }, [destination, router, session, status])
 
   async function handleVerify(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -51,8 +55,10 @@ function MfaVerifyContent() {
         return
       }
 
-      await update({ mfaVerified: true, mfaEnabled: true })
-      router.replace(callbackUrl)
+      void update({ mfaVerified: true, mfaEnabled: true }).catch(() => undefined)
+      window.location.assign(destination)
+    } catch {
+      setError('Verification succeeded, but we could not continue your sign-in. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -189,7 +195,9 @@ function MfaVerifyContent() {
 export default function MfaVerifyPage() {
   return (
     <SessionProvider>
-      <MfaVerifyContent />
+      <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-secondary)' }}>Loading...</div>}>
+        <MfaVerifyContent />
+      </Suspense>
     </SessionProvider>
   )
 }
