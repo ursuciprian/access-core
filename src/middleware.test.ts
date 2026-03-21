@@ -90,6 +90,21 @@ describe('middleware matcher', () => {
     expect(response.status).toBe(403)
   })
 
+  it('redirects already-verified users away from the MFA verify screen', async () => {
+    const response = await middleware({
+      nextauth: { token: { isApproved: true, mfaEnabled: true, mfaVerified: true } },
+      nextUrl: {
+        pathname: '/mfa/verify',
+        search: '?callbackUrl=%2Fanalytics',
+        searchParams: new URLSearchParams('callbackUrl=%2Fanalytics'),
+      },
+      cookies: { get: vi.fn(() => undefined) },
+      url: 'http://localhost/mfa/verify?callbackUrl=%2Fanalytics',
+    } as never)
+
+    expect(response.headers.get('location')).toBe('http://localhost/analytics')
+  })
+
   it('redirects approved users without MFA enrolled to the setup screen', async () => {
     const response = await middleware({
       nextauth: { token: { isApproved: true, mfaEnabled: false, mfaVerified: true } },

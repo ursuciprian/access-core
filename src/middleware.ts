@@ -69,6 +69,16 @@ export default withAuth(
       )
 
     if (
+      pathname === '/mfa/verify' &&
+      token?.mfaEnabled === true &&
+      (token.mfaVerified === true || hasServerIssuedMfaVerification)
+    ) {
+      const callbackUrl = req.nextUrl.searchParams.get('callbackUrl')
+      const destination = callbackUrl?.startsWith('/') ? callbackUrl : '/'
+      return NextResponse.redirect(new URL(destination, req.url))
+    }
+
+    if (
       token &&
       token.mfaEnabled === true &&
       token.mfaVerified !== true &&
