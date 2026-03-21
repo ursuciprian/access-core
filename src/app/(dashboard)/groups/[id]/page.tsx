@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/ToastProvider'
 
@@ -74,6 +75,7 @@ export default function GroupDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
+  const groupId = String(params.id)
   const [group, setGroup] = useState<GroupDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [newCidr, setNewCidr] = useState({ cidr: '', description: '' })
@@ -83,8 +85,9 @@ export default function GroupDetailPage() {
   const [saving, setSaving] = useState(false)
   const [syncingCcd, setSyncingCcd] = useState(false)
 
-  const fetchGroup = () => {
-    fetch(`/api/groups/${params.id}`)
+  const fetchGroup = useCallback(() => {
+    setLoading(true)
+    fetch(`/api/groups/${groupId}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         setGroup(data)
@@ -92,15 +95,15 @@ export default function GroupDetailPage() {
       })
       .catch(() => setGroup(null))
       .finally(() => setLoading(false))
-  }
+  }, [groupId])
 
   const handleSaveEdit = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/groups/${params.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        const res = await fetch(`/api/groups/${groupId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editForm),
       })
       if (res.ok) {
         setEditing(false)
@@ -114,13 +117,13 @@ export default function GroupDetailPage() {
     }
   }
 
-  useEffect(() => { fetchGroup() }, [params.id])
+  useEffect(() => { fetchGroup() }, [fetchGroup])
 
   const handleAddCidr = async (e: React.FormEvent) => {
     e.preventDefault()
     setAdding(true)
     try {
-      const res = await fetch(`/api/groups/${params.id}/cidr`, {
+      const res = await fetch(`/api/groups/${groupId}/cidr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCidr),
@@ -138,7 +141,7 @@ export default function GroupDetailPage() {
   }
 
   const handleRemoveCidr = async (cidrId: string) => {
-    const res = await fetch(`/api/groups/${params.id}/cidr/${cidrId}`, { method: 'DELETE' })
+    const res = await fetch(`/api/groups/${groupId}/cidr/${cidrId}`, { method: 'DELETE' })
     if (res.ok) toast('CIDR block removed', 'success')
     else toast('Failed to remove CIDR block', 'error')
     fetchGroup()
@@ -147,7 +150,7 @@ export default function GroupDetailPage() {
   const handleSyncCcd = async () => {
     setSyncingCcd(true)
     try {
-      const res = await fetch(`/api/groups/${params.id}/push-ccd`, { method: 'POST' })
+      const res = await fetch(`/api/groups/${groupId}/push-ccd`, { method: 'POST' })
       if (res.ok) {
         const data = await res.json().catch(() => ({}))
         const syncedCount = typeof (data as { syncedCount?: number }).syncedCount === 'number'
@@ -347,12 +350,12 @@ export default function GroupDetailPage() {
               {group.users.map((membership) => (
                 <li key={membership.id} style={listItemStyle}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                    <a
+                    <Link
                       href={`/users/${membership.user.id}`}
                       style={{ fontSize: '13px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600, wordBreak: 'break-word' }}
                     >
                       {membership.user.email}
-                    </a>
+                    </Link>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', wordBreak: 'break-word' }}>
                       {membership.user.commonName}
                     </span>
@@ -391,12 +394,12 @@ export default function GroupDetailPage() {
               {group.temporaryAccess.map((grant) => (
                 <li key={grant.id} style={listItemStyle}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                    <a
+                    <Link
                       href={`/users/${grant.user.id}`}
                       style={{ fontSize: '13px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600, wordBreak: 'break-word' }}
                     >
                       {grant.user.email}
-                    </a>
+                    </Link>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', wordBreak: 'break-word' }}>
                       {grant.user.commonName}
                     </span>

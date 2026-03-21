@@ -307,6 +307,7 @@ enum AccessRequestStatus {
   APPROVED
   FAILED
   REJECTED
+  EXPIRED
 }
 
 model AccessRequest {

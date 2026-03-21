@@ -4,6 +4,7 @@ import { AccessRequestStatus } from '@prisma/client'
 import { z } from 'zod/v4'
 import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
+import { reconcileAccessRequestLifecycle } from '@/lib/access-lifecycle'
 
 export const dynamic = 'force-dynamic'
 
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest) {
   }
 
   const email = session.user.email as string
+  await reconcileAccessRequestLifecycle({ email })
 
   const parsed = createAccessRequestSchema.safeParse(await req.json())
   if (!parsed.success) {

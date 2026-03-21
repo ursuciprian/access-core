@@ -28,6 +28,8 @@ interface DashboardStats {
   activeConnections: number
   totalBandwidthIn: number
   totalBandwidthOut: number
+  inboundTrafficTrend?: { date: string; value: number }[]
+  outboundTrafficTrend?: { date: string; value: number }[]
   serverConnections: Record<string, number>
   connectedUsers: ConnectedUser[]
   activityByDay: { date: string; count: number }[]
@@ -38,6 +40,15 @@ interface DashboardStats {
   disabledUsers: number
   certWarningDays?: number
   alerts?: DashboardAlertItem[]
+  lifecycleAutomation?: {
+    ranAt: string
+    expiredTemporaryAccessCount: number
+    failedTemporaryAccessCount: number
+    expiredOrphanedApprovedCount: number
+    expiredStalePendingCount: number
+    expiredStaleFailedCount: number
+    skipped: boolean
+  } | null
 }
 
 interface ViewerStats {
@@ -395,10 +406,9 @@ export default function DashboardPage() {
   const totalUsers = stats?.totalUsers ?? 0
   const activeConnections = stats?.activeConnections ?? 0
   const activeCerts = stats?.activeCerts ?? 0
-  const activeCertPct = totalUsers > 0 ? Math.round((activeCerts / totalUsers) * 100) : 0
   const overviewColumns = viewport === 'desktop' ? 'minmax(0, 1.35fr) minmax(320px, 0.85fr)' : '1fr'
   const overviewStatColumns = viewport === 'desktop' ? 'repeat(4, minmax(0, 1fr))' : viewport === 'tablet' ? 'repeat(2, minmax(0, 1fr))' : '1fr'
-  const detailPillColumns = viewport === 'desktop' ? 'repeat(4, minmax(0, 1fr))' : viewport === 'tablet' ? 'repeat(2, minmax(0, 1fr))' : '1fr'
+  const trafficColumns = viewport === 'desktop' ? 'repeat(2, minmax(0, 1fr))' : '1fr'
   const healthColumns = viewport === 'phone' ? '1fr' : 'repeat(2, minmax(0, 1fr))'
   const lowerRowColumns = viewport === 'desktop' ? '1fr 1fr' : '1fr'
 
@@ -443,16 +453,24 @@ export default function DashboardPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: overviewStatColumns, gap: '12px' }}>
             <StatCard title="Connected" value={activeConnections} color="#22C55E" subtitle={`of ${totalUsers} users`} />
-            <StatCard title="Active Certs" value={activeCerts} color="#3B82F6" subtitle={`${activeCertPct}% of users`} />
             <StatCard title="Servers" value={stats?.serverCount ?? 0} color="#8B5CF6" subtitle="configured" />
             <StatCard title="Requests" value={stats?.pendingRequests ?? 0} color="#F59E0B" subtitle="awaiting review" href="/access-requests" />
+            <StatCard title="Today's Events" value={stats?.todayAuditCount ?? 0} color="var(--accent)" subtitle="audit actions today" />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: detailPillColumns, gap: '10px', marginTop: '14px' }}>
-            <DetailPill label="Bandwidth In" value={formatBytes(stats?.totalBandwidthIn ?? 0)} color="#22C55E" />
-            <DetailPill label="Bandwidth Out" value={formatBytes(stats?.totalBandwidthOut ?? 0)} color="var(--accent)" />
-            <DetailPill label="Today's Events" value={String(stats?.todayAuditCount ?? 0)} color="var(--accent)" />
-            <DetailPill label="Flagged Users" value={String(stats?.pendingFlags ?? 0)} color="#EF4444" />
+          <div style={{ display: 'grid', gridTemplateColumns: trafficColumns, gap: '12px', marginTop: '14px' }}>
+            <TrafficLineCard
+              title="Inbound Traffic"
+              color="#22C55E"
+              totalLabel={formatBytes(stats?.totalBandwidthIn ?? 0)}
+              series={stats?.inboundTrafficTrend ?? []}
+            />
+            <TrafficLineCard
+              title="Outbound Traffic"
+              color="var(--accent)"
+              totalLabel={formatBytes(stats?.totalBandwidthOut ?? 0)}
+              series={stats?.outboundTrafficTrend ?? []}
+            />
           </div>
         </section>
 
@@ -506,6 +524,34 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
+
+      {stats?.lifecycleAutomation && (
+        <section
+          style={{
+            ...cardStyle,
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+              Access Lifecycle Automation
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
+              {stats.lifecycleAutomation.skipped ? 'Using the most recent cleanup result.' : 'A cleanup pass just ran.'} Last run {relativeTime(stats.lifecycleAutomation.ranAt)}.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <MiniStat label="Temp Grants Expired" value={stats.lifecycleAutomation.expiredTemporaryAccessCount} color="#22C55E" />
+            <MiniStat label="Approved Closed" value={stats.lifecycleAutomation.expiredOrphanedApprovedCount} color="#F59E0B" />
+            <MiniStat label="Stale Requests Closed" value={stats.lifecycleAutomation.expiredStalePendingCount + stats.lifecycleAutomation.expiredStaleFailedCount} color="#CBD5E1" />
+          </div>
+        </section>
+      )}
 
       <section style={{ ...cardStyle, marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '16px' }}>
@@ -859,7 +905,26 @@ function StatCard({ title, value, color, subtitle, href }: {
   return content
 }
 
-function DetailPill({ label, value, color }: { label: string; value: string; color: string }) {
+function TrafficLineCard({
+  title,
+  totalLabel,
+  color,
+  series,
+}: {
+  title: string
+  totalLabel: string
+  color: string
+  series: Array<{ date: string; value: number }>
+}) {
+  const width = 320
+  const height = 96
+  const maxValue = Math.max(...series.map((point) => point.value), 1)
+  const points = series.map((point, index) => {
+    const x = series.length <= 1 ? width / 2 : (index / (series.length - 1)) * width
+    const y = height - (point.value / maxValue) * (height - 12) - 6
+    return `${x},${y}`
+  }).join(' ')
+
   return (
     <div style={{
       background: '#0A0A0A',
@@ -867,11 +932,30 @@ function DetailPill({ label, value, color }: { label: string; value: string; col
       borderRadius: '12px',
       padding: '12px 14px',
     }}>
-      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
-        {label}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px', marginBottom: '8px' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {title}
+        </div>
+        <div style={{ fontSize: '13px', fontWeight: 600, color }}>
+          {totalLabel}
+        </div>
       </div>
-      <div style={{ fontSize: '14px', fontWeight: 600, color }}>
-        {value}
+      <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: '96px', display: 'block' }} aria-hidden="true">
+        <polyline
+          points={points}
+          fill="none"
+          stroke={color}
+          strokeWidth="3"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginTop: '6px' }}>
+        {series.map((point) => (
+          <span key={point.date} style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+            {formatShortDay(point.date)}
+          </span>
+        ))}
       </div>
     </div>
   )

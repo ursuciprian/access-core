@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/ToastProvider'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -114,31 +115,34 @@ export default function UserDetailPage() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [deletingUser, setDeletingUser] = useState(false)
 
-  const fetchUser = () => {
-    fetch(`/api/users/${params.id}`)
+  const userId = String(params.id)
+
+  const fetchUser = useCallback(() => {
+    setLoading(true)
+    fetch(`/api/users/${userId}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => setUser(data))
       .catch(() => setUser(null))
       .finally(() => setLoading(false))
-  }
+  }, [userId])
 
-  const fetchTempGrants = () => {
-    fetch(`/api/users/${params.id}/temporary-access`)
+  const fetchTempGrants = useCallback(() => {
+    fetch(`/api/users/${userId}/temporary-access`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => setTempGrants(Array.isArray(data) ? data : []))
       .catch(() => setTempGrants([]))
-  }
+  }, [userId])
 
-  const fetchAvailableGroups = () => {
+  const fetchAvailableGroups = useCallback(() => {
     if (!user) return
-    fetch(`/api/servers/${user.server.id}`)
+    fetch(`/api/servers/${user.server.id}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         const groups = data.groups || []
         setAvailableGroups(groups.map((g: { id: string; name: string }) => ({ id: g.id, name: g.name })))
       })
       .catch(() => setAvailableGroups([]))
-  }
+  }, [user])
 
   const handleAddGroup = async () => {
     if (!selectedGroupId) return
@@ -178,8 +182,8 @@ export default function UserDetailPage() {
     }
   }
 
-  useEffect(() => { fetchUser(); fetchTempGrants() }, [params.id])
-  useEffect(() => { if (user) fetchAvailableGroups() }, [user?.server.id])
+  useEffect(() => { fetchUser(); fetchTempGrants() }, [fetchUser, fetchTempGrants])
+  useEffect(() => { if (user) fetchAvailableGroups() }, [user, fetchAvailableGroups])
   useEffect(() => {
     fetch('/api/system/status')
       .then((res) => res.json())
@@ -196,7 +200,7 @@ export default function UserDetailPage() {
         allowedSourceIps: (user.allowedSourceIps || []).join(', '),
       })
     }
-  }, [user?.id, user?.staticIp, user?.allowInternet, user?.maxConnections])
+  }, [user])
 
   const handleSaveNetwork = async () => {
     setSavingNetwork(true)
@@ -592,12 +596,12 @@ export default function UserDetailPage() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {user.groups.map((ug) => (
                 <li key={ug.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--elevated)', borderRadius: 'var(--radius-lg)', padding: '8px 12px' }}>
-                  <a
+                  <Link
                     href={`/groups/${ug.group.id}`}
                     style={{ fontSize: '13px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}
                   >
                     {ug.group.name}
-                  </a>
+                  </Link>
                   <button
                     onClick={() => handleRemoveGroup(ug.group.id)}
                     disabled={removingGroupId === ug.group.id}

@@ -11,7 +11,7 @@ interface AccessRequest {
   server: { id: string; name: string; hostname: string }
   groupIds: string[]
   reason: string | null
-  status: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REJECTED'
+  status: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REJECTED' | 'EXPIRED'
   reviewedBy: string | null
   reviewedAt: string | null
   reviewNote: string | null
@@ -21,7 +21,7 @@ interface AccessRequest {
 export default function AccessRequestsPage() {
   const [requests, setRequests] = useState<AccessRequest[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REJECTED'>('PENDING')
+  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REJECTED' | 'EXPIRED'>('PENDING')
   const [reviewNote, setReviewNote] = useState<Record<string, string>>({})
   const [processing, setProcessing] = useState<string | null>(null)
 
@@ -56,9 +56,10 @@ export default function AccessRequestsPage() {
     APPROVED: { bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
     FAILED: { bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
     REJECTED: { bg: 'rgba(239,68,68,0.15)', text: '#EF4444' },
+    EXPIRED: { bg: 'rgba(148,163,184,0.16)', text: '#CBD5E1' },
   }
 
-  const filters: Array<'ALL' | 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REJECTED'> = ['ALL', 'PENDING', 'PROCESSING', 'APPROVED', 'FAILED', 'REJECTED']
+  const filters: Array<'ALL' | 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REJECTED' | 'EXPIRED'> = ['ALL', 'PENDING', 'PROCESSING', 'APPROVED', 'FAILED', 'REJECTED', 'EXPIRED']
 
   if (loading) {
     return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px', color: 'var(--text-muted)' }}>Loading...</div>

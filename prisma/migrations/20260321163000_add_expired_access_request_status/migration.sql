@@ -1,0 +1,1 @@
+ALTER TYPE "AccessRequestStatus" ADD VALUE IF NOT EXISTS 'EXPIRED';

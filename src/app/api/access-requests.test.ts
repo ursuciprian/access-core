@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-const { prismaMock } = vi.hoisted(() => ({
+const { prismaMock, reconcileAccessRequestLifecycleMock } = vi.hoisted(() => ({
   prismaMock: {
     accessRequest: {
       findFirst: vi.fn(),
@@ -13,6 +13,7 @@ const { prismaMock } = vi.hoisted(() => ({
       findMany: vi.fn(),
     },
   },
+  reconcileAccessRequestLifecycleMock: vi.fn(),
 }))
 
 vi.mock('next-auth', () => ({
@@ -31,6 +32,10 @@ vi.mock('@/lib/audit', () => ({
   logAudit: vi.fn(),
 }))
 
+vi.mock('@/lib/access-lifecycle', () => ({
+  reconcileAccessRequestLifecycle: reconcileAccessRequestLifecycleMock,
+}))
+
 import { getServerSession } from 'next-auth'
 import { GET, POST } from '@/app/api/access-requests/route'
 
@@ -47,6 +52,11 @@ describe('POST /api/access-requests', () => {
     vi.clearAllMocks()
     prismaMock.accessRequest.count.mockResolvedValue(0)
     prismaMock.vpnUser.findMany.mockResolvedValue([])
+    reconcileAccessRequestLifecycleMock.mockResolvedValue({
+      expiredOrphanedApprovedCount: 0,
+      expiredStalePendingCount: 0,
+      expiredStaleFailedCount: 0,
+    })
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
         email: 'viewer@example.com',
@@ -69,6 +79,7 @@ describe('POST /api/access-requests', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'You already have a pending request for this server',
     })
+    expect(reconcileAccessRequestLifecycleMock).toHaveBeenCalledWith({ email: 'viewer@example.com' })
   })
 
   it('rejects requests when the user already has VPN access on that server', async () => {
