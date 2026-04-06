@@ -2,6 +2,10 @@
 
 This folder contains documentation, deployment guides, public assets, and architecture diagrams for AccessCore.
 
+## Start Here
+
+- [Getting Started](./getting-started.md) - Local setup, configuration, and deployment basics
+
 ## Diagrams
 
 Architecture and flow diagrams (Mermaid format, renderable on GitHub):

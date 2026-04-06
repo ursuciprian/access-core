@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth'
 import { z } from 'zod/v4'
 import { validateCidr } from '@/lib/validation'
 import { markUsersAffectedByGroupChangePending } from '@/lib/temporary-access'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 const addCidrSchema = z.object({
   cidr: z.string(),
@@ -16,6 +17,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
 import { reconcileAccessRequestLifecycle } from '@/lib/access-lifecycle'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 export const dynamic = 'force-dynamic'
 
@@ -86,6 +87,11 @@ export async function GET(req: NextRequest) {
 // POST /api/access-requests — create a new access request
 export async function POST(req: NextRequest) {
   const { prisma } = await import('@/lib/prisma')
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(req)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

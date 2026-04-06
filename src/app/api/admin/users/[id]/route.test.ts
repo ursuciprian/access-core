@@ -54,6 +54,9 @@ describe('PUT /api/admin/users/[id]', () => {
       new NextRequest('http://localhost/api/admin/users/admin-2', {
         method: 'PUT',
         body: JSON.stringify({ password: 'new-password' }),
+        headers: {
+          origin: 'http://localhost',
+        },
       }),
       { params: Promise.resolve({ id: 'admin-2' }) } as never
     )
@@ -77,6 +80,9 @@ describe('PUT /api/admin/users/[id]', () => {
       new NextRequest('http://localhost/api/admin/users/admin-1', {
         method: 'PUT',
         body: JSON.stringify({ password: 'new-password' }),
+        headers: {
+          origin: 'http://localhost',
+        },
       }),
       { params: Promise.resolve({ id: 'admin-1' }) } as never
     )

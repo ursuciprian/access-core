@@ -7,6 +7,7 @@ import { z } from 'zod/v4'
 import { logAudit } from '@/lib/audit'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { generateCert, revokeCert } from '@/lib/cert-service'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 const certActionSchema = z.object({
   action: z.enum(['generate', 'revoke', 'regenerate']),
@@ -16,6 +17,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

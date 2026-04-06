@@ -70,7 +70,12 @@ describe('POST /api/groups/[id]/push-ccd', () => {
 
   it('syncs CCD for permanent and temporary-access users of a group', async () => {
     const response = await POST(
-      new NextRequest('http://localhost/api/groups/group-1/push-ccd', { method: 'POST' }),
+      new NextRequest('http://localhost/api/groups/group-1/push-ccd', {
+        method: 'POST',
+        headers: {
+          origin: 'http://localhost',
+        },
+      }),
       { params: Promise.resolve({ id: 'group-1' }) } as never
     )
 

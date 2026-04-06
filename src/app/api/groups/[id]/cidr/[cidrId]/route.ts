@@ -4,11 +4,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { markUsersAffectedByGroupChangePending } from '@/lib/temporary-access'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; cidrId: string }> }
 ) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

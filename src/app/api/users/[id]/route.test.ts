@@ -61,7 +61,12 @@ import { isServerManagementEnabled } from '@/lib/features'
 import { DELETE } from '@/app/api/users/[id]/route'
 
 function makeRequest() {
-  return new NextRequest('http://localhost/api/users/user-1', { method: 'DELETE' })
+  return new NextRequest('http://localhost/api/users/user-1', {
+    method: 'DELETE',
+    headers: {
+      origin: 'http://localhost',
+    },
+  })
 }
 
 function makeParams(id: string) {

@@ -16,12 +16,18 @@ import {
   createMfaVerificationCookieValue,
   MFA_VERIFICATION_COOKIE,
 } from '@/lib/mfa-cookie'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 const verifyMfaSchema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
 })
 
 export async function POST(request: NextRequest) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

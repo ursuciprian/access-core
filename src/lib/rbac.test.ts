@@ -16,6 +16,20 @@ function makeRequest(url = 'http://localhost/api/test'): NextRequest {
   return new NextRequest(url)
 }
 
+function makeMutatingRequest(
+  url = 'http://localhost/api/test',
+  init?: RequestInit
+): NextRequest {
+  return new NextRequest(url, {
+    method: 'POST',
+    headers: {
+      origin: 'http://localhost',
+      ...(init?.headers ?? {}),
+    },
+    ...init,
+  })
+}
+
 describe('requireAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -84,6 +98,24 @@ describe('requireAuth', () => {
     expect(handler).toHaveBeenCalledOnce()
     expect(response.status).toBe(200)
   })
+
+  it('blocks cross-site mutation requests before session handling', async () => {
+    const handler = vi.fn()
+    const wrapped = requireAuth()(handler)
+    const response = await wrapped(new NextRequest('http://localhost/api/test', {
+      method: 'POST',
+      headers: {
+        origin: 'https://attacker.example.com',
+      },
+    }))
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Forbidden: cross-site request blocked',
+    })
+    expect(getServerSession).not.toHaveBeenCalled()
+    expect(handler).not.toHaveBeenCalled()
+  })
 })
 
 describe('requireRole(ADMIN)', () => {
@@ -144,6 +176,18 @@ describe('requireRole(ADMIN)', () => {
     expect(handler).toHaveBeenCalledOnce()
     expect(handler).toHaveBeenCalledWith(req, session, undefined)
     expect(response.status).toBe(200)
+  })
+
+  it('allows same-origin mutation requests through to admin handlers', async () => {
+    const session = { user: { email: 'admin@example.com', role: UserRole.ADMIN } }
+    vi.mocked(getServerSession).mockResolvedValue(session as never)
+
+    const handler = vi.fn().mockResolvedValue(NextResponse.json({ ok: true }))
+    const wrapped = requireRole(UserRole.ADMIN)(handler)
+    const response = await wrapped(makeMutatingRequest())
+
+    expect(response.status).toBe(200)
+    expect(handler).toHaveBeenCalledOnce()
   })
 })
 
