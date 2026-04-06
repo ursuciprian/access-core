@@ -7,7 +7,7 @@ vi.mock('./transport', () => ({
   }),
 }))
 
-import { generateCert, revokeCert, checkCertStatus } from './cert-service'
+import { generateCert, revokeCert, checkCertStatus, getCertExpiryDate } from './cert-service'
 import { getTransport } from './transport'
 
 const mockGetTransport = getTransport as ReturnType<typeof vi.fn>
@@ -17,6 +17,7 @@ function makeServer(overrides: Record<string, unknown> = {}) {
     id: 'server-1',
     name: 'Test Server',
     easyRsaPath: '/etc/easyrsa',
+    clientCertValidityDays: 825,
     ccdPath: '/etc/openvpn/ccd',
     serverConf: '/etc/openvpn/server.conf',
     transport: 'SSH',
@@ -50,7 +51,7 @@ describe('generateCert', () => {
     await generateCert(server as any, 'alice')
 
     expect(transport.executeCommand).toHaveBeenCalledWith(
-      `cd '/etc/easyrsa' && ./easyrsa --batch build-client-full 'alice' nopass`
+      `cd '/etc/easyrsa' && rm -f pki/reqs/'alice'.req && rm -f pki/private/'alice'.key && rm -f pki/issued/'alice'.crt && rm -f pki/inline/'alice'.inline && ./easyrsa --batch --days=825 build-client-full 'alice' nopass`
     )
   })
 
@@ -64,6 +65,19 @@ describe('generateCert', () => {
 
     expect(transport.executeCommand).toHaveBeenCalledWith(
       expect.stringContaining(`cd '/custom/pki'`)
+    )
+  })
+
+  it('uses server client certificate validity days in the command', async () => {
+    const transport = makeTransport()
+    transport.executeCommand.mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' })
+    mockGetTransport.mockReturnValue(transport)
+
+    const server = makeServer({ clientCertValidityDays: 90 })
+    await generateCert(server as any, 'bob')
+
+    expect(transport.executeCommand).toHaveBeenCalledWith(
+      expect.stringContaining('--days=90')
     )
   })
 
@@ -92,7 +106,7 @@ describe('generateCert', () => {
     mockGetTransport.mockReturnValue(transport)
 
     await expect(generateCert(makeServer() as any, 'alice')).rejects.toThrow(
-      'Certificate generation command failed'
+      'Certificate generation command failed: failure'
     )
   })
 })
@@ -110,7 +124,8 @@ describe('revokeCert', () => {
     expect(command).toContain('./easyrsa gen-crl')
     expect(command).toContain('cp pki/crl.pem /etc/openvpn/crl.pem')
     expect(command).toContain('chmod 644 /etc/openvpn/crl.pem')
-    expect(command).toContain('systemctl reload openvpn')
+    expect(command).toContain('command -v systemctl')
+    expect(command).toContain('service openvpn restart')
   })
 
   it('includes cd to easyRsaPath in revoke command', async () => {
@@ -142,8 +157,23 @@ describe('revokeCert', () => {
     mockGetTransport.mockReturnValue(transport)
 
     await expect(revokeCert(makeServer() as any, 'alice')).rejects.toThrow(
-      'Certificate revocation command failed'
+      'Certificate revocation command failed: failure'
     )
+  })
+
+  it('allows missing certificates when requested', async () => {
+    const transport = makeTransport()
+    const commandResult = {
+      exitCode: 1,
+      stdout: '',
+      stderr: 'Easy-RSA error:\n\nUnable to revoke as no certificate was found.',
+    }
+    transport.executeCommand.mockResolvedValue(commandResult)
+    mockGetTransport.mockReturnValue(transport)
+
+    const result = await revokeCert(makeServer() as any, 'alice', { allowMissing: true })
+
+    expect(result).toEqual(commandResult)
   })
 })
 
@@ -191,5 +221,31 @@ describe('checkCertStatus', () => {
     expect(transport.executeCommand).toHaveBeenCalledWith(
       expect.stringContaining(`cd '/srv/pki'`)
     )
+  })
+})
+
+describe('getCertExpiryDate', () => {
+  it('parses EasyRSA expiry output', async () => {
+    const transport = makeTransport()
+    transport.executeCommand.mockResolvedValue({
+      exitCode: 0,
+      stdout: 'Certificate is to be certified until May  6 12:00:00 2026 GMT (30 days)',
+      stderr: '',
+    })
+    mockGetTransport.mockReturnValue(transport)
+
+    const result = await getCertExpiryDate(makeServer() as any, 'alice')
+
+    expect(result?.toISOString()).toBe('2026-05-06T12:00:00.000Z')
+  })
+
+  it('returns null when certificate is not found', async () => {
+    const transport = makeTransport()
+    transport.executeCommand.mockResolvedValue({ exitCode: 0, stdout: 'NOT_FOUND', stderr: '' })
+    mockGetTransport.mockReturnValue(transport)
+
+    const result = await getCertExpiryDate(makeServer() as any, 'alice')
+
+    expect(result).toBeNull()
   })
 })

@@ -82,7 +82,22 @@ npm run docker:up
 This starts:
 - **PostgreSQL 16** on port `5433`
 - **OpenVPN server** on port `1194/UDP` (VPN) and `2222/TCP` (SSH management)
-- **Internal test app** at `10.8.1.100` (accessible only via VPN)
+- **Internal test app** on the isolated Docker bridge network (accessible only via VPN)
+
+If Docker reports `invalid pool request: Pool overlaps with other one on this address space`, override the internal bridge subnet before starting Compose:
+
+```bash
+export VPN_INTERNAL_SUBNET=172.31.251.0/24
+export VPN_INTERNAL_GATEWAY_IP=172.31.251.2
+export VPN_INTERNAL_APP_IP=172.31.251.100
+docker compose -f docker/compose.yml up -d --build
+```
+
+You can also override the routed OpenVPN client subnet if needed:
+
+```bash
+export OPENVPN_CLIENT_SUBNET=10.8.0.0/24
+```
 
 ### 4. Initialize the database
 
@@ -192,7 +207,7 @@ For small teams or testing. Suitable for a single VM (EC2, Droplet, etc.).
 #### 1. Build the Docker image
 
 ```bash
-docker build -f docker/app/Dockerfile -t accesscore .
+docker build -f docker/app/Dockerfile.prod -t accesscore .
 ```
 
 #### 2. Set up PostgreSQL

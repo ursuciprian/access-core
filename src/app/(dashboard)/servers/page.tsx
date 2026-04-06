@@ -9,6 +9,7 @@ interface VpnServer {
   name: string
   hostname: string
   transport: string
+  clientCertValidityDays: number
   isActive: boolean
   _count?: { users: number; groups: number }
 }
@@ -34,6 +35,7 @@ const defaultForm = {
   ccdPath: '/etc/openvpn/ccd',
   easyRsaPath: '/etc/openvpn/easy-rsa',
   serverConf: '/etc/openvpn/server.conf',
+  clientCertValidityDays: '825',
 }
 
 const inputStyle: React.CSSProperties = {
@@ -131,6 +133,7 @@ export default function ServersPage() {
         ccdPath: form.ccdPath,
         easyRsaPath: form.easyRsaPath,
         serverConf: form.serverConf,
+        clientCertValidityDays: parseInt(form.clientCertValidityDays, 10) || 825,
       }
       if (form.transport === 'SSH') {
         payload.sshHost = form.sshHost
@@ -309,6 +312,14 @@ export default function ServersPage() {
             <div>
               <label style={labelStyle}>Server Config</label>
               <input type="text" required value={form.serverConf} onChange={(e) => set('serverConf', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 280px)', gap: '16px', marginBottom: '16px' }}>
+            <div>
+              <label style={labelStyle}>Client Certificate Validity (Days)</label>
+              <input type="number" min="1" max="3650" required value={form.clientCertValidityDays} onChange={(e) => set('clientCertValidityDays', e.target.value)} style={inputStyle} />
+              <p style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>Applies to new and regenerated client certificates on this server.</p>
             </div>
           </div>
 

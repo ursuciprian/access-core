@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
-import { generateCert, revokeCert } from '@/lib/cert-service'
+import { generateCert, getCertExpiryDate, revokeCert } from '@/lib/cert-service'
 import { deriveCommonName, validateCommonName } from '@/lib/validation'
 import { requireAdmin } from '@/lib/rbac'
 import { enforceTrustedOriginForMutation } from '@/lib/request-security'
@@ -160,8 +160,10 @@ export const PATCH = requireAdmin()(async (
     }
 
     const needsNewCert = provisionedUser.certStatus !== 'ACTIVE'
+    let certExpiresAt = provisionedUser.certExpiresAt ?? null
     if (needsNewCert) {
       await generateCert(provisionedUser.server, provisionedUser.commonName)
+      certExpiresAt = await getCertExpiryDate(provisionedUser.server, provisionedUser.commonName)
       generatedFreshCert = true
     }
 
@@ -182,6 +184,7 @@ export const PATCH = requireAdmin()(async (
           isEnabled: true,
           certStatus: 'ACTIVE',
           certCreatedAt: needsNewCert ? new Date() : provisionedUser.certCreatedAt ?? new Date(),
+          certExpiresAt,
         },
       }),
       prisma.adminUser.updateMany({

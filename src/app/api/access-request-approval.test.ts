@@ -14,6 +14,7 @@ vi.mock('@/lib/audit', () => ({
 
 vi.mock('@/lib/cert-service', () => ({
   generateCert: vi.fn(),
+  getCertExpiryDate: vi.fn(),
   revokeCert: vi.fn(),
 }))
 
@@ -43,7 +44,7 @@ vi.mock('@/lib/prisma', () => ({
 }))
 
 import { getServerSession } from 'next-auth'
-import { generateCert, revokeCert } from '@/lib/cert-service'
+import { generateCert, getCertExpiryDate, revokeCert } from '@/lib/cert-service'
 import { PATCH } from '@/app/api/access-requests/[id]/route'
 
 function makeRequest(body: Record<string, unknown>) {
@@ -110,6 +111,7 @@ describe('PATCH /api/access-requests/[id]', () => {
     prismaMock.vpnUser.update.mockResolvedValue({ ...createdUser, certStatus: 'ACTIVE', isEnabled: true })
     prismaMock.adminUser.updateMany.mockResolvedValue({ count: 1 })
     vi.mocked(generateCert).mockResolvedValue({ exitCode: 0, stdout: 'ok', stderr: '' } as never)
+    vi.mocked(getCertExpiryDate).mockResolvedValue(new Date('2026-05-06T12:00:00.000Z') as never)
 
     const response = await PATCH(
       makeRequest({ action: 'approve', reviewNote: 'looks good' }),
@@ -131,6 +133,13 @@ describe('PATCH /api/access-requests/[id]', () => {
     expect(prismaMock.adminUser.updateMany).toHaveBeenCalledWith({
       where: { email: baseRequest.email, isApproved: false },
       data: { isApproved: true },
+    })
+    expect(prismaMock.vpnUser.update).toHaveBeenCalledWith({
+      where: { id: createdUser.id },
+      data: expect.objectContaining({
+        certStatus: 'ACTIVE',
+        certExpiresAt: new Date('2026-05-06T12:00:00.000Z'),
+      }),
     })
     expect(vi.mocked(revokeCert)).not.toHaveBeenCalled()
   })
