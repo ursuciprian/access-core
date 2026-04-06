@@ -80,6 +80,9 @@ describe('POST /api/users/[id]/temporary-access', () => {
           expiresAt: '2030-03-17T10:00:00.000Z',
           reason: 'after-hours support',
         }),
+        headers: {
+          origin: 'http://localhost',
+        },
       }),
       { params: Promise.resolve({ id: 'user-1' }) } as never
     )
@@ -126,6 +129,9 @@ describe('POST /api/users/[id]/temporary-access', () => {
           groupId: 'group-1',
           expiresAt: '2030-03-17T10:00:00.000Z',
         }),
+        headers: {
+          origin: 'http://localhost',
+        },
       }),
       { params: Promise.resolve({ id: 'user-1' }) } as never
     )

@@ -50,7 +50,10 @@ function makeRequest(body: Record<string, unknown>) {
   return new NextRequest('http://localhost/api/access-requests/request-1', {
     method: 'PATCH',
     body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      origin: 'http://localhost',
+    },
   })
 }
 

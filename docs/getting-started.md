@@ -87,11 +87,8 @@ This starts:
 ### 4. Initialize the database
 
 ```bash
-# Run migrations
-npx prisma migrate dev
-
-# Seed local demo data and, if configured, the initial admin user
-npx prisma db seed
+npm run db:migrate
+npm run db:seed
 ```
 
 The seed command always creates the local development VPN server and demo groups. It only creates an admin account when both of these environment variables are set:
@@ -104,7 +101,7 @@ Recommended local setup:
 ```bash
 export SEED_ADMIN_EMAIL="admin@local.test"
 export SEED_ADMIN_PASSWORD="change-this-demo-password"
-npx prisma db seed
+npm run db:seed
 ```
 
 ### 5. Start the development server
@@ -180,8 +177,8 @@ GOOGLE_ADMIN_EMAIL="admin@yourcompany.com"
 2. Set `NEXTAUTH_SECRET`
 3. Set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`
 4. Start Docker services with `npm run docker:up`
-5. Run `npx prisma migrate dev`
-6. Run `npx prisma db seed`
+5. Run `npm run db:migrate`
+6. Run `npm run db:seed`
 7. Start the app with `npm run dev`
 
 ---

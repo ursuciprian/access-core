@@ -45,6 +45,18 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Origin-Agent-Cluster',
+            value: '?1',
+          },
         ],
       },
     ]
