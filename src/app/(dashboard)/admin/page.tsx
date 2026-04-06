@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/ToastProvider'
 import { MIN_PASSWORD_LENGTH, MIN_PASSWORD_MESSAGE } from '@/lib/password-policy'
+import { notifyPortalAccessPendingCountChanged } from '@/lib/access-request-events'
 
 interface AdminUser {
   id: string
@@ -169,6 +170,7 @@ export default function AdminPage() {
     if (res.ok) {
       toast('User approved', 'success')
       fetchUsers()
+      notifyPortalAccessPendingCountChanged()
     } else {
       const data = await res.json()
       toast(data.error || 'Failed to approve', 'error')
@@ -194,6 +196,7 @@ export default function AdminPage() {
     if (res.ok) {
       toast('User rejected and removed', 'success')
       fetchUsers()
+      notifyPortalAccessPendingCountChanged()
     } else {
       const data = await res.json()
       toast(data.error || 'Failed to reject', 'error')
@@ -232,6 +235,7 @@ export default function AdminPage() {
     setSelectedPendingIds([])
     setBulkAction(null)
     fetchUsers()
+    notifyPortalAccessPendingCountChanged()
   }
 
   const handleResetPassword = async (id: string) => {
