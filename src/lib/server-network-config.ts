@@ -151,9 +151,7 @@ export function buildApplyNetworkSettingsCommand(input: {
 
   return [
     `cp ${escapedConf} ${escapedBackup} 2>/dev/null || true`,
-    `cat > ${escapedConf} << 'SERVERCONFEOF'`,
-    input.configContent,
-    'SERVERCONFEOF',
+    `printf '%s' ${shellEscape(input.configContent)} > ${escapedConf}`,
     'DEFAULT_IFACE="$(ip route show default 2>/dev/null | awk \'/default/ {print $5; exit}\')"',
     '[ -n "$DEFAULT_IFACE" ] || DEFAULT_IFACE=eth0',
     `iptables -t nat -D POSTROUTING -s ${shellEscape(input.vpnNetwork)} -o "$DEFAULT_IFACE" -j MASQUERADE 2>/dev/null || true`,

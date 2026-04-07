@@ -11,8 +11,8 @@ import {
   decryptTotpSecret,
   encryptTotpSecret,
   generateTotpSecret,
-  verifyTotpCode,
 } from '@/lib/totp'
+import { consumeTotpCode } from '@/lib/totp-verification'
 
 const schema = z.object({
   currentCode: z.string().trim().regex(/^\d{6}$/),
@@ -40,7 +40,11 @@ export const POST = requireApprovedUser()(async (request: NextRequest, session) 
   }
 
   const currentSecret = decryptTotpSecret(adminUser.mfaSecret)
-  if (!currentSecret || !verifyTotpCode(currentSecret, parsed.data.currentCode)) {
+  const verification = currentSecret
+    ? await consumeTotpCode(adminUser.id, currentSecret, parsed.data.currentCode)
+    : { success: false as const, reason: 'invalid' as const }
+
+  if (!verification.success) {
     return NextResponse.json({ error: 'Invalid current MFA code' }, { status: 400 })
   }
 

@@ -25,7 +25,9 @@ export const POST = requireAdmin()(async (_request, session, context) => {
       mfaSecret: null,
       mfaPendingSecret: null,
       mfaEnabledAt: null,
-    },
+      lastTotpStep: null,
+      lastTotpSecretHash: null,
+    } as any,
   })
 
   await revokeUserAuthSessions({
