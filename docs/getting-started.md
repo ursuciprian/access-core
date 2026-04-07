@@ -82,16 +82,28 @@ npm run docker:up
 This starts:
 - **PostgreSQL 16** on port `5433`
 - **OpenVPN server** on port `1194/UDP` (VPN) and `2222/TCP` (SSH management)
-- **Internal test app** at `10.8.1.100` (accessible only via VPN)
+- **Internal test app** on the isolated Docker bridge network (accessible only via VPN)
+
+If Docker reports `invalid pool request: Pool overlaps with other one on this address space`, override the internal bridge subnet before starting Compose:
+
+```bash
+export VPN_INTERNAL_SUBNET=172.31.251.0/24
+export VPN_INTERNAL_GATEWAY_IP=172.31.251.2
+export VPN_INTERNAL_APP_IP=172.31.251.100
+docker compose -f docker/compose.yml up -d --build
+```
+
+You can also override the routed OpenVPN client subnet if needed:
+
+```bash
+export OPENVPN_CLIENT_SUBNET=10.8.0.0/24
+```
 
 ### 4. Initialize the database
 
 ```bash
-# Run migrations
-npx prisma migrate dev
-
-# Seed local demo data and, if configured, the initial admin user
-npx prisma db seed
+npm run db:migrate
+npm run db:seed
 ```
 
 The seed command always creates the local development VPN server and demo groups. It only creates an admin account when both of these environment variables are set:
@@ -104,7 +116,7 @@ Recommended local setup:
 ```bash
 export SEED_ADMIN_EMAIL="admin@local.test"
 export SEED_ADMIN_PASSWORD="change-this-demo-password"
-npx prisma db seed
+npm run db:seed
 ```
 
 ### 5. Start the development server
@@ -180,8 +192,8 @@ GOOGLE_ADMIN_EMAIL="admin@yourcompany.com"
 2. Set `NEXTAUTH_SECRET`
 3. Set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`
 4. Start Docker services with `npm run docker:up`
-5. Run `npx prisma migrate dev`
-6. Run `npx prisma db seed`
+5. Run `npm run db:migrate`
+6. Run `npm run db:seed`
 7. Start the app with `npm run dev`
 
 ---
@@ -195,7 +207,7 @@ For small teams or testing. Suitable for a single VM (EC2, Droplet, etc.).
 #### 1. Build the Docker image
 
 ```bash
-docker build -f docker/app/Dockerfile -t accesscore .
+docker build -f docker/app/Dockerfile.prod -t accesscore .
 ```
 
 #### 2. Set up PostgreSQL

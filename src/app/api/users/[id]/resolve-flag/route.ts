@@ -9,6 +9,7 @@ import { revokeCert } from '@/lib/cert-service'
 import { getTransport } from '@/lib/transport'
 import { validateCommonName, serverPathSchema } from '@/lib/validation'
 import { buildRemoveFileCommand } from '@/lib/shell'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 const resolveFlagSchema = z.object({
   action: z.enum(['revoke', 'dismiss', 'reassign']),
@@ -20,6 +21,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

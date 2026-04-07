@@ -1,0 +1,2 @@
+ALTER TABLE "VpnServer"
+ADD COLUMN "clientCertValidityDays" INTEGER NOT NULL DEFAULT 825;

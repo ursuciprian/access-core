@@ -43,7 +43,10 @@ function makeRequest(body: Record<string, unknown>) {
   return new NextRequest('http://localhost/api/access-requests', {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      origin: 'http://localhost',
+    },
   })
 }
 
@@ -105,6 +108,23 @@ describe('POST /api/access-requests', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'You already have too many active access requests. Please wait for an administrator to review them.',
     })
+  })
+
+  it('blocks cross-site request forgery attempts', async () => {
+    const response = await POST(new NextRequest('http://localhost/api/access-requests', {
+      method: 'POST',
+      body: JSON.stringify({ serverId: 'server-1', groupIds: [] }),
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'https://attacker.example.com',
+      },
+    }))
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Forbidden: cross-site request blocked',
+    })
+    expect(getServerSession).not.toHaveBeenCalled()
   })
 })
 

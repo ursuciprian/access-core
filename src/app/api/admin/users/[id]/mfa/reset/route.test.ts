@@ -41,6 +41,9 @@ import { POST } from '@/app/api/admin/users/[id]/mfa/reset/route'
 function makeRequest() {
   return new NextRequest('http://localhost/api/admin/users/admin-2/mfa/reset', {
     method: 'POST',
+    headers: {
+      origin: 'http://localhost',
+    },
   })
 }
 

@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
 import { generateCcdForUser, buildCcdWriteCommand } from '@/lib/ccd-generator'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
 import { getTransport } from '@/lib/transport'
-import { generateCert } from '@/lib/cert-service'
+import { generateCert, getCertExpiryDate } from '@/lib/cert-service'
 import { requireAdmin } from '@/lib/rbac'
 
 const bulkActionSchema = z.object({
@@ -93,10 +93,11 @@ export const POST = requireAdmin()(async (request: NextRequest) => {
         }
 
         await generateCert(user.server, user.commonName)
+        const certExpiresAt = await getCertExpiryDate(user.server, user.commonName)
 
         await prisma.vpnUser.update({
           where: { id: userId },
-          data: { certStatus: 'ACTIVE', certCreatedAt: new Date() },
+          data: { certStatus: 'ACTIVE', certCreatedAt: new Date(), certExpiresAt },
         })
 
         success++

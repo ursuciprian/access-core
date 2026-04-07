@@ -6,7 +6,8 @@ import { authOptions } from '@/lib/auth'
 import { z } from 'zod/v4'
 import { logAudit } from '@/lib/audit'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
-import { generateCert, revokeCert } from '@/lib/cert-service'
+import { generateCert, getCertExpiryDate, revokeCert } from '@/lib/cert-service'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 const certActionSchema = z.object({
   action: z.enum(['generate', 'revoke', 'regenerate']),
@@ -16,6 +17,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -58,12 +64,14 @@ export async function POST(
       }
 
       await generateCert(user.server, user.commonName)
+      const certExpiresAt = await getCertExpiryDate(user.server, user.commonName)
 
       const updatedUser = await prisma.vpnUser.update({
         where: { id },
         data: {
           certStatus: 'ACTIVE',
           certCreatedAt: new Date(),
+          certExpiresAt,
         },
       })
 
@@ -109,16 +117,18 @@ export async function POST(
     if (parsed.data.action === 'regenerate') {
       // Revoke existing cert if active
       if (user.certStatus === 'ACTIVE') {
-        await revokeCert(user.server, user.commonName)
+        await revokeCert(user.server, user.commonName, { allowMissing: true })
       }
 
       await generateCert(user.server, user.commonName)
+      const certExpiresAt = await getCertExpiryDate(user.server, user.commonName)
 
       const updatedUser = await prisma.vpnUser.update({
         where: { id },
         data: {
           certStatus: 'ACTIVE',
           certCreatedAt: new Date(),
+          certExpiresAt,
         },
       })
 

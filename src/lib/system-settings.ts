@@ -40,11 +40,38 @@ export function getSystemSettingsFallbacks(): EffectiveSystemSettings {
   }
 }
 
+function isMissingSystemSettingsTableError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false
+  }
+
+  const candidate = error as { code?: string; message?: string }
+
+  if (candidate.code === 'P2021') {
+    return true
+  }
+
+  return typeof candidate.message === 'string' &&
+    candidate.message.includes('SystemSettings') &&
+    candidate.message.includes('does not exist')
+}
+
 export async function getEffectiveSystemSettings(): Promise<EffectiveSystemSettings> {
   const fallbacks = getSystemSettingsFallbacks()
-  const settings = await prisma.systemSettings.findUnique({
-    where: { id: 'global' },
-  })
+  let settings: SystemSettings | null = null
+
+  try {
+    settings = await prisma.systemSettings.findUnique({
+      where: { id: 'global' },
+    })
+  } catch (error) {
+    if (!isMissingSystemSettingsTableError(error)) {
+      throw error
+    }
+
+    console.warn('SystemSettings table is missing; using environment fallbacks instead.')
+    return fallbacks
+  }
 
   if (!settings) {
     return fallbacks
