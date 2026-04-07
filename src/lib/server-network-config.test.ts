@@ -86,7 +86,7 @@ describe('buildApplyNetworkSettingsCommand', () => {
     })
 
     expect(command).toContain("cp '/etc/openvpn/server.conf' '/etc/openvpn/server.conf.portal.bak'")
-    expect(command).toContain("cat > '/etc/openvpn/server.conf' << 'SERVERCONFEOF'")
+    expect(command).toContain("printf '%s'")
     expect(command).toContain("iptables -t nat -A POSTROUTING -s '10.8.0.0/24'")
     expect(command).toContain('systemctl reload openvpn@server')
     expect(command).toContain('service openvpn restart')

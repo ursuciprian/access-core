@@ -5,7 +5,8 @@ import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { requireApprovedUser } from '@/lib/rbac'
-import { decryptTotpSecret, verifyTotpCode } from '@/lib/totp'
+import { decryptTotpSecret } from '@/lib/totp'
+import { consumeTotpCode } from '@/lib/totp-verification'
 
 const schema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
@@ -33,7 +34,8 @@ export const POST = requireApprovedUser()(async (request: NextRequest, session) 
     return NextResponse.json({ error: 'No MFA reconfiguration is pending' }, { status: 409 })
   }
 
-  if (!verifyTotpCode(pendingSecret, parsed.data.code)) {
+  const verification = await consumeTotpCode(adminUser.id, pendingSecret, parsed.data.code)
+  if (!verification.success) {
     return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 })
   }
 

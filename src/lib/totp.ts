@@ -112,7 +112,7 @@ export function decryptTotpSecret(payload: string | null | undefined): string | 
 
 export function generateTotpCode(secret: string, timestamp = Date.now()): string {
   const secretBytes = decodeBase32(secret)
-  const counter = Math.floor(timestamp / 1000 / TOTP_PERIOD_SECONDS)
+  const counter = getTotpStep(timestamp)
   const counterBuffer = Buffer.alloc(8)
   counterBuffer.writeBigUInt64BE(BigInt(counter))
 
@@ -127,21 +127,35 @@ export function generateTotpCode(secret: string, timestamp = Date.now()): string
   return String(binaryCode % 10 ** TOTP_DIGITS).padStart(TOTP_DIGITS, '0')
 }
 
-export function verifyTotpCode(secret: string, code: string, options?: { window?: number; timestamp?: number }) {
+export function getTotpStep(timestamp = Date.now()) {
+  return Math.floor(timestamp / 1000 / TOTP_PERIOD_SECONDS)
+}
+
+export function getTotpSecretHash(secret: string) {
+  return createHash('sha256').update(secret).digest('hex')
+}
+
+export function findValidTotpStep(secret: string, code: string, options?: { window?: number; timestamp?: number }) {
   const candidate = code.trim()
   if (!/^\d{6}$/.test(candidate)) {
-    return false
+    return null
   }
 
   const window = options?.window ?? 1
   const timestamp = options?.timestamp ?? Date.now()
+  const baseStep = getTotpStep(timestamp)
 
   for (let offset = -window; offset <= window; offset += 1) {
-    const expected = generateTotpCode(secret, timestamp + offset * TOTP_PERIOD_SECONDS * 1000)
+    const step = baseStep + offset
+    const expected = generateTotpCode(secret, (step * TOTP_PERIOD_SECONDS) * 1000)
     if (timingSafeEqual(Buffer.from(candidate), Buffer.from(expected))) {
-      return true
+      return step
     }
   }
 
-  return false
+  return null
+}
+
+export function verifyTotpCode(secret: string, code: string, options?: { window?: number; timestamp?: number }) {
+  return findValidTotpStep(secret, code, options) !== null
 }

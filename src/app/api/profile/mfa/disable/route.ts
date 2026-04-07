@@ -5,9 +5,10 @@ import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { requireApprovedUser } from '@/lib/rbac'
-import { decryptTotpSecret, verifyTotpCode } from '@/lib/totp'
+import { decryptTotpSecret } from '@/lib/totp'
 import { revokeUserAuthSessions } from '@/lib/auth-session'
 import { clearAuthCookies } from '@/lib/auth-cookies'
+import { consumeTotpCode } from '@/lib/totp-verification'
 
 const disableMfaSchema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
@@ -34,7 +35,11 @@ export const POST = requireApprovedUser()(async (request: NextRequest, session) 
   }
 
   const secret = decryptTotpSecret(adminUser.mfaSecret)
-  if (!secret || !verifyTotpCode(secret, parsed.data.code)) {
+  const verification = secret
+    ? await consumeTotpCode(adminUser.id, secret, parsed.data.code)
+    : { success: false as const, reason: 'invalid' as const }
+
+  if (!verification.success) {
     return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 })
   }
 
@@ -45,7 +50,9 @@ export const POST = requireApprovedUser()(async (request: NextRequest, session) 
       mfaEnabledAt: null,
       mfaSecret: null,
       mfaPendingSecret: null,
-    },
+      lastTotpStep: null,
+      lastTotpSecretHash: null,
+    } as any,
   })
 
   await logAudit({

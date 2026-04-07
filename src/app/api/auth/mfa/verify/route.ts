@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth'
 import { z } from 'zod/v4'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { decryptTotpSecret, verifyTotpCode } from '@/lib/totp'
+import { decryptTotpSecret } from '@/lib/totp'
 import { logAudit } from '@/lib/audit'
 import {
   canAttemptMfaVerify,
@@ -17,6 +17,7 @@ import {
   MFA_VERIFICATION_COOKIE,
 } from '@/lib/mfa-cookie'
 import { enforceTrustedOriginForMutation } from '@/lib/request-security'
+import { consumeTotpCode } from '@/lib/totp-verification'
 
 const verifyMfaSchema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
@@ -55,14 +56,18 @@ export async function POST(request: NextRequest) {
   }
 
   const secret = decryptTotpSecret(adminUser.mfaSecret)
-  if (!secret || !verifyTotpCode(secret, parsed.data.code)) {
+  const verification = secret
+    ? await consumeTotpCode(adminUser.id, secret, parsed.data.code)
+    : { success: false as const, reason: 'invalid' as const }
+
+  if (!verification.success) {
     await recordFailedMfaAttempt(adminUser.id)
     await logAudit({
       action: 'MFA_VERIFICATION_FAILED',
       actorEmail: adminUser.email,
       targetType: 'ADMIN_USER',
       targetId: adminUser.id,
-      details: { email: adminUser.email },
+      details: { email: adminUser.email, reason: verification.reason },
     })
     return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 })
   }
