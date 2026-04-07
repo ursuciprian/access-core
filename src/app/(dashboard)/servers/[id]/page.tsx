@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/ToastProvider'
@@ -22,6 +22,7 @@ interface ServerDetail {
   ccdPath: string
   easyRsaPath: string
   serverConf: string
+  clientCertValidityDays: number
   isActive: boolean
   createdAt: string
   _count: { users: number; groups: number; syncJobs: number }
@@ -79,7 +80,7 @@ export default function ServerDetailPage() {
   const [confirmDeactivate, setConfirmDeactivate] = useState(false)
   const [serverManagementEnabled, setServerManagementEnabled] = useState(true)
 
-  const fetchServer = () => {
+  const fetchServer = useCallback(() => {
     fetch(`/api/servers/${params.id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -98,13 +99,14 @@ export default function ServerDetailPage() {
           ccdPath: data.ccdPath,
           easyRsaPath: data.easyRsaPath,
           serverConf: data.serverConf,
+          clientCertValidityDays: String(data.clientCertValidityDays),
         })
       })
       .catch(() => setServer(null))
       .finally(() => setLoading(false))
-  }
+  }, [params.id])
 
-  useEffect(() => { fetchServer() }, [params.id])
+  useEffect(() => { fetchServer() }, [fetchServer])
 
   useEffect(() => {
     fetch('/api/system/status')
@@ -126,6 +128,7 @@ export default function ServerDetailPage() {
         ccdPath: form.ccdPath,
         easyRsaPath: form.easyRsaPath,
         serverConf: form.serverConf,
+        clientCertValidityDays: parseInt(form.clientCertValidityDays, 10) || 825,
       }
       if (form.transport === 'SSH') {
         payload.sshHost = form.sshHost || null
@@ -322,6 +325,13 @@ export default function ServerDetailPage() {
             <div><label style={labelStyle}>EasyRSA Path</label><input type="text" value={form.easyRsaPath} onChange={(e) => set('easyRsaPath', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} /></div>
             <div><label style={labelStyle}>Server Config</label><input type="text" value={form.serverConf} onChange={(e) => set('serverConf', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: '12px' }} /></div>
           </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 280px)', gap: '16px', marginBottom: '16px' }}>
+            <div>
+              <label style={labelStyle}>Client Certificate Validity (Days)</label>
+              <input type="number" min="1" max="3650" value={form.clientCertValidityDays} onChange={(e) => set('clientCertValidityDays', e.target.value)} style={inputStyle} />
+              <p style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>Applies to new and regenerated client certificates on this server.</p>
+            </div>
+          </div>
           <button
             onClick={handleSave}
             disabled={saving}
@@ -367,6 +377,7 @@ export default function ServerDetailPage() {
                 <CompactRow label="CCD Directory" value={server.ccdPath} mono />
                 <CompactRow label="EasyRSA" value={server.easyRsaPath} mono />
                 <CompactRow label="Server Config" value={server.serverConf} mono />
+                <CompactRow label="Client Cert Validity" value={`${server.clientCertValidityDays} days`} />
               </dl>
             </div>
           </div>

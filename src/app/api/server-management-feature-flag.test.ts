@@ -51,6 +51,9 @@ describe('server management feature flag', () => {
           easyRsaPath: '/etc/openvpn/easy-rsa',
           serverConf: '/etc/openvpn/server.conf',
         }),
+        headers: {
+          origin: 'http://localhost',
+        },
       })
     )
 
@@ -81,6 +84,9 @@ describe('server management feature flag', () => {
       new NextRequest('http://localhost/api/users/user-1/cert', {
         method: 'POST',
         body: JSON.stringify({ action: 'generate' }),
+        headers: {
+          origin: 'http://localhost',
+        },
       }),
       { params: Promise.resolve({ id: 'user-1' }) }
     )

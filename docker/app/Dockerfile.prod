@@ -8,8 +8,8 @@ RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
-ARG ALLOW_UNSAFE_INLINE_CSP=false
-ENV ALLOW_UNSAFE_INLINE_CSP=$ALLOW_UNSAFE_INLINE_CSP
+# Keep the production image strict by default. Do not relax CSP at build time.
+ENV ALLOW_UNSAFE_INLINE_CSP=false
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate

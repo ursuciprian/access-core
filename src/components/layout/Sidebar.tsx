@@ -17,14 +17,17 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
-import { ACCESS_REQUEST_PENDING_COUNT_CHANGED_EVENT } from '@/lib/access-request-events'
+import {
+  ACCESS_REQUEST_PENDING_COUNT_CHANGED_EVENT,
+  PORTAL_ACCESS_PENDING_COUNT_CHANGED_EVENT,
+} from '@/lib/access-request-events'
 
 type NavItemConfig = {
   href: string
   label: string
   icon: LucideIcon
   exact?: boolean
-  hasBadge?: boolean
+  badgeKey?: 'accessRequests' | 'portalUsers'
   isActive?: (pathname: string) => boolean
 }
 
@@ -57,10 +60,10 @@ const adminSections: Array<{
     key: 'access',
     label: 'Access',
     items: [
-      { href: '/access-requests', label: 'VPN Requests', icon: Key, hasBadge: true },
+      { href: '/access-requests', label: 'VPN Requests', icon: Key, badgeKey: 'accessRequests' },
       { href: '/users', label: 'Users', icon: Users },
       { href: '/groups', label: 'Groups', icon: Layers },
-      { href: '/admin', label: 'Portal Access', icon: DoorOpen, exact: true },
+      { href: '/admin', label: 'Portal Access', icon: DoorOpen, exact: true, badgeKey: 'portalUsers' },
     ],
   },
   {
@@ -88,7 +91,10 @@ export default function Sidebar({
   const pathname = usePathname()
   const { data: session } = useSession()
   const [profileOpen, setProfileOpen] = useState(false)
-  const [pendingCount, setPendingCount] = useState(0)
+  const [pendingCounts, setPendingCounts] = useState({
+    accessRequests: 0,
+    portalUsers: 0,
+  })
 
   const userEmail = session?.user?.email ?? ''
   const userRole = ((session?.user as Record<string, unknown>)?.role as string | undefined) ?? 'VIEWER'
@@ -99,18 +105,27 @@ export default function Sidebar({
     if (userRole !== 'ADMIN') return
 
     const fetchCount = () => {
-      fetch('/api/access-requests/pending-count')
-        .then((response) => response.json())
-        .then((data) => setPendingCount(data.count || 0))
+      Promise.all([
+        fetch('/api/access-requests/pending-count').then((response) => response.json()),
+        fetch('/api/admin/users/pending-count').then((response) => response.json()),
+      ])
+        .then(([accessRequests, portalUsers]) => {
+          setPendingCounts({
+            accessRequests: accessRequests.count || 0,
+            portalUsers: portalUsers.count || 0,
+          })
+        })
         .catch(() => {})
     }
 
     fetchCount()
     window.addEventListener(ACCESS_REQUEST_PENDING_COUNT_CHANGED_EVENT, fetchCount)
+    window.addEventListener(PORTAL_ACCESS_PENDING_COUNT_CHANGED_EVENT, fetchCount)
     const interval = setInterval(fetchCount, 30000)
     return () => {
       clearInterval(interval)
       window.removeEventListener(ACCESS_REQUEST_PENDING_COUNT_CHANGED_EVENT, fetchCount)
+      window.removeEventListener(PORTAL_ACCESS_PENDING_COUNT_CHANGED_EVENT, fetchCount)
     }
   }, [userRole])
 
@@ -239,7 +254,7 @@ export default function Sidebar({
                     icon={<item.icon size={18} strokeWidth={1.85} />}
                     active={isActive(pathname, item.href, Boolean(item.exact))}
                     collapsed={effectiveCollapsed}
-                    badge={item.hasBadge ? pendingCount : undefined}
+                    badge={item.badgeKey ? pendingCounts[item.badgeKey] : undefined}
                     onNavigate={mobile ? onCloseMobile : undefined}
                   />
                 ))}

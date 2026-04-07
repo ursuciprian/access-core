@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { detectDrift, reconcileDrift } from '@/lib/drift-detection'
 import { isServerManagementEnabled, SERVER_MANAGEMENT_DISABLED_MESSAGE } from '@/lib/features'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 export async function GET(
   _request: NextRequest,
@@ -33,9 +34,14 @@ export async function GET(
 }
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

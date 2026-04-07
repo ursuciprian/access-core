@@ -4,11 +4,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
+import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
+  const blockedByOriginPolicy = enforceTrustedOriginForMutation(request)
+  if (blockedByOriginPolicy) {
+    return blockedByOriginPolicy
+  }
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

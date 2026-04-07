@@ -80,7 +80,12 @@ describe('POST /api/users/[id]/push-ccd', () => {
 
   it('reconciles temporary access before pushing the user CCD', async () => {
     const response = await POST(
-      new NextRequest('http://localhost/api/users/user-1/push-ccd', { method: 'POST' }),
+      new NextRequest('http://localhost/api/users/user-1/push-ccd', {
+        method: 'POST',
+        headers: {
+          origin: 'http://localhost',
+        },
+      }),
       { params: Promise.resolve({ id: 'user-1' }) }
     )
 

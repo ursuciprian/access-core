@@ -28,6 +28,7 @@ model VpnServer {
   ccdPath         String
   easyRsaPath     String
   serverConf      String
+  clientCertValidityDays Int  @default(825)
   vpnNetwork      String        @default("10.8.0.0/24")
   dnsServers      String[]      @default([])
   searchDomains   String[]      @default([])

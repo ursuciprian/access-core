@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { authOptions } from './auth'
 import { UserRole } from '@prisma/client'
+import { enforceTrustedOriginForMutation } from './request-security'
 
 interface SessionUser {
   name?: string | null
@@ -58,6 +59,11 @@ export async function requireSession(options?: {
 export function requireRole(role: UserRole) {
   return function (handler: RouteHandler) {
     return async function (req: NextRequest, context: any) {
+      const blockedByOriginPolicy = enforceTrustedOriginForMutation(req)
+      if (blockedByOriginPolicy) {
+        return blockedByOriginPolicy
+      }
+
       const result = await requireSession({
         admin: role === UserRole.ADMIN,
         approved: true,
@@ -74,6 +80,11 @@ export function requireRole(role: UserRole) {
 export function requireAuth() {
   return function (handler: RouteHandler) {
     return async function (req: NextRequest, context: any) {
+      const blockedByOriginPolicy = enforceTrustedOriginForMutation(req)
+      if (blockedByOriginPolicy) {
+        return blockedByOriginPolicy
+      }
+
       const result = await requireSession({ approved: false })
       if (result instanceof NextResponse) {
         return result
@@ -87,6 +98,11 @@ export function requireAuth() {
 export function requireApprovedUser() {
   return function (handler: RouteHandler) {
     return async function (req: NextRequest, context: any) {
+      const blockedByOriginPolicy = enforceTrustedOriginForMutation(req)
+      if (blockedByOriginPolicy) {
+        return blockedByOriginPolicy
+      }
+
       const result = await requireSession({ approved: true })
       if (result instanceof NextResponse) {
         return result
@@ -100,6 +116,11 @@ export function requireApprovedUser() {
 export function requireAdmin() {
   return function (handler: RouteHandler) {
     return async function (req: NextRequest, context: any) {
+      const blockedByOriginPolicy = enforceTrustedOriginForMutation(req)
+      if (blockedByOriginPolicy) {
+        return blockedByOriginPolicy
+      }
+
       const result = await requireSession({ admin: true, approved: true })
       if (result instanceof NextResponse) {
         return result

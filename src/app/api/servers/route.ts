@@ -13,6 +13,7 @@ const serverListSelect = {
   name: true,
   hostname: true,
   transport: true,
+  clientCertValidityDays: true,
   isActive: true,
   createdAt: true,
   _count: { select: { users: true, groups: true } },
@@ -28,6 +29,8 @@ export const GET = requireAdmin()(async () => {
 
   return NextResponse.json(servers)
 })
+
+const certValidityDaysSchema = z.int().min(1).max(3650)
 
 const createServerSchema = z.object({
   name: z.string().min(1).max(100),
@@ -45,6 +48,7 @@ const createServerSchema = z.object({
   ccdPath: z.string(),
   easyRsaPath: z.string(),
   serverConf: z.string(),
+  clientCertValidityDays: certValidityDaysSchema.default(825),
 })
 
 export const POST = requireAdmin()(async (request: NextRequest, session) => {
