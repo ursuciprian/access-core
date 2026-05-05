@@ -2,6 +2,11 @@ import { CertStatus } from '@prisma/client'
 import { getTransport } from './transport'
 import { validateCommonName } from './validation'
 import { logAudit } from './audit'
+import {
+  buildListDirectoryCommand,
+  buildReadCcdCommand,
+  buildShowCertCommand,
+} from './shell'
 
 export type ImportUserInput = {
   commonName: string
@@ -50,7 +55,7 @@ export async function discoverExistingUsers(serverId: string): Promise<Discovere
   const transport = getTransport(server)
 
   // List CCD files
-  const lsResult = await transport.executeCommand(`ls -1 ${server.ccdPath}/`)
+  const lsResult = await transport.executeCommand(buildListDirectoryCommand(server.ccdPath))
   if (lsResult.exitCode !== 0) {
     throw new Error(`Failed to list CCD directory: ${lsResult.stderr}`)
   }
@@ -80,13 +85,11 @@ export async function discoverExistingUsers(serverId: string): Promise<Discovere
     }
 
     // Read CCD content
-    const catResult = await transport.executeCommand(`cat ${server.ccdPath}/${cn}`)
+    const catResult = await transport.executeCommand(buildReadCcdCommand(server.ccdPath, cn))
     const routes = catResult.exitCode === 0 ? parseCcdRoutes(catResult.stdout) : []
 
     // Check cert status
-    const certResult = await transport.executeCommand(
-      `cd ${server.easyRsaPath} && ./easyrsa show-cert ${cn} 2>/dev/null || echo "NOT_FOUND"`
-    )
+    const certResult = await transport.executeCommand(buildShowCertCommand(server.easyRsaPath, cn))
     const certStatus = parseCertStatus(certResult.stdout)
 
     discovered.push({ commonName: cn, routes, certStatus })

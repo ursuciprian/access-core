@@ -78,6 +78,8 @@ describe('POST /api/admin/users/[id]/mfa/reset', () => {
         mfaSecret: null,
         mfaPendingSecret: null,
         mfaEnabledAt: null,
+        lastTotpStep: null,
+        lastTotpSecretHash: null,
       },
     })
     expect(prismaMock.authSession.updateMany).toHaveBeenCalled()

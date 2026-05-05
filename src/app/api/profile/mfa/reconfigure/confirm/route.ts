@@ -7,6 +7,7 @@ import { logAudit } from '@/lib/audit'
 import { requireApprovedUser } from '@/lib/rbac'
 import { decryptTotpSecret } from '@/lib/totp'
 import { consumeTotpCode } from '@/lib/totp-verification'
+import { applyMfaVerificationCookie } from '@/lib/auth-cookies'
 
 const schema = z.object({
   code: z.string().trim().regex(/^\d{6}$/),
@@ -57,5 +58,7 @@ export const POST = requireApprovedUser()(async (request: NextRequest, session) 
     details: { email: adminUser.email, method: 'TOTP' },
   })
 
-  return NextResponse.json({ success: true })
+  const response = NextResponse.json({ success: true })
+  await applyMfaVerificationCookie(response, session.user as Record<string, unknown>)
+  return response
 })

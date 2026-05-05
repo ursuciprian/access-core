@@ -1,0 +1,2 @@
+ALTER TABLE "VpnServer"
+ADD COLUMN "internalDomains" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

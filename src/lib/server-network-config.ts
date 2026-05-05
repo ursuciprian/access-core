@@ -4,6 +4,7 @@ export interface ServerNetworkSettings {
   vpnNetwork: string
   dnsServers: string[]
   searchDomains: string[]
+  internalDomains: string[]
   routeMode: 'NAT' | 'ROUTING'
   splitTunnel: boolean
   compression: 'off' | 'lzo' | 'lz4'
@@ -51,7 +52,12 @@ function buildManagedLines(settings: ServerNetworkSettings) {
     lines.push(`push "dhcp-option DNS ${dns}"`)
   }
 
-  for (const domain of settings.searchDomains) {
+  const pushedDomains = Array.from(new Set([
+    ...settings.searchDomains,
+    ...settings.internalDomains,
+  ]))
+
+  for (const domain of pushedDomains) {
     lines.push(`push "dhcp-option DOMAIN-SEARCH ${domain}"`)
   }
 
@@ -115,10 +121,10 @@ export function validateServerNetworkSettings(settings: ServerNetworkSettings) {
     }
   }
 
-  const searchDomainRegex = /^[a-zA-Z0-9.-]+$/
-  for (const domain of settings.searchDomains) {
+  const searchDomainRegex = /^(?=.{1,253}$)(?!-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}\.?$/
+  for (const domain of [...settings.searchDomains, ...settings.internalDomains]) {
     if (!searchDomainRegex.test(domain)) {
-      return { success: false as const, error: `Invalid DNS search domain: ${domain}` }
+      return { success: false as const, error: `Invalid DNS domain: ${domain}` }
     }
   }
 

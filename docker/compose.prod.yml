@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-accesscore}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-private
+
+  openvpn:
+    build:
+      context: ./openvpn
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+    ports:
+      - "${OPENVPN_PORT:-1194}:1194/udp"
+    volumes:
+      - openvpn_data:/etc/openvpn
+    environment:
+      OPENVPN_SERVER_SUBNET: ${OPENVPN_SERVER_SUBNET:-10.8.0.0 255.255.255.0}
+    networks:
+      - app-private
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/app/Dockerfile.prod
+    restart: unless-stopped
+    depends_on:
+      - db
+      - openvpn
+    ports:
+      - "127.0.0.1:${ACCESSCORE_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?set NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_ALLOWED_DOMAIN: ${GOOGLE_ALLOWED_DOMAIN:?set GOOGLE_ALLOWED_DOMAIN}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY}
+      ENFORCE_PRODUCTION_SECURITY_CONFIG: "true"
+      ALLOW_UNSAFE_INLINE_CSP: "false"
+      ALLOW_UNSAFE_DEV_CSP: "false"
+    networks:
+      - app-private
+
+networks:
+  app-private:
+    driver: bridge
+
+volumes:
+  pgdata:
+  openvpn_data:

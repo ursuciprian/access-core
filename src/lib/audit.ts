@@ -48,6 +48,8 @@ type AuditAction =
   | 'MFA_VERIFIED'
   | 'MFA_VERIFICATION_FAILED'
   | 'SETTINGS_UPDATED'
+  | 'DNS_HEALTH_CHECKED'
+  | 'NOTIFICATIONS_VIEWED'
 
 export async function logAudit(params: {
   action: AuditAction
