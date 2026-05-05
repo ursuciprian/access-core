@@ -36,7 +36,7 @@ Required variables for local development:
 
 ```env
 # Database
-DATABASE_URL="postgresql://openvpn:openvpn@localhost:5433/openvpn_gui"
+DATABASE_URL="<postgresql-connection-url>"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"
@@ -135,7 +135,7 @@ Open [http://localhost:3000](http://localhost:3000) and log in with the admin ac
 
 ```env
 GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="GOCSPX-your-secret"
+GOOGLE_CLIENT_SECRET="<google-oauth-client-secret>"
 GOOGLE_ALLOWED_DOMAIN="yourcompany.com"
 ```
 
@@ -152,7 +152,7 @@ OIDC_SSO_ENABLED="true"
 OIDC_PROVIDER_NAME="Okta"
 OIDC_ISSUER="https://your-org.okta.com/oauth2/default"
 OIDC_CLIENT_ID="your-client-id"
-OIDC_CLIENT_SECRET="your-client-secret"
+OIDC_CLIENT_SECRET="<oidc-client-secret>"
 OIDC_SCOPES="openid email profile"
 OIDC_ALLOWED_DOMAINS="yourcompany.com"
 ```
@@ -230,11 +230,11 @@ docker run -d \
 docker run -d \
   --name accesscore \
   -p 3000:3000 \
-  -e DATABASE_URL="postgresql://openvpn:<password>@<db-host>:5432/openvpn_gui" \
+  -e DATABASE_URL="<postgresql-connection-url>" \
   -e NEXTAUTH_URL="https://vpn.yourcompany.com" \
   -e NEXTAUTH_SECRET="<openssl rand -base64 32>" \
   -e GOOGLE_CLIENT_ID="<your-client-id>" \
-  -e GOOGLE_CLIENT_SECRET="<your-secret>" \
+  -e GOOGLE_CLIENT_SECRET="<google-oauth-client-secret>" \
   -e GOOGLE_ALLOWED_DOMAIN="yourcompany.com" \
   accesscore
 ```
@@ -301,7 +301,7 @@ DATABASE_URL="postgresql://..."
 NEXTAUTH_URL="https://vpn.yourcompany.com"
 NEXTAUTH_SECRET="<strong-32-byte-random>"
 GOOGLE_CLIENT_ID="..."
-GOOGLE_CLIENT_SECRET="..."
+GOOGLE_CLIENT_SECRET="<google-oauth-client-secret>"
 GOOGLE_ALLOWED_DOMAIN="yourcompany.com"
 TRUST_PROXY_HEADERS="true"
 ```

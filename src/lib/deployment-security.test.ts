@@ -6,7 +6,7 @@ describe('validateDeploymentSecurityConfig', () => {
       NODE_ENV: 'production',
       NEXTAUTH_SECRET: 'change-me-in-production',
       ALLOW_UNSAFE_INLINE_CSP: 'true',
-      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/openvpn_gui',
+      DATABASE_URL: 'postgresql://localhost:5432/openvpn_gui',
     })).toEqual([
       expect.objectContaining({ id: 'default-nextauth-secret', severity: 'critical' }),
       expect.objectContaining({ id: 'relaxed-production-csp', severity: 'critical' }),
@@ -19,7 +19,7 @@ describe('validateDeploymentSecurityConfig', () => {
       NODE_ENV: 'production',
       NEXTAUTH_SECRET: 'a-strong-random-secret-that-is-not-the-default',
       ALLOW_UNSAFE_INLINE_CSP: 'false',
-      DATABASE_URL: 'postgresql://accesscore:secret@db.internal:5432/accesscore',
+      DATABASE_URL: 'postgresql://db.internal:5432/accesscore',
     })).toEqual([])
   })
 
@@ -28,7 +28,7 @@ describe('validateDeploymentSecurityConfig', () => {
       NODE_ENV: 'development',
       NEXTAUTH_SECRET: 'change-me-in-production',
       ALLOW_UNSAFE_INLINE_CSP: 'true',
-      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/openvpn_gui',
+      DATABASE_URL: 'postgresql://localhost:5432/openvpn_gui',
     })).toEqual([])
   })
 })

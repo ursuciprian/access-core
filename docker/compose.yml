@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: openvpn_gui
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-openvpn_gui}
     ports:
       - "5433:5432"
     volumes:
@@ -59,15 +59,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: "postgresql://postgres:postgres@db:5432/openvpn_gui?schema=public"
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
       NEXTAUTH_URL: "http://localhost:3000"
-      NEXTAUTH_SECRET: "change-me-in-production"
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET}
       ALLOW_UNSAFE_INLINE_CSP: "true"
       GOOGLE_CLIENT_ID: ""
       GOOGLE_CLIENT_SECRET: ""
       GOOGLE_ALLOWED_DOMAIN: ""
       ALLOW_SSH_PASSWORD_AUTH: "true"
-      SSH_PASS_LOCAL_DEV: "openvpn"
+      SSH_PASS_LOCAL_DEV: ${SSH_PASS_LOCAL_DEV:?set SSH_PASS_LOCAL_DEV}
 
 networks:
   vpn-internal:

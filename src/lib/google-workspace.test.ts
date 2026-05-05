@@ -28,7 +28,7 @@ import { listGoogleGroupMembers, listGoogleGroups } from './google-workspace'
 const VALID_ENV = {
   GOOGLE_SERVICE_ACCOUNT_EMAIL: 'sa@project.iam.gserviceaccount.com',
   GOOGLE_SERVICE_ACCOUNT_KEY: JSON.stringify({
-    private_key: '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA\n-----END RSA PRIVATE KEY-----',
+    private_key: 'not-a-real-private-key-for-tests',
     client_email: 'sa@project.iam.gserviceaccount.com',
   }),
   GOOGLE_ADMIN_EMAIL: 'admin@example.com',

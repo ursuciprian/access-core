@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5433/openvpn_gui?schema=public'
+  const connectionString = process.env.DATABASE_URL ?? 'postgresql://localhost:5433/openvpn_gui?schema=public'
   const pool = new Pool({ connectionString })
   const adapter = new PrismaPg(pool as any)
   return new PrismaClient({ adapter })

@@ -3,7 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import { hashSync } from 'bcryptjs'
 
-const connectionString = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5433/openvpn_gui?schema=public'
+const connectionString = process.env.DATABASE_URL ?? 'postgresql://localhost:5433/openvpn_gui?schema=public'
 const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool as any)
 const prisma = new PrismaClient({ adapter })
