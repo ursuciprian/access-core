@@ -40,9 +40,14 @@ export function normalizeEmail(email: string): string {
 
 export function isGoogleSignInAllowed(email: string | null | undefined, options?: {
   allowedDomain?: string | null
+  emailVerified?: unknown
 }) {
   const normalizedEmail = email ? normalizeEmail(email) : null
   if (!normalizedEmail) {
+    return false
+  }
+
+  if (!isVerifiedIdentityClaim(options?.emailVerified)) {
     return false
   }
 
@@ -413,6 +418,7 @@ export const authOptions: NextAuthOptions = {
         const email = normalizeEmail(profile?.email ?? user.email ?? '')
         if (!isGoogleSignInAllowed(email, {
           allowedDomain: process.env.GOOGLE_ALLOWED_DOMAIN,
+          emailVerified: (profile as Record<string, unknown> | undefined)?.email_verified,
         })) {
           return false
         }
@@ -433,15 +439,12 @@ export const authOptions: NextAuthOptions = {
       }
       return true
     },
-    async jwt({ token, user, account, trigger, session }) {
-      if (trigger === 'update') {
-        if (typeof (session as Record<string, unknown> | undefined)?.mfaVerified === 'boolean') {
-          token.mfaVerified = Boolean((session as Record<string, unknown>).mfaVerified)
-        }
-        if (typeof (session as Record<string, unknown> | undefined)?.mfaEnabled === 'boolean') {
-          token.mfaEnabled = Boolean((session as Record<string, unknown>).mfaEnabled)
-        }
-      }
+    async jwt({ token, user, account }) {
+      // MFA state (mfaEnabled, mfaVerified) is intentionally NOT settable from
+      // client-side `update()` calls. Both fields are sourced from the database
+      // on token refresh (below), and the middleware gate trusts only the
+      // server-issued MFA_VERIFICATION_COOKIE — never a JWT field — to prove
+      // that TOTP was completed.
 
       const metadata = getAuthRequestMetadata()
 

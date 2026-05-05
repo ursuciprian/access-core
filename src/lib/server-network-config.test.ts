@@ -10,6 +10,7 @@ const settings: ServerNetworkSettings = {
   vpnNetwork: '10.8.0.0/24',
   dnsServers: ['8.8.8.8', '1.1.1.1'],
   searchDomains: ['corp.example.com', 'internal.local'],
+  internalDomains: ['interna.example.com'],
   routeMode: 'NAT',
   splitTunnel: false,
   compression: 'lz4',
@@ -31,6 +32,18 @@ describe('validateServerNetworkSettings', () => {
     ).toEqual({
       success: false,
       error: 'Invalid DNS server: 999.1.1.1',
+    })
+  })
+
+  it('rejects invalid internal domains', () => {
+    expect(
+      validateServerNetworkSettings({
+        ...settings,
+        internalDomains: ['internal_domain.example.com'],
+      })
+    ).toEqual({
+      success: false,
+      error: 'Invalid DNS domain: internal_domain.example.com',
     })
   })
 })
@@ -62,6 +75,7 @@ describe('applyNetworkSettingsToServerConfig', () => {
     expect(updated).toContain('compress lz4')
     expect(updated).toContain('push "dhcp-option DNS 8.8.8.8"')
     expect(updated).toContain('push "dhcp-option DOMAIN-SEARCH corp.example.com"')
+    expect(updated).toContain('push "dhcp-option DOMAIN-SEARCH interna.example.com"')
     expect(updated).toContain('# portal-route-mode NAT')
     expect(updated).not.toContain('port 443')
     expect(updated).not.toContain('proto tcp')

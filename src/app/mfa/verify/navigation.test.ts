@@ -1,4 +1,4 @@
-import { getPostVerifyDestination } from './navigation'
+import { getPostVerifyDestination, getSafeCallbackUrl } from './navigation'
 
 describe('getPostVerifyDestination', () => {
   it('sends unapproved users to pending approval', () => {
@@ -15,6 +15,13 @@ describe('getPostVerifyDestination', () => {
     })).toBe('/analytics')
   })
 
+  it('sanitizes unsafe callback urls before redirecting approved users', () => {
+    expect(getPostVerifyDestination({
+      callbackUrl: '//evil.example',
+      isApproved: true,
+    })).toBe('/')
+  })
+
   it('falls back to root when callback is missing', () => {
     expect(getPostVerifyDestination({
       callbackUrl: null,
@@ -27,5 +34,24 @@ describe('getPostVerifyDestination', () => {
       callbackUrl: '/mfa/verify',
       isApproved: true,
     })).toBe('/')
+  })
+})
+
+describe('getSafeCallbackUrl', () => {
+  it('keeps internal callback paths', () => {
+    expect(getSafeCallbackUrl('/analytics')).toBe('/analytics')
+  })
+
+  it('rejects absolute external callback urls', () => {
+    expect(getSafeCallbackUrl('https://evil.example')).toBe('/')
+  })
+
+  it('rejects protocol-relative callback urls', () => {
+    expect(getSafeCallbackUrl('//evil.example')).toBe('/')
+  })
+
+  it('rejects backslash and control-character callback urls', () => {
+    expect(getSafeCallbackUrl('/\\evil.example')).toBe('/')
+    expect(getSafeCallbackUrl('/\nadmin')).toBe('/')
   })
 })

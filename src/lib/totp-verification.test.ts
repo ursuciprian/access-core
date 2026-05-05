@@ -39,7 +39,14 @@ describe('consumeTotpCode', () => {
     expect(result).toEqual({ success: true, step: getTotpStep(timestamp) })
     expect(updateManyMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ id: 'admin-1' }),
+        where: expect.objectContaining({
+          id: 'admin-1',
+          OR: expect.arrayContaining([
+            { lastTotpSecretHash: null },
+            { lastTotpStep: null },
+            { lastTotpStep: { lt: getTotpStep(timestamp) } },
+          ]),
+        }),
         data: expect.objectContaining({ lastTotpStep: getTotpStep(timestamp) }),
       })
     )

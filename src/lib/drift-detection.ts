@@ -3,6 +3,7 @@ import { validateCommonName } from './validation'
 import { generateCcdForUser, buildCcdWriteCommand } from './ccd-generator'
 import { logAudit } from './audit'
 import { reconcileExpiredTemporaryAccess } from './temporary-access'
+import { buildListDirectoryCommand, buildReadCcdCommand } from './shell'
 
 export type DriftResult = {
   missing: string[]
@@ -31,7 +32,7 @@ export async function detectDrift(serverId: string): Promise<DriftResult> {
   const transport = getTransport(server)
 
   // List CCD files on server
-  const lsResult = await transport.executeCommand(`ls -1 ${server.ccdPath}/`)
+  const lsResult = await transport.executeCommand(buildListDirectoryCommand(server.ccdPath))
   const serverFiles: string[] = lsResult.exitCode === 0
     ? lsResult.stdout
         .split('\n')
@@ -60,7 +61,7 @@ export async function detectDrift(serverId: string): Promise<DriftResult> {
   const commonCns = dbUsers.filter((u) => serverCns.has(u.commonName))
 
   for (const user of commonCns) {
-    const catResult = await transport.executeCommand(`cat ${server.ccdPath}/${user.commonName}`)
+    const catResult = await transport.executeCommand(buildReadCcdCommand(server.ccdPath, user.commonName))
     const actual = catResult.exitCode === 0 ? catResult.stdout : ''
 
     const expected = await generateCcdForUser(user.id)

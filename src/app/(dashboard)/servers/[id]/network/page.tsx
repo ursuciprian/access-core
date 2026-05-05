@@ -10,6 +10,7 @@ interface NetworkSettings {
   vpnNetwork: string
   dnsServers: string[]
   searchDomains: string[]
+  internalDomains: string[]
   routeMode: string
   splitTunnel: boolean
   compression: string
@@ -77,6 +78,7 @@ export default function ServerNetworkPage() {
     vpnNetwork: '10.8.0.0/24',
     dnsServers: [],
     searchDomains: [],
+    internalDomains: [],
     routeMode: 'NAT',
     splitTunnel: false,
     compression: 'off',
@@ -85,6 +87,12 @@ export default function ServerNetworkPage() {
   })
   const [dnsInput, setDnsInput] = useState('')
   const [domainsInput, setDomainsInput] = useState('')
+  const [internalDomainsInput, setInternalDomainsInput] = useState('')
+  const [checkingDns, setCheckingDns] = useState(false)
+  const [dnsHealth, setDnsHealth] = useState<{
+    checkedAt: string
+    checks: Array<{ domain: string; resolver: string; ok: boolean; status: string }>
+  } | null>(null)
   const [serverManagementEnabled, setServerManagementEnabled] = useState(true)
 
   useEffect(() => {
@@ -97,6 +105,7 @@ export default function ServerNetworkPage() {
           vpnNetwork: data.vpnNetwork || '10.8.0.0/24',
           dnsServers: data.dnsServers || [],
           searchDomains: data.searchDomains || [],
+          internalDomains: data.internalDomains || [],
           routeMode: data.routeMode || 'NAT',
           splitTunnel: data.splitTunnel ?? false,
           compression: data.compression || 'off',
@@ -105,6 +114,7 @@ export default function ServerNetworkPage() {
         })
         setDnsInput((data.dnsServers || []).join(', '))
         setDomainsInput((data.searchDomains || []).join(', '))
+        setInternalDomainsInput((data.internalDomains || []).join(', '))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -132,6 +142,10 @@ export default function ServerNetworkPage() {
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean),
+        internalDomains: internalDomainsInput
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
         routeMode: form.routeMode,
         splitTunnel: form.splitTunnel,
         compression: form.compression,
@@ -153,6 +167,26 @@ export default function ServerNetworkPage() {
       toast('Failed to save', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDnsHealthCheck = async () => {
+    setCheckingDns(true)
+    setDnsHealth(null)
+    try {
+      const res = await fetch(`/api/servers/${params.id}/dns-health`, { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        toast((data as Record<string, string>).error || 'DNS health check failed', 'error')
+        return
+      }
+
+      setDnsHealth(data as typeof dnsHealth)
+      toast('DNS health check completed', 'success')
+    } catch {
+      toast('DNS health check failed', 'error')
+    } finally {
+      setCheckingDns(false)
     }
   }
 
@@ -288,7 +322,32 @@ export default function ServerNetworkPage() {
 
         {/* DNS */}
         <div style={cardStyle}>
-          <h3 style={sectionTitleStyle}>DNS</h3>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{ ...sectionTitleStyle, marginBottom: '4px' }}>DNS &amp; Internal Domains</h3>
+              <p style={{ ...hintStyle, marginTop: 0 }}>Control what resolvers clients use and which internal domains are routed through VPN DNS.</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDnsHealthCheck}
+              disabled={checkingDns || !serverManagementEnabled}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '10px',
+                border: '1px solid var(--border-hover)',
+                background: 'var(--elevated)',
+                color: 'var(--text-primary)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: checkingDns || !serverManagementEnabled ? 'not-allowed' : 'pointer',
+                opacity: checkingDns || !serverManagementEnabled ? 0.55 : 1,
+                fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {checkingDns ? 'Checking...' : 'Check DNS'}
+            </button>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={labelStyle}>DNS Servers</label>
@@ -300,10 +359,22 @@ export default function ServerNetworkPage() {
                 style={inputStyle}
                 placeholder="8.8.8.8, 1.1.1.1"
               />
-              <p style={hintStyle}>Comma-separated list of DNS server IPs</p>
+              <p style={hintStyle}>Comma-separated resolver IPs pushed to clients. Use the VPN-facing resolver IP, not 127.0.0.1.</p>
             </div>
             <div>
-              <label style={labelStyle}>Search Domains</label>
+              <label style={labelStyle}>Internal Domains</label>
+              <input
+                type="text"
+                value={internalDomainsInput}
+                onChange={(e) => setInternalDomainsInput(e.target.value)}
+                disabled={!serverManagementEnabled}
+                style={inputStyle}
+                placeholder="interna.example.com"
+              />
+              <p style={hintStyle}>Domains controlled by this VPN server DNS. These are also pushed as OpenVPN search domains.</p>
+            </div>
+            <div>
+              <label style={labelStyle}>Additional Search Domains</label>
               <input
                 type="text"
                 value={domainsInput}
@@ -312,8 +383,33 @@ export default function ServerNetworkPage() {
                 style={inputStyle}
                 placeholder="corp.example.com, internal.local"
               />
-              <p style={hintStyle}>Comma-separated list of DNS search domains</p>
+              <p style={hintStyle}>Optional client search suffixes that are not explicitly managed as internal domains.</p>
             </div>
+            {dnsHealth && (
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                  Last check: {new Date(dnsHealth.checkedAt).toLocaleString()}
+                </div>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {dnsHealth.checks.length === 0 ? (
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Add at least one DNS server and internal domain to run a useful check.</div>
+                  ) : dnsHealth.checks.map((check) => (
+                    <div key={`${check.resolver}-${check.domain}`} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      padding: '9px 10px',
+                      borderRadius: '10px',
+                      border: `1px solid ${check.ok ? 'rgba(34,197,94,0.22)' : 'rgba(239,68,68,0.22)'}`,
+                      background: check.ok ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+                    }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{check.domain} via {check.resolver}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: check.ok ? '#22C55E' : '#EF4444', textTransform: 'uppercase' }}>{check.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

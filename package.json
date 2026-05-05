@@ -60,5 +60,14 @@
     "@vitejs/plugin-react": "^6.0.1",
     "prisma": "^7.5.0",
     "vitest": "^4.1.0"
+  },
+  "overrides": {
+    "@prisma/dev": {
+      "@hono/node-server": "1.19.14"
+    },
+    "micromatch": {
+      "picomatch": "2.3.2"
+    },
+    "postcss": "$postcss"
   }
 }

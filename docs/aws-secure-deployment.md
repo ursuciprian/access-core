@@ -81,6 +81,22 @@ Use ALB authentication with Google OIDC so:
 - `CloudWatch Logs`
 - `AWS WAF` recommended
 
+### Single-EC2 starter topology
+
+For a small single-tenant deployment, AccessCore can run on one EC2 instance with local PostgreSQL and OpenVPN, but treat this as a starter topology rather than the strongest AWS layout.
+
+Recommended minimum controls:
+
+- terminate HTTPS with Caddy, Nginx, ALB, or another trusted TLS proxy
+- bind PostgreSQL to localhost or a private Docker network only
+- expose only the portal HTTPS port and OpenVPN UDP port publicly
+- keep SSH restricted to your admin IP or SSM Session Manager
+- store `.env` outside the repo and set a strong `NEXTAUTH_SECRET`
+- schedule encrypted PostgreSQL and OpenVPN PKI volume backups
+- use the production Dockerfile and do not enable relaxed CSP flags
+
+Do not use `docker/compose.yml` as-is for production. It is intentionally local-development friendly and includes default credentials, public Postgres mapping, SSH mapping, and relaxed CSP. For single-EC2 deployments, start from `docker/compose.prod.yml`, keep the app bound to localhost behind your TLS proxy, and keep PostgreSQL on the private compose network.
+
 ### OpenVPN placement
 
 Run OpenVPN on EC2.

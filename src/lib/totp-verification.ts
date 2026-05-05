@@ -11,12 +11,12 @@ export async function consumeTotpCode(adminUserId: string, secret: string, code:
   const result = await prisma.adminUser.updateMany({
     where: {
       id: adminUserId,
-      NOT: {
-        AND: [
-          { lastTotpSecretHash: secretHash },
-          { lastTotpStep: { gte: matchedStep } },
-        ],
-      },
+      OR: [
+        { lastTotpSecretHash: null },
+        { lastTotpStep: null },
+        { lastTotpSecretHash: { not: secretHash } },
+        { lastTotpStep: { lt: matchedStep } },
+      ],
     } as any,
     data: {
       lastTotpSecretHash: secretHash,

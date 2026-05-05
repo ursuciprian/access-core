@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { UserRole, SyncStatus } from '@prisma/client'
 import { getTransport } from '@/lib/transport'
+import { validateDeploymentSecurityConfig } from '@/lib/deployment-security'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -66,13 +67,19 @@ export async function GET() {
   )
 
   const allTransportsOk = serverResults.every((s) => s.transportOk)
-  const overallStatus = dbHealthy && allTransportsOk ? 'healthy' : 'degraded'
+  const deploymentSecurityIssues = validateDeploymentSecurityConfig()
+  const hasCriticalDeploymentIssue = deploymentSecurityIssues.some((issue) => issue.severity === 'critical')
+  const overallStatus = dbHealthy && allTransportsOk && !hasCriticalDeploymentIssue ? 'healthy' : 'degraded'
 
   return NextResponse.json(
     {
       status: overallStatus,
       timestamp: new Date().toISOString(),
       db: { healthy: dbHealthy },
+      deploymentSecurity: {
+        healthy: deploymentSecurityIssues.length === 0,
+        issues: deploymentSecurityIssues,
+      },
       servers: serverResults,
     },
     { status: overallStatus === 'healthy' ? 200 : 503 }

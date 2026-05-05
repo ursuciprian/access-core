@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { SessionProvider, signOut, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import MfaQrCode from '@/components/auth/MfaQrCode'
+import { getSafeCallbackUrl } from '../verify/navigation'
 
 interface MfaSetupData {
   secret: string
@@ -14,7 +15,7 @@ interface MfaSetupData {
 function MfaSetupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/'
+  const callbackUrl = getSafeCallbackUrl(searchParams.get('callbackUrl'))
   const { data: session, status, update } = useSession()
   const [setup, setSetup] = useState<MfaSetupData | null>(null)
   const [code, setCode] = useState('')

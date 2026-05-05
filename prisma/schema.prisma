@@ -32,6 +32,7 @@ model VpnServer {
   vpnNetwork      String        @default("10.8.0.0/24")
   dnsServers      String[]      @default([])
   searchDomains   String[]      @default([])
+  internalDomains String[]      @default([])
   routeMode       String        @default("NAT")
   splitTunnel     Boolean       @default(false)
   compression     String        @default("off")

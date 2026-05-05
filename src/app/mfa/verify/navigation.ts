@@ -6,9 +6,25 @@ export function getPostVerifyDestination(options: {
     return '/pending-approval'
   }
 
-  if (!options.callbackUrl || options.callbackUrl === '/mfa/verify') {
+  const callbackUrl = getSafeCallbackUrl(options.callbackUrl)
+
+  if (callbackUrl === '/' || callbackUrl === '/mfa/verify') {
     return '/'
   }
 
-  return options.callbackUrl
+  return callbackUrl
+}
+
+export function getSafeCallbackUrl(value: string | null) {
+  if (
+    !value ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.includes('\\') ||
+    /[\u0000-\u001F\u007F]/.test(value)
+  ) {
+    return '/'
+  }
+
+  return value
 }
