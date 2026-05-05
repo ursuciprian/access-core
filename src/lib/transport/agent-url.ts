@@ -16,9 +16,15 @@ function isPrivateIpv4(hostname: string) {
     first === 10 ||
     first === 127 ||
     first === 0 ||
+    (first === 100 && second >= 64 && second <= 127) ||
     (first === 169 && second === 254) ||
     (first === 172 && second >= 16 && second <= 31) ||
-    (first === 192 && second === 168)
+    (first === 192 && second === 0) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    (first === 198 && second === 51) ||
+    (first === 203 && second === 0) ||
+    first >= 224
   )
 }
 
@@ -30,6 +36,8 @@ function isPrivateIpv6(hostname: string) {
     normalized.startsWith('fc') ||
     normalized.startsWith('fd') ||
     normalized.startsWith('fe80:') ||
+    normalized.startsWith('ff') ||
+    normalized.startsWith('2001:db8:') ||
     normalized.startsWith('::ffff:')
   )
 }

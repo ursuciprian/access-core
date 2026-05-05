@@ -6,6 +6,13 @@ import { validateCommonName, validateServerPaths } from '@/lib/validation'
 import { logAudit } from '@/lib/audit'
 import { buildCatCommand } from '@/lib/shell'
 import { requireApprovedUser } from '@/lib/rbac'
+import {
+  buildOvpnAttachmentFilename,
+  getSafeOpenVpnConfigToken,
+  getSafeOpenVpnPort,
+  getSafeOpenVpnProtocol,
+  isSafeOpenVpnRemoteHost,
+} from '@/lib/openvpn-profile'
 
 export const GET = requireApprovedUser()(async (
   request: NextRequest,
@@ -37,6 +44,10 @@ export const GET = requireApprovedUser()(async (
   const server = await prisma.vpnServer.findUnique({ where: { id } })
   if (!server) {
     return NextResponse.json({ error: 'Server not found' }, { status: 404 })
+  }
+
+  if (!isSafeOpenVpnRemoteHost(server.hostname)) {
+    return NextResponse.json({ error: 'Invalid server hostname for OpenVPN profile' }, { status: 400 })
   }
 
   const pathValidation = validateServerPaths({
@@ -73,9 +84,12 @@ export const GET = requireApprovedUser()(async (
 
     // Parse server config for port and proto
     const confLines = confResult.stdout.split('\n')
-    const port = confLines.find(l => l.startsWith('port '))?.split(' ')[1] || '1194'
-    const proto = confLines.find(l => l.startsWith('proto '))?.split(' ')[1] || 'udp'
-    const cipher = confLines.find(l => l.startsWith('cipher '))?.split(' ')[1] || 'AES-256-GCM'
+    const port = getSafeOpenVpnPort(confLines.find(l => l.startsWith('port '))?.split(/\s+/)[1])
+    const proto = getSafeOpenVpnProtocol(confLines.find(l => l.startsWith('proto '))?.split(/\s+/)[1])
+    const cipher = getSafeOpenVpnConfigToken(
+      confLines.find(l => l.startsWith('cipher '))?.split(/\s+/)[1],
+      'AES-256-GCM'
+    )
 
     // Extract just the certificate (between BEGIN and END markers)
     const extractPem = (raw: string) => {
@@ -129,7 +143,7 @@ export const GET = requireApprovedUser()(async (
       status: 200,
       headers: {
         'Content-Type': 'application/x-openvpn-profile',
-        'Content-Disposition': `attachment; filename="${vpnUser.commonName}-${server.name}.ovpn"`,
+        'Content-Disposition': `attachment; filename="${buildOvpnAttachmentFilename(vpnUser.commonName, server.name)}"`,
       },
     })
   } catch (err) {

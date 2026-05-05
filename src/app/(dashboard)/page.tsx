@@ -5,6 +5,14 @@ import Link from 'next/link'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/ToastProvider'
 import type { DashboardAlertItem, DashboardAlertSeverity } from '@/lib/dashboard-alerts'
+import {
+  ActionButton,
+  EmptyState,
+  MetricCard as UiMetricCard,
+  SectionCard,
+  SectionHeader,
+  StatusBadge as UiStatusBadge,
+} from '@/components/ui/Primitives'
 
 interface ConnectedUser {
   commonName: string
@@ -68,6 +76,24 @@ interface VpnServer {
   _count: { users: number; groups: number }
 }
 
+interface RenewalQueueResponse {
+  warningDays: number
+  count: number
+  users: Array<{
+    id: string
+    email: string
+    commonName: string
+    certExpiresAt: string | null
+    isEnabled: boolean
+    server: {
+      id: string
+      name: string
+      hostname: string
+      clientCertValidityDays: number
+    }
+  }>
+}
+
 interface ServerStatus {
   id: string
   online: boolean
@@ -129,6 +155,13 @@ function formatUptime(seconds: number | null | undefined): string {
   return `${Math.max(minutes, 1)}m`
 }
 
+function daysUntil(dateStr: string | null): number | null {
+  if (!dateStr) return null
+  const date = new Date(dateStr).getTime()
+  if (Number.isNaN(date)) return null
+  return Math.ceil((date - Date.now()) / (1000 * 60 * 60 * 24))
+}
+
 const cardStyle: React.CSSProperties = {
   background: 'var(--surface)',
   border: '1px solid var(--border)',
@@ -141,6 +174,7 @@ export default function DashboardPage() {
   const [viewerStats, setViewerStats] = useState<ViewerStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [servers, setServers] = useState<VpnServer[]>([])
+  const [renewalQueue, setRenewalQueue] = useState<RenewalQueueResponse | null>(null)
   const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>({})
   const [pushingServers, setPushingServers] = useState<Record<string, boolean>>({})
   const [pushResults, setPushResults] = useState<Record<string, { ok: boolean; message: string }>>({})
@@ -168,9 +202,15 @@ export default function DashboardPage() {
 
       Promise.all([
         fetch('/api/servers').then((r) => r.json()).catch(() => []),
-      ]).then(([serversData]) => {
+        fetch('/api/certificates/renewal-queue').then((r) => r.json()).catch(() => null),
+      ]).then(([serversData, renewalData]) => {
         const serverList: VpnServer[] = Array.isArray(serversData) ? serversData : []
         setServers(serverList)
+        setRenewalQueue(
+          renewalData && typeof renewalData.count === 'number'
+            ? renewalData as RenewalQueueResponse
+            : null
+        )
 
         serverList.forEach((server) => {
           fetch(`/api/servers/${server.id}/status`)
@@ -434,6 +474,47 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <SectionCard style={{ marginBottom: '16px', padding: '22px' }}>
+        <SectionHeader
+          eyebrow="Command Center"
+          title="Operational Posture"
+          description="A high-signal snapshot of access pressure, certificate risk, and live VPN load."
+          action={(
+            <ActionButton onClick={() => fetchData(false)} variant="soft">
+              Refresh
+            </ActionButton>
+          )}
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: overviewStatColumns, gap: '12px' }}>
+          <UiMetricCard
+            label="Live Sessions"
+            value={activeConnections}
+            helper={`${totalUsers} managed VPN user${totalUsers === 1 ? '' : 's'}`}
+            tone={activeConnections > 0 ? 'success' : 'muted'}
+          />
+          <UiMetricCard
+            label="Security Alerts"
+            value={stats?.alerts?.length ?? 0}
+            helper={(stats?.alerts?.length ?? 0) > 0 ? 'Open items in Priority Alerts' : 'No active priority alerts'}
+            tone={(stats?.alerts?.length ?? 0) > 0 ? 'warning' : 'success'}
+            href="#priority-alerts"
+          />
+          <UiMetricCard
+            label="Renewals"
+            value={renewalQueue?.count ?? stats?.expiringCerts ?? 0}
+            helper={`Inside ${(renewalQueue?.warningDays ?? stats?.certWarningDays ?? 30)} day renewal window`}
+            tone={(renewalQueue?.count ?? stats?.expiringCerts ?? 0) > 0 ? 'warning' : 'success'}
+            href="#renewal-queue"
+          />
+          <UiMetricCard
+            label="Bandwidth"
+            value={formatBytes((stats?.totalBandwidthIn ?? 0) + (stats?.totalBandwidthOut ?? 0))}
+            helper="Total observed live throughput"
+            tone="accent"
+          />
+        </div>
+      </SectionCard>
+
       <div style={{ display: 'grid', gridTemplateColumns: overviewColumns, gap: '16px', marginBottom: '16px' }}>
         <section style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '18px' }}>
@@ -525,6 +606,71 @@ export default function DashboardPage() {
         </section>
       </div>
 
+      <SectionCard id="renewal-queue" style={{ marginBottom: '16px' }}>
+        <SectionHeader
+          eyebrow="Certificate Lifecycle"
+          title="Renewal Queue"
+          description={`Users with active certificates expiring inside the ${renewalQueue?.warningDays ?? stats?.certWarningDays ?? 30}-day warning window.`}
+          action={<ActionButton href="/users?certStatus=ACTIVE" variant="soft">Review Users</ActionButton>}
+        />
+        {!renewalQueue || renewalQueue.users.length === 0 ? (
+          <EmptyState
+            title="No certificates need renewal right now."
+            description="The renewal queue is clear. New items will appear here as certificates enter the configured warning window."
+          />
+        ) : (
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {renewalQueue.users.slice(0, 5).map((user) => {
+              const remainingDays = daysUntil(user.certExpiresAt)
+              const tone: 'danger' | 'warning' = remainingDays !== null && remainingDays <= 7 ? 'danger' : 'warning'
+              return (
+                <div
+                  key={user.id}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: viewport === 'phone' ? '1fr' : 'minmax(220px, 1.4fr) minmax(160px, 0.9fr) minmax(130px, 0.7fr) auto',
+                    gap: '12px',
+                    alignItems: 'center',
+                    padding: '13px 14px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.055)',
+                    background: 'rgba(5,5,5,0.42)',
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <Link href={`/users/${user.id}`} style={{ color: 'var(--text-primary)', textDecoration: 'none', fontSize: '13px', fontWeight: 800 }}>
+                      {user.email}
+                    </Link>
+                    <div style={{ marginTop: '4px', color: 'var(--text-muted)', fontSize: '11px', fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user.commonName}
+                    </div>
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '12px', minWidth: 0 }}>
+                    <Link href={`/servers/${user.server.id}`} style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 700 }}>
+                      {user.server.name}
+                    </Link>
+                    <div style={{ marginTop: '4px', color: 'var(--text-muted)' }}>{user.server.hostname}</div>
+                  </div>
+                  <div>
+                    <UiStatusBadge tone={tone}>
+                      {remainingDays === null ? 'Unknown' : `${Math.max(remainingDays, 0)}d left`}
+                    </UiStatusBadge>
+                  </div>
+                  <ActionButton href={`/users/${user.id}`} variant="soft" tone={tone}>
+                    Renew
+                  </ActionButton>
+                </div>
+              )
+            })}
+            {renewalQueue.users.length > 5 && (
+              <div style={{ color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center', paddingTop: '4px' }}>
+                Showing 5 of {renewalQueue.users.length} certificates in the renewal queue.
+              </div>
+            )}
+          </div>
+        )}
+      </SectionCard>
+
       {stats?.lifecycleAutomation && (
         <section
           style={{
@@ -553,7 +699,7 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <section style={{ ...cardStyle, marginBottom: '16px' }}>
+      <section id="priority-alerts" style={{ ...cardStyle, marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '16px' }}>
           <div>
             <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Priority Alerts</h3>

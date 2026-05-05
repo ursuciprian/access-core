@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const isProduction = process.env.NODE_ENV === 'production'
+if (isProduction && process.env.ALLOW_UNSAFE_INLINE_CSP === 'true') {
+  throw new Error('Unsafe CSP relaxations are not allowed for production builds.')
+}
+
 const allowUnsafeInlineScripts =
-  (!isProduction && process.env.ALLOW_UNSAFE_DEV_CSP === 'true')
-  || process.env.ALLOW_UNSAFE_INLINE_CSP === 'true'
+  !isProduction && process.env.ALLOW_UNSAFE_DEV_CSP === 'true'
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self'${allowUnsafeInlineScripts ? " 'unsafe-inline'" : ''}${!isProduction && process.env.ALLOW_UNSAFE_DEV_CSP === 'true' ? " 'unsafe-eval'" : ''}`,

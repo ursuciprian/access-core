@@ -11,6 +11,17 @@ describe('validateAgentUrl', () => {
     expect(validateAgentUrl('https://[::ffff:127.0.0.1]/').success).toBe(false)
   })
 
+  it('rejects reserved IPv4 ranges that should never be agent targets', () => {
+    expect(validateAgentUrl('https://100.64.0.1/').success).toBe(false)
+    expect(validateAgentUrl('https://198.18.0.1/').success).toBe(false)
+    expect(validateAgentUrl('https://224.0.0.1/').success).toBe(false)
+  })
+
+  it('rejects multicast and documentation IPv6 literals', () => {
+    expect(validateAgentUrl('https://[ff02::1]/').success).toBe(false)
+    expect(validateAgentUrl('https://[2001:db8::1]/').success).toBe(false)
+  })
+
   it('allows public agent URLs', () => {
     expect(validateAgentUrl('https://agent.example.com').success).toBe(true)
     expect(validateAgentUrl('https://[2606:4700:4700::1111]/').success).toBe(true)

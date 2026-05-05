@@ -518,6 +518,13 @@ export default function UsersPage() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const savedViews = [
+    { label: 'All users', params: { search: '', server: '', certStatus: '', flagged: '' } },
+    { label: 'Active certs', params: { certStatus: 'ACTIVE', flagged: '', search: '', server: '' } },
+    { label: 'No certificate', params: { certStatus: 'NONE', flagged: '', search: '', server: '' } },
+    { label: 'Revoked', params: { certStatus: 'REVOKED', flagged: '', search: '', server: '' } },
+    { label: 'Flagged', params: { flagged: 'true', certStatus: '', search: '', server: '' } },
+  ]
 
   if (loading && users.length === 0) {
     return (
@@ -534,7 +541,41 @@ export default function UsersPage() {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <div />
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: '6px' }}>
+            Saved Views
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {savedViews.map((view) => {
+              const active =
+                (view.params.certStatus ?? '') === certStatus &&
+                (view.params.flagged ?? '') === flagged &&
+                (view.params.search ?? '') === search &&
+                (view.label !== 'All users' || (!certStatus && !flagged && !search && !serverFilter))
+              return (
+                <button
+                  key={view.label}
+                  type="button"
+                  onClick={() => updateParams(view.params)}
+                  style={{
+                    minHeight: '32px',
+                    padding: '0 11px',
+                    borderRadius: '999px',
+                    border: `1px solid ${active ? 'rgba(255,183,125,0.3)' : 'var(--border)'}`,
+                    background: active ? 'rgba(255,183,125,0.13)' : 'rgba(18,18,18,0.65)',
+                    color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    fontFamily: 'inherit',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {view.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
           style={styles.primaryButton}

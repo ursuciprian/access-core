@@ -6,6 +6,20 @@ import {
   MFA_VERIFICATION_COOKIE,
 } from '@/lib/mfa-cookie'
 
+function getSafeCallbackPath(value: string | null) {
+  if (
+    !value ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.includes('\\') ||
+    /[\u0000-\u001F\u007F]/.test(value)
+  ) {
+    return '/'
+  }
+
+  return value
+}
+
 export default withAuth(
   async function middleware(req) {
     if (req.method === 'TRACE') {
@@ -71,17 +85,16 @@ export default withAuth(
     if (
       pathname === '/mfa/verify' &&
       token?.mfaEnabled === true &&
-      (token.mfaVerified === true || hasServerIssuedMfaVerification)
+      hasServerIssuedMfaVerification
     ) {
       const callbackUrl = req.nextUrl.searchParams.get('callbackUrl')
-      const destination = callbackUrl?.startsWith('/') ? callbackUrl : '/'
+      const destination = getSafeCallbackPath(callbackUrl)
       return NextResponse.redirect(new URL(destination, req.url))
     }
 
     if (
       token &&
       token.mfaEnabled === true &&
-      token.mfaVerified !== true &&
       !hasServerIssuedMfaVerification &&
       !allowMfaVerification
     ) {

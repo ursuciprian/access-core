@@ -12,10 +12,7 @@ import {
   recordFailedMfaAttempt,
   clearMfaRateLimit,
 } from '@/lib/login-rate-limit'
-import {
-  createMfaVerificationCookieValue,
-  MFA_VERIFICATION_COOKIE,
-} from '@/lib/mfa-cookie'
+import { applyMfaVerificationCookie } from '@/lib/auth-cookies'
 import { enforceTrustedOriginForMutation } from '@/lib/request-security'
 import { consumeTotpCode } from '@/lib/totp-verification'
 
@@ -82,24 +79,6 @@ export async function POST(request: NextRequest) {
   })
 
   const response = NextResponse.json({ success: true })
-  const userId = (session.user as Record<string, unknown>).id
-  const authSessionId = (session.user as Record<string, unknown>).authSessionId
-  const sessionExpiresAt = (session.user as Record<string, unknown>).sessionExpiresAt
-  if (
-    typeof userId === 'string' &&
-    typeof authSessionId === 'string' &&
-    typeof sessionExpiresAt === 'number'
-  ) {
-    response.cookies.set({
-      name: MFA_VERIFICATION_COOKIE,
-      value: await createMfaVerificationCookieValue(userId, authSessionId, sessionExpiresAt),
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      expires: new Date(sessionExpiresAt),
-    })
-  }
-
+  await applyMfaVerificationCookie(response, session.user as Record<string, unknown>)
   return response
 }

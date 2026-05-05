@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react'
 import { SessionProvider, signOut, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-import { getPostVerifyDestination } from './navigation'
-
-function getSafeCallbackUrl(value: string | null) {
-  return value?.startsWith('/') ? value : '/'
-}
+import { getPostVerifyDestination, getSafeCallbackUrl } from './navigation'
 
 function MfaVerifyContent() {
   const router = useRouter()

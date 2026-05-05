@@ -21,4 +21,5 @@ Architecture and flow diagrams (Mermaid format, renderable on GitHub):
 
 - [Getting Started](./getting-started.md) - Installation, local development, and cloud deployment
 - [AWS Secure Deployment](./aws-secure-deployment.md) - Production architecture on AWS with ALB + Google OIDC authentication
+- [Security Audit 2026-04-24](./security/security-audit-2026-04-24.md) - Security Ops audit findings, fixes, and verification checklist
 - [Screenshots](./screenshots/README.md) - Screenshot library and UI assets used in documentation

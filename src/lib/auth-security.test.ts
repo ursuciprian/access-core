@@ -17,6 +17,13 @@ describe('auth security helpers', () => {
     expect(isGoogleSignInAllowed('admin@other.com', { allowedDomain: 'example.com' })).toBe(false)
   })
 
+  it('rejects Google sign-in when the provider says the email is unverified', () => {
+    expect(isGoogleSignInAllowed('admin@example.com', {
+      allowedDomain: 'example.com',
+      emailVerified: false,
+    })).toBe(false)
+  })
+
   it('rejects Google sign-in without a domain restriction outside production too', () => {
     expect(isGoogleSignInAllowed('admin@other.com', { allowedDomain: null })).toBe(false)
   })

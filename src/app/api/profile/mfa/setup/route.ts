@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { requireApprovedUser } from '@/lib/rbac'
 import { isTotpMfaEnabled } from '@/lib/features'
-import { buildTotpUri, encryptTotpSecret, generateTotpSecret } from '@/lib/totp'
+import { buildTotpUri, decryptTotpSecret, encryptTotpSecret, generateTotpSecret } from '@/lib/totp'
 
 export const POST = requireApprovedUser()(async (_request, session) => {
   if (!isTotpMfaEnabled()) {
@@ -25,23 +25,28 @@ export const POST = requireApprovedUser()(async (_request, session) => {
     return NextResponse.json({ error: 'Multi-factor authentication is already enabled' }, { status: 409 })
   }
 
-  const secret = generateTotpSecret()
+  let secret = decryptTotpSecret(adminUser.mfaPendingSecret)
+
+  if (!secret) {
+    secret = generateTotpSecret()
+
+    await prisma.adminUser.update({
+      where: { id: adminUser.id },
+      data: {
+        mfaPendingSecret: encryptTotpSecret(secret),
+      },
+    })
+
+    await logAudit({
+      action: 'MFA_SETUP_STARTED',
+      actorEmail: adminUser.email,
+      targetType: 'ADMIN_USER',
+      targetId: adminUser.id,
+      details: { email: adminUser.email, method: 'TOTP' },
+    })
+  }
+
   const otpauthUri = buildTotpUri(adminUser.email, 'AccessCore', secret)
-
-  await prisma.adminUser.update({
-    where: { id: adminUser.id },
-    data: {
-      mfaPendingSecret: encryptTotpSecret(secret),
-    },
-  })
-
-  await logAudit({
-    action: 'MFA_SETUP_STARTED',
-    actorEmail: adminUser.email,
-    targetType: 'ADMIN_USER',
-    targetId: adminUser.id,
-    details: { email: adminUser.email, method: 'TOTP' },
-  })
 
   return NextResponse.json({
     secret,
