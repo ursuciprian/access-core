@@ -27,7 +27,7 @@
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.1009.0",
     "@prisma/adapter-pg": "^7.5.0",
-    "@prisma/client": "^7.5.0",
+    "@prisma/client": "^7.8.0",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
